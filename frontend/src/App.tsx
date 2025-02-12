@@ -1,51 +1,47 @@
-import { useEffect, useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { authClient } from "./lib/auth-client";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
-  const [response, setResponse] = useState('')
+const App = () => {
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/')
-        const body = await response.text()
-        console.log(body)
-        setResponse(body)
-      } catch (error) {
-        console.error('Error fetching data:', error)
-      }
+    const { data, error } = await authClient.signUp.email({
+      email: "user@email.com",
+      name: "Users",
+      password: "password",
+    });
+
+    if (error) {
+      console.error("Sign up error details:", error);
+      throw error;
     }
 
-    fetchData()
-  }, [])
+    console.log("Sign up successful:", data);
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const { data, error } = await authClient.signIn.email({
+      email: "user@email.com",
+      password: "password",
+    });
+
+    if (error) {
+      console.error("Sign in error details:", error);
+      throw error;
+    }
+
+    console.log("Sign in successful:", data);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>{response}</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="auth-container">
+      <h1>Sign Up</h1>
+      <button onClick={handleSignUp}>Sign Up</button>
+      <button onClick={handleSignIn}>Sign In</button>
+    </div>
+  );
+};
 
-export default App
+export default App;
