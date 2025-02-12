@@ -6,15 +6,15 @@ import { auth } from "./utils/auth";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.all("/api/auth/*", toNodeHandler(auth));
-
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
+
+app.all("/api/auth/*", toNodeHandler(auth));
 
 app.get("/", (req: Request, res: Response) => {
   console.log("Hi from frontend");
