@@ -4,11 +4,11 @@ import cors from "cors"; //wanted to accept requests from frontend
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./utils/auth";
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT ?? 3000;
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL,
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -21,5 +21,5 @@ app.get("/", async (req: Request, res: Response) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+  console.log(`Server is running at ${PORT}`);
 });
