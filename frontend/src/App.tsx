@@ -1,5 +1,4 @@
 import { authClient } from "./lib/auth-client";
-import "./App.css";
 
 const App = () => {
   const handleSignUp = async (e: React.FormEvent) => {
@@ -36,10 +35,20 @@ const App = () => {
   };
 
   return (
-    <div className="auth-container">
-      <h1>Sign Up</h1>
-      <button onClick={handleSignUp}>Sign Up</button>
-      <button onClick={handleSignIn}>Sign In</button>
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-100 gap-4">
+      <h1 className="text-2xl font-bold">Sign Up</h1>
+      <button
+        className="bg-blue-500 text-white p-2 rounded-md cursor-pointer"
+        onClick={handleSignUp}
+      >
+        Sign Up
+      </button>
+      <button
+        className="bg-blue-500 text-white p-2 rounded-md cursor-pointer"
+        onClick={handleSignIn}
+      >
+        Sign In
+      </button>
     </div>
   );
 };
