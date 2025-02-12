@@ -5,49 +5,34 @@ const App = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      const { data, error } = await authClient.signUp.email({
-        email: "user@email.com",
-        name: "Users",
-        password: "password",
-      });
+    const { data, error } = await authClient.signUp.email({
+      email: "user@email.com",
+      name: "Users",
+      password: "password",
+    });
 
-      if (error) {
-        console.error("Sign up error details:", error);
-        throw error;
-      }
-
-      console.log("Sign up successful:", data);
-      window.location.href = "/dashboard";
-    } catch (error: any) {
-      console.error("Sign up error:", error);
-      // Display a more user-friendly error message
-      const errorMessage = error.message || "An error occurred during sign up";
-      alert(errorMessage);
+    if (error) {
+      console.error("Sign up error details:", error);
+      throw error;
     }
+
+    console.log("Sign up successful:", data);
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      const { data, error } = await authClient.signIn.email({
-        email: "user@email.com",
-        password: "password",
-      });
+    const { data, error } = await authClient.signIn.email({
+      email: "user@email.com",
+      password: "password",
+    });
 
-      if (error) {
-        console.error("Sign in error details:", error);
-        throw error;
-      }
-
-      console.log("Sign in successful:", data);
-      window.location.href = "/dashboard";
-    } catch (error: any) {
-      console.error("Sign in error:", error);
-      const errorMessage = error.message || "An error occurred during sign in";
-      alert(errorMessage);
+    if (error) {
+      console.error("Sign in error details:", error);
+      throw error;
     }
+
+    console.log("Sign in successful:", data);
   };
 
   return (
