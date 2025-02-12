@@ -8,8 +8,8 @@ const App = () => {
     try {
       const { data, error } = await authClient.signUp.email({
         email: "user@email.com",
+        name: "Users",
         password: "password",
-        name: "User",
       });
 
       if (error) {
@@ -45,7 +45,6 @@ const App = () => {
       window.location.href = "/dashboard";
     } catch (error: any) {
       console.error("Sign in error:", error);
-      // Display a more user-friendly error message
       const errorMessage = error.message || "An error occurred during sign in";
       alert(errorMessage);
     }

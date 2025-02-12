@@ -16,8 +16,7 @@ app.use(
 
 app.all("/api/auth/*", toNodeHandler(auth));
 
-app.get("/", (req: Request, res: Response) => {
-  console.log("Hi from frontend");
+app.get("/", async (req: Request, res: Response) => {
   res.send("Hello, World! 🚀");
 });
 
