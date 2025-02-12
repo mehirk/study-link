@@ -1,4 +1,4 @@
-import { authClient } from "../lib/auth-client"; // Make sure this path is correct
+import { authClient } from "./lib/auth-client";
 import "./App.css";
 
 const App = () => {
