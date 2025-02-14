@@ -8,19 +8,120 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id            String        @id @default(uuid())
+  email         String        @unique
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   name          String
   emailVerified Boolean
   image         String?
   sessions      Session[]
   accounts      Account[]
+  GroupMember   GroupMember[]
+  Discussion    Discussion[]
+  Comment       Comment[]
+  File          File[]
+  Link          Link[]
+  Resource      Resource[]
 
   @@map("user")
 }
 
+model Group {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String?
+  members     GroupMember[]
+  discussions Discussion[]
+  files       File[]
+  links       Link[]
+  resources   Resource[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+model GroupMember {
+  id       Int      @id @default(autoincrement())
+  user     User     @relation(fields: [userId], references: [id])
+  userId   String
+  group    Group    @relation(fields: [groupId], references: [id])
+  groupId  Int
+  role     Role
+  joinedAt DateTime @default(now())
+
+  @@unique([userId, groupId])
+}
+
+model Discussion {
+  id        Int       @id @default(autoincrement())
+  title     String
+  content   String?
+  group     Group     @relation(fields: [groupId], references: [id])
+  groupId   Int
+  author    User      @relation(fields: [authorId], references: [id])
+  authorId  String
+  comments  Comment[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model Comment {
+  id           Int        @id @default(autoincrement())
+  content      String
+  discussion   Discussion @relation(fields: [discussionId], references: [id])
+  discussionId Int
+  author       User       @relation(fields: [authorId], references: [id])
+  authorId     String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  deletedAt    DateTime?
+}
+
+model File {
+  id           Int       @id @default(autoincrement())
+  fileName     String
+  url          String
+  group        Group     @relation(fields: [groupId], references: [id])
+  groupId      Int
+  uploadedBy   User      @relation(fields: [uploadedById], references: [id])
+  uploadedById String
+  createdAt    DateTime  @default(now())
+  deletedAt    DateTime?
+}
+
+model Link {
+  id        Int       @id @default(autoincrement())
+  title     String
+  url       String
+  group     Group     @relation(fields: [groupId], references: [id])
+  groupId   Int
+  addedBy   User      @relation(fields: [addedById], references: [id])
+  addedById String
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+}
+
+model Resource {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  url         String?
+  group       Group     @relation(fields: [groupId], references: [id])
+  groupId     Int
+  addedBy     User      @relation(fields: [addedById], references: [id])
+  addedById   String
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+}
+
+// Necessary for better-auth
 model Session {
   id        String   @id
   expiresAt DateTime
