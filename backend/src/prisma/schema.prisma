@@ -39,6 +39,8 @@ model Group {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   deletedAt   DateTime?
+
+  @@map("group")
 }
 
 enum Role {
@@ -56,6 +58,7 @@ model GroupMember {
   joinedAt DateTime @default(now())
 
   @@unique([userId, groupId])
+  @@map("group_member")
 }
 
 model Discussion {
@@ -70,6 +73,8 @@ model Discussion {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+
+  @@map("discussion")
 }
 
 model Comment {
@@ -82,6 +87,8 @@ model Comment {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   deletedAt    DateTime?
+
+  @@map("comment")
 }
 
 model File {
@@ -94,6 +101,8 @@ model File {
   uploadedById String
   createdAt    DateTime  @default(now())
   deletedAt    DateTime?
+
+  @@map("file")
 }
 
 model Link {
@@ -106,6 +115,8 @@ model Link {
   addedById String
   createdAt DateTime  @default(now())
   deletedAt DateTime?
+
+  @@map("link")
 }
 
 model Resource {
@@ -119,9 +130,12 @@ model Resource {
   addedById   String
   createdAt   DateTime  @default(now())
   deletedAt   DateTime?
+
+  @@map("resource")
 }
 
 // Necessary for better-auth
+
 model Session {
   id        String   @id
   expiresAt DateTime
