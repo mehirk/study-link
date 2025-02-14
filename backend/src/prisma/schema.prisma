@@ -21,7 +21,6 @@ model User {
   Discussion    Discussion[]
   Comment       Comment[]
   File          File[]
-  Link          Link[]
   Resource      Resource[]
 
   @@map("user")
@@ -34,7 +33,6 @@ model Group {
   members     GroupMember[]
   discussions Discussion[]
   files       File[]
-  links       Link[]
   resources   Resource[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -103,20 +101,6 @@ model File {
   deletedAt    DateTime?
 
   @@map("file")
-}
-
-model Link {
-  id        Int       @id @default(autoincrement())
-  title     String
-  url       String
-  group     Group     @relation(fields: [groupId], references: [id])
-  groupId   Int
-  addedBy   User      @relation(fields: [addedById], references: [id])
-  addedById String
-  createdAt DateTime  @default(now())
-  deletedAt DateTime?
-
-  @@map("link")
 }
 
 model Resource {
