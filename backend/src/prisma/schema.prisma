@@ -17,11 +17,11 @@ model User {
   image         String?
   sessions      Session[]
   accounts      Account[]
-  GroupMember   GroupMember[]
-  Discussion    Discussion[]
-  Comment       Comment[]
-  File          File[]
-  Resource      Resource[]
+  groups        GroupMember[]
+  discussions   Discussion[]
+  comments      Comment[]
+  files         File[]
+  resources     Resource[]
   invitations   Invitation[]
   joinRequests  JoinRequest[]
 
