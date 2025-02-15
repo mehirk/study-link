@@ -5,10 +5,12 @@
   "scripts": {
     "dev": "tsc-watch --onSuccess \"node ./dist/index.js\"",
     "start": "node ./dist/index.js",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio",
-    "db:push": "prisma db push"
+    "db:generate": "prisma generate --schema=./src/prisma/schema.prisma",
+    "db:migrate": "prisma migrate dev --schema=./src/prisma/schema.prisma",
+    "db:studio": "prisma studio --schema=./src/prisma/schema.prisma",
+    "db:push": "prisma db push --schema=./src/prisma/schema.prisma",
+    "better-auth:generate": "npx @better-auth/cli@latest generate --output src/prisma/schema.prisma",
+    "better-auth:migrate": "npx @better-auth/cli@latest migrate --schema=./src/prisma/schema.prisma"
   },
   "author": "",
   "license": "ISC",
