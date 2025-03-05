@@ -1,8 +1,8 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import "dotenv/config";
-import cors from "cors"; //wanted to accept requests from frontend
-import { toNodeHandler } from "better-auth/node";
-import { auth } from "./utils/auth";
+import cors from "cors";
+import routes from "./routes";
+
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 
@@ -14,11 +14,7 @@ app.use(
   })
 );
 
-app.all("/api/auth/*", toNodeHandler(auth));
-
-app.get("/", async (req: Request, res: Response) => {
-  res.send("Hello, World! 🚀");
-});
+app.use("/api", routes);
 
 app.listen(PORT, () => {
   console.log(`Server is running at ${PORT}`);
