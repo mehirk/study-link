@@ -1,7 +1,8 @@
 import express from "express";
 import "dotenv/config";
 import cors from "cors";
-import routes from "./routes";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./utils/auth";
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -14,7 +15,7 @@ app.use(
   })
 );
 
-app.use("/api", routes);
+app.all("/api/auth/*", toNodeHandler(auth));
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
