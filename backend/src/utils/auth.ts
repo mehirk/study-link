@@ -24,7 +24,7 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    // requireEmailVerification: true,
   },
 
   trustedOrigins: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : ["*"],

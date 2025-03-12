@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { Label } from "@components/ui/label";
 import { Input } from "@components/ui/input";
 import { cn } from "@lib/utils";
-import { IconBrandGithub, IconBrandGoogle } from "@tabler/icons-react";
 import { authClient } from "@lib/auth-client";
 
 
@@ -99,11 +98,6 @@ export function SignupForm() {
           Sign up &rarr;
           <BottomGradient />
         </button>
-
-        <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-8 h-[1px] w-full" />
-
-        <div className="flex flex-col space-y-4">
-        </div>
       </form>
     </div>
   );
