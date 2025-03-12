@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error || !data) {
         setIsAuthenticated(false);
         setUser(null);
-        navigate('/');
+        navigate('/auth');
       } else {
         setIsAuthenticated(true);
         setUser(data.user);
