@@ -5,8 +5,10 @@ import { cn } from "@lib/utils";
 
 export function SignInForm({
   onSubmit,
+  isLoading = false,
 }: {
   onSubmit: (credentials: { email: string; password: string }) => void;
+  isLoading?: boolean;
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,6 +35,7 @@ export function SignInForm({
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
           />
         </LabelInputContainer>
         <LabelInputContainer className="mb-4">
@@ -43,14 +46,19 @@ export function SignInForm({
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
           />
         </LabelInputContainer>
 
         <button
-          className="cursor-pointer bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+          className={cn(
+            "cursor-pointer bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]",
+            isLoading && "opacity-70 cursor-not-allowed"
+          )}
           type="submit"
+          disabled={isLoading}
         >
-          Sign in &rarr;
+          {isLoading ? "Signing in..." : "Sign in"} {!isLoading && "→"}
           <BottomGradient />
         </button>
       </form>

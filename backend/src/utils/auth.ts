@@ -27,5 +27,5 @@ export const auth = betterAuth({
     // requireEmailVerification: true,
   },
 
-  trustedOrigins: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : ["*"],
+  trustedOrigins: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL, "http://localhost:5173", "http://localhost:4173"] : ["*"],
 });
