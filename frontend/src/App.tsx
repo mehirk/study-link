@@ -1,18 +1,21 @@
 // import { authClient } from "./lib/auth-client";
-import { ModeToggle } from "@components/mode-toggle";
-import { ThemeProvider } from "@components/theme-provider";
-import { AuthTabs } from "@components/auth-tabs";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Layout from "@components/Layout";
+import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
+import NotFound from "./pages/NotFound";
 
 const App = () => {
   return (
-    <ThemeProvider>
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="absolute top-4 right-4">
-          <ModeToggle />
-        </div>
-        <AuthTabs />
-      </div>
-    </ThemeProvider>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 };
 
