@@ -1,70 +1,43 @@
 import { useAuth } from "../contexts/AuthContext";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { User, Mail, Calendar } from "lucide-react";
 
 const Profile = () => {
-  const { isAuthenticated, isLoading, user } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isAuthenticated && !isLoading) {
-      navigate('/auth');
-    }
-  }, [isAuthenticated, isLoading, navigate]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null; // This will not render while redirecting
-  }
+  const { user } = useAuth();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-65px)] p-4">
-      <div className="max-w-md w-full space-y-8 p-8 border rounded-lg shadow-sm">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center">
+      <div className="max-w-md w-full space-y-8 p-6 bg-card rounded-xl shadow-sm">
+        <div className="text-center">
+          <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <User className="h-12 w-12 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-center">
-            {user?.name || "User Profile"}
-          </h1>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-md">
-            <Mail className="h-5 w-5 text-muted-foreground" />
-            <div>
-              <p className="text-sm font-medium">Email</p>
-              <p className="text-sm text-muted-foreground">{user?.email || "No email provided"}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-md">
-            <Calendar className="h-5 w-5 text-muted-foreground" />
-            <div>
-              <p className="text-sm font-medium">Joined</p>
-              <p className="text-sm text-muted-foreground">
-                {user?.created_at 
-                  ? new Date(user.created_at).toLocaleDateString() 
-                  : "Unknown"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="pt-4 space-y-4">
-          <h2 className="text-xl font-semibold">Account Settings</h2>
-          <p className="text-sm text-muted-foreground">
-            You can update your profile information and password from here.
-            (Settings functionality coming soon)
+          <h1 className="text-2xl font-bold">{user?.name || 'User'}</h1>
+          <p className="text-muted-foreground flex items-center justify-center mt-1">
+            <Mail className="h-4 w-4 mr-2" />
+            {user?.email}
           </p>
+          <p className="text-muted-foreground flex items-center justify-center mt-1">
+            <Calendar className="h-4 w-4 mr-2" />
+            Member since {new Date().toLocaleDateString()}
+          </p>
+        </div>
+        
+        <div className="space-y-4">
+          <h2 className="font-semibold text-lg">Profile Information</h2>
+          <div className="space-y-2">
+            <div className="flex justify-between py-2 border-b">
+              <span className="text-muted-foreground">Username</span>
+              <span>{user?.username || user?.name || 'Loda'}</span>
+            </div>
+            <div className="flex justify-between py-2 border-b">
+              <span className="text-muted-foreground">Email</span>
+              <span>{user?.email}</span>
+            </div>
+            <div className="flex justify-between py-2 border-b">
+              <span className="text-muted-foreground">Role</span>
+              <span>{user?.role || 'Student'}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

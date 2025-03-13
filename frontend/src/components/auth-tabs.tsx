@@ -3,34 +3,29 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/ui/tabs"
 import { SignInForm } from "./sign-in"
 import { SignupForm } from "./sign-up"
-import { authClient } from "@lib/auth-client"
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function AuthTabs() {
-  const { checkAuthStatus } = useAuth();
+  const { login, signup } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleSignIn = async (credentials: { email: string; password: string }) => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const { error: signInError } = await authClient.signIn.email({
-        email: credentials.email,
-        password: credentials.password,
-      });
+      const { success, error } = await login(credentials.email, credentials.password);
       
-      if (signInError) {
-        const errorMessage = typeof signInError.message === 'string' 
-          ? signInError.message 
-          : "Sign in failed";
-        setError(errorMessage);
+      if (!success) {
+        setError(error || "Sign in failed");
         return;
       }
       
-      await checkAuthStatus();
+      navigate('/dashboard');
     } catch (err: any) {
       const errorMessage = typeof err.message === 'string'
         ? err.message
@@ -42,25 +37,50 @@ export function AuthTabs() {
     }
   };
 
+  const handleSignUp = async (data: { email: string; password: string; name: string }) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const { success, error } = await signup(data.email, data.password, data.name);
+      
+      if (!success) {
+        setError(error || "Sign up failed");
+        return;
+      }
+      
+      navigate('/dashboard');
+    } catch (err: any) {
+      const errorMessage = typeof err.message === 'string'
+        ? err.message
+        : 'An error occurred during sign up';
+      setError(errorMessage);
+      console.error('Sign up error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="w-full max-w-md mx-auto">
+    <Tabs defaultValue="signin" className="w-full max-w-md">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="signin">Sign In</TabsTrigger>
+        <TabsTrigger value="signup">Sign Up</TabsTrigger>
+      </TabsList>
+      
       {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+        <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
           {error}
         </div>
       )}
-      <Tabs defaultValue="signin" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="signin" disabled={isLoading}>Sign In</TabsTrigger>
-          <TabsTrigger value="signup" disabled={isLoading}>Sign Up</TabsTrigger>
-        </TabsList>
-        <TabsContent value="signin">
-          <SignInForm onSubmit={handleSignIn} isLoading={isLoading} />
-        </TabsContent>
-        <TabsContent value="signup">
-          <SignupForm isLoading={isLoading} />
-        </TabsContent>
-      </Tabs>
-    </div>
-  )
+      
+      <TabsContent value="signin">
+        <SignInForm onSubmit={handleSignIn} isLoading={isLoading} />
+      </TabsContent>
+      
+      <TabsContent value="signup">
+        <SignupForm onSubmit={handleSignUp} isLoading={isLoading} />
+      </TabsContent>
+    </Tabs>
+  );
 } 

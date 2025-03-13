@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ModeToggle } from "./mode-toggle";
 import { useAuth } from "../contexts/AuthContext";
 import { Button } from "./ui/button";
@@ -6,9 +6,11 @@ import { LogOut, User, BookOpen, Home } from "lucide-react";
 
 const Navbar = () => {
   const { isAuthenticated, isLoading, user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
+    navigate('/');
   };
 
   return (
@@ -24,7 +26,10 @@ const Navbar = () => {
         </Link>
         
         {isLoading ? (
-          <span className="text-sm">Loading...</span>
+          <span className="flex items-center gap-1 text-sm">
+            <div className="h-3 w-3 animate-spin rounded-full border-b-2 border-primary"></div>
+            Loading...
+          </span>
         ) : (
           <>
             {isAuthenticated ? (
@@ -38,6 +43,15 @@ const Navbar = () => {
                   <User className="h-4 w-4" />
                   Profile
                 </Link>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleLogout}
+                  className="flex items-center gap-1"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
               </>
             ) : (
               /* Non-authenticated user navigation */
@@ -48,20 +62,7 @@ const Navbar = () => {
           </>
         )}
         
-        <div className="flex items-center gap-3">
-          {isAuthenticated && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleLogout}
-              className="flex items-center gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
-          )}
-          <ModeToggle />
-        </div>
+        <ModeToggle />
       </div>
     </nav>
   );

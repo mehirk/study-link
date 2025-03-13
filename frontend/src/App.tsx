@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import Profile from "./pages/Profile";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => {
   return (
@@ -13,10 +14,33 @@ const App = () => {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="auth" element={<Auth />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="profile" element={<Profile />} />
+            {/* Public route, redirect to dashboard if already logged in */}
+            <Route index element={
+              <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
+                <Home />
+              </ProtectedRoute>
+            } />
+            
+            {/* Auth route, redirect to dashboard if already logged in */}
+            <Route path="auth" element={
+              <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
+                <Auth />
+              </ProtectedRoute>
+            } />
+            
+            {/* Protected routes - require authentication */}
+            <Route path="dashboard" element={
+              <ProtectedRoute requireAuth={true} redirectTo="/auth">
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="profile" element={
+              <ProtectedRoute requireAuth={true} redirectTo="/auth">
+                <Profile />
+              </ProtectedRoute>
+            } />
+            
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
