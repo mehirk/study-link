@@ -8,12 +8,6 @@ type ProtectedRouteProps = {
   redirectTo: string;
 };
 
-/**
- * A component that protects routes based on authentication status
- * @param children The component to render if access is granted
- * @param requireAuth If true, user must be authenticated; if false, user must NOT be authenticated
- * @param redirectTo Path to redirect to if access is denied
- */
 const ProtectedRoute = ({
   children,
   requireAuth,

@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import { LogOut, User, BookOpen, Home } from "lucide-react";
 
 const Navbar = () => {
-  const { isAuthenticated, isLoading, user, logout } = useAuth();
+  const { isAuthenticated, isLoading, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -20,10 +20,12 @@ const Navbar = () => {
       </Link>
       
       <div className="flex items-center gap-6">
-        <Link to="/" className="hover:underline flex items-center gap-1">
-          <Home className="h-4 w-4" />
-          Home
-        </Link>
+        {!isAuthenticated && (
+          <Link to="/" className="hover:underline flex items-center gap-1">
+            <Home className="h-4 w-4" />
+            Home
+          </Link>
+        )}
         
         {isLoading ? (
           <span className="flex items-center gap-1 text-sm">
@@ -56,7 +58,7 @@ const Navbar = () => {
             ) : (
               /* Non-authenticated user navigation */
               <Link to="/auth" className="hover:underline">
-                Sign In / Sign Up
+                Login
               </Link>
             )}
           </>
