@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signup = async (email: string, password: string, name?: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { data, error } = await authClient.signUp.email({
+      const { error } = await authClient.signUp.email({
         email,
         password,
         name: name || '',
@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) {
         return { 
           success: false, 
-          error: typeof error.message === 'string' ? error.message : 'Signup failed' 
+          error: error.message
         };
       }
       
@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Signup error:', err);
       return { 
         success: false, 
-        error: typeof err.message === 'string' ? err.message : 'An unexpected error occurred' 
+        error: err.message 
       };
     }
   };
