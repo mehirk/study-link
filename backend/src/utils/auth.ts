@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 export const auth = betterAuth({
   emailVerification: {
-    sendOnSignUp: true,
+    sendOnSignUp: false,
     sendVerificationEmail: async ({ user, url }) => {
       await resend.emails.send({
         from: "verify@shahcodes.in", // TODO: Change this to different domain after buying one
@@ -27,5 +27,11 @@ export const auth = betterAuth({
     // requireEmailVerification: true,
   },
 
-  trustedOrigins: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL, "http://localhost:5173", "http://localhost:4173"] : ["*"],
+  trustedOrigins: process.env.FRONTEND_URL
+    ? [
+        process.env.FRONTEND_URL,
+        "http://localhost:5173",
+        "http://localhost:4173",
+      ]
+    : ["*"],
 });

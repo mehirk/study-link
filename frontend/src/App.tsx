@@ -15,32 +15,44 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Layout />}>
             {/* Public route, redirect to dashboard if already logged in */}
-            <Route index element={
-              <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
-                <Home />
-              </ProtectedRoute>
-            } />
-            
+            <Route
+              index
+              element={
+                <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Auth route, redirect to dashboard if already logged in */}
-            <Route path="auth" element={
-              <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
-                <Auth />
-              </ProtectedRoute>
-            } />
-            
+            <Route
+              path="auth"
+              element={
+                <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
+                  <Auth />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Protected routes - require authentication */}
-            <Route path="dashboard" element={
-              <ProtectedRoute requireAuth={true} redirectTo="/auth">
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="profile" element={
-              <ProtectedRoute requireAuth={true} redirectTo="/auth">
-                <Profile />
-              </ProtectedRoute>
-            } />
-            
+            <Route
+              path="dashboard"
+              element={
+                <ProtectedRoute requireAuth={true} redirectTo="/auth">
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="profile"
+              element={
+                <ProtectedRoute requireAuth={true} redirectTo="/auth">
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

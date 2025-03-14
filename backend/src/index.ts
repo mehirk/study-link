@@ -17,7 +17,7 @@ app.use(
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
-  })
+  }),
 );
 
 app.all("/api/auth/*", toNodeHandler(auth));

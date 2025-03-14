@@ -1,5 +1,11 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { authClient } from '@lib/auth-client';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import { authClient } from "@lib/auth-client";
 
 // Properly type the user object
 type User = {
@@ -14,8 +20,15 @@ type AuthContextType = {
   isLoading: boolean;
   user: User | null;
   logout: () => Promise<void>;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  signup: (email: string, password: string, name?: string) => Promise<{ success: boolean; error?: string }>;
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  signup: (
+    email: string,
+    password: string,
+    name?: string,
+  ) => Promise<{ success: boolean; error?: string }>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,7 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         setIsLoading(true);
         const { data, error } = await authClient.getSession();
-        
+
         if (error || !data) {
           setIsAuthenticated(false);
           setUser(null);
@@ -40,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(data.user);
         }
       } catch (error) {
-        console.error('Auth check error:', error);
+        console.error("Auth check error:", error);
         setIsAuthenticated(false);
         setUser(null);
       } finally {
@@ -51,61 +64,72 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkAuthStatus();
   }, []);
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (
+    email: string,
+    password: string,
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       const { error } = await authClient.signIn.email({
         email,
         password,
       });
-      
+
       if (error) {
-        return { 
-          success: false, 
-          error: typeof error.message === 'string' ? error.message : 'Login failed' 
+        return {
+          success: false,
+          error:
+            typeof error.message === "string" ? error.message : "Login failed",
         };
       }
-      
+
       // Get updated session after login
       const { data, error: sessionError } = await authClient.getSession();
-      
+
       if (sessionError || !data) {
-        return { success: false, error: 'Failed to retrieve session' };
+        return { success: false, error: "Failed to retrieve session" };
       }
-      
+
       setIsAuthenticated(true);
       setUser(data.user);
       return { success: true };
     } catch (err: any) {
-      console.error('Login error:', err);
-      return { 
-        success: false, 
-        error: typeof err.message === 'string' ? err.message : 'An unexpected error occurred' 
+      console.error("Login error:", err);
+      return {
+        success: false,
+        error:
+          typeof err.message === "string"
+            ? err.message
+            : "An unexpected error occurred",
       };
     }
   };
 
-  const signup = async (email: string, password: string, name?: string): Promise<{ success: boolean; error?: string }> => {
+  const signup = async (
+    email: string,
+    password: string,
+    name?: string,
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       const { error } = await authClient.signUp.email({
         email,
         password,
-        name: name || '',
+        name: name || "",
       });
-      
+
       if (error) {
-        return { 
-          success: false, 
-          error: error.message
+        return {
+          success: false,
+          error: error.message,
         };
       }
-      
+
       // Auto-login after signup
       return login(email, password);
     } catch (err: any) {
-      console.error('Signup error:', err);
-      return { 
-        success: false, 
-        error: err.message 
+      console.error("Signup error:", err);
+      return {
+        success: false,
+        error: err.message,
       };
     }
   };
@@ -116,7 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsAuthenticated(false);
       setUser(null);
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -126,7 +150,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     logout,
     login,
-    signup
+    signup,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -135,7 +159,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-}; 
+};

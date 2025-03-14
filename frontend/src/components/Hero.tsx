@@ -7,17 +7,18 @@ const Hero = () => {
         Welcome to <span className="text-primary">Study Link</span>
       </h1>
       <p className="text-xl md:text-2xl max-w-3xl mb-8">
-        Connect with students, share resources, and enhance your learning experience
+        Connect with students, share resources, and enhance your learning
+        experience
       </p>
       <div className="flex flex-col sm:flex-row gap-4">
-        <Link 
-          to="/auth" 
+        <Link
+          to="/auth"
           className="px-8 py-3 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
         >
           Get Started
         </Link>
-        <Link 
-          to="/about" 
+        <Link
+          to="/about"
           className="px-8 py-3 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90 font-medium"
         >
           Learn More
@@ -27,4 +28,4 @@ const Hero = () => {
   );
 };
 
-export default Hero; 
+export default Hero;

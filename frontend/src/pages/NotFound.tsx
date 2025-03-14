@@ -6,7 +6,9 @@ const NotFound = () => {
       <div className="max-w-md w-full space-y-8 text-center">
         <h1 className="text-6xl font-bold">404</h1>
         <h2 className="text-3xl font-semibold">Page Not Found</h2>
-        <p className="mt-2">The page you are looking for doesn't exist or has been moved.</p>
+        <p className="mt-2">
+          The page you are looking for doesn't exist or has been moved.
+        </p>
         <div className="mt-6">
           <Link to="/" className="font-medium hover:underline">
             Go back home
@@ -17,4 +19,4 @@ const NotFound = () => {
   );
 };
 
-export default NotFound; 
+export default NotFound;

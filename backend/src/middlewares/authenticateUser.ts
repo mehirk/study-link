@@ -4,7 +4,7 @@ import { auth } from "../utils/auth";
 export const authenticateUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   // TODO: Implement this middleware
   next();
