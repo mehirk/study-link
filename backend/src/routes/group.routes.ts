@@ -1,10 +1,9 @@
 import { Router, Response } from "express";
-import { PrismaClient } from "@prisma/client";
 import { authenticateUser } from "../middlewares/authenticateUser";
 import { AuthenticatedRequest } from "./userProfile.routes";
+import prisma from "../utils/prisma";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 router.get(
   "/",

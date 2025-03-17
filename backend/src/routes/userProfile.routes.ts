@@ -1,14 +1,13 @@
 import { Router, Request, Response } from "express";
 import { authenticateUser } from "../middlewares/authenticateUser";
-import { PrismaClient } from "@prisma/client";
 import { User } from "better-auth/types";
+import prisma from "../utils/prisma";
 
 export interface AuthenticatedRequest extends Request {
   user?: User;
 }
 
 const router = Router();
-const prisma = new PrismaClient();
 
 router.get(
   "/",
