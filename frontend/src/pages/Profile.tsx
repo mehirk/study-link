@@ -1,6 +1,6 @@
 import { UploadButton } from "@lib/uploadthing-client";
 import { useAuth } from "../contexts/AuthContext";
-import { Mail, Calendar } from "lucide-react";
+import { Mail, Calendar, User } from "lucide-react";
 
 const Profile = () => {
   const { user, sessionToken } = useAuth();
@@ -17,7 +17,7 @@ const Profile = () => {
                 className="w-full h-full object-cover rounded-full"
               />
             ) : (
-              <div className="h-12 w-12 text-primary">User</div>
+              <User className="h-12 w-12 text-primary" />
             )}
           </div>
           <h1 className="text-2xl font-bold">{user?.name || "User"}</h1>
@@ -61,6 +61,7 @@ const Profile = () => {
             }}
             onClientUploadComplete={(res) => {
               console.log("uploaded", res);
+              window.location.reload();
             }}
             onUploadError={(error: Error) => {
               console.error(error, error.cause);
