@@ -18,7 +18,7 @@ const Profile = () => {
           </p>
           <p className="text-muted-foreground flex items-center justify-center mt-1">
             <Calendar className="h-4 w-4 mr-2" />
-            Member since {new Date().toLocaleDateString()}
+            Member since {new Date(user?.createdAt).toLocaleDateString()}
           </p>
         </div>
 
