@@ -8,13 +8,15 @@ const f = createUploadthing();
 
 export const uploadRouter = {
   profilePicture: f({ image: { maxFileSize: "8MB", maxFileCount: 1 } })
-    .input(z.object({ userId: z.string() }))
-    .middleware(async ({ input, req }) => {
-      const session = await auth.api.getSession({
-        headers: fromNodeHeaders(req.headers),
+    .input(z.object({ userId: z.string(), token: z.string() }))
+    .middleware(async ({ input }) => {
+      const session = await prisma.session.findUnique({
+        where: {
+          token: input.token,
+        },
       });
 
-      if (!session?.user) {
+      if (!session) {
         throw new UploadThingError("Unauthorized");
       }
 

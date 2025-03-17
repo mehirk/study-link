@@ -6,9 +6,10 @@ import { SignupForm } from "./sign-up";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authClient } from "@lib/auth-client";
 
 export function AuthTabs() {
-  const { login, signup } = useAuth();
+  const { setUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -21,22 +22,20 @@ export function AuthTabs() {
       setIsLoading(true);
       setError(null);
 
-      const { success, error } = await login(
-        credentials.email,
-        credentials.password,
-      );
+      const { data, error } = await authClient.signIn.email({
+        ...credentials,
+      });
 
-      if (!success) {
-        setError(error || "Sign in failed");
+      if (error) {
+        setError(error.message || "Sign in failed");
         return;
       }
 
+      setUser(data.user);
       navigate("/dashboard");
-    } catch (err: any) {
+    } catch (err) {
       const errorMessage =
-        typeof err.message === "string"
-          ? err.message
-          : "An error occurred during sign in";
+        err instanceof Error ? err.message : "An error occurred during sign in";
       setError(errorMessage);
       console.error("Sign in error:", err);
     } finally {
@@ -44,7 +43,7 @@ export function AuthTabs() {
     }
   };
 
-  const handleSignUp = async (data: {
+  const handleSignUp = async (credentials: {
     email: string;
     password: string;
     name: string;
@@ -53,23 +52,20 @@ export function AuthTabs() {
       setIsLoading(true);
       setError(null);
 
-      const { success, error } = await signup(
-        data.email,
-        data.password,
-        data.name,
-      );
+      const { data, error } = await authClient.signUp.email({
+        ...credentials,
+      });
 
-      if (!success) {
-        setError(error || "Sign up failed");
+      if (error) {
+        setError(error.message || "Sign up failed");
         return;
       }
 
+      setUser(data.user);
       navigate("/dashboard");
-    } catch (err: any) {
+    } catch (err) {
       const errorMessage =
-        typeof err.message === "string"
-          ? err.message
-          : "An error occurred during sign up";
+        err instanceof Error ? err.message : "An error occurred during sign up";
       setError(errorMessage);
       console.error("Sign up error:", err);
     } finally {
