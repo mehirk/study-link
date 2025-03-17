@@ -13,6 +13,7 @@ const App = () => {
     <Router>
       <AuthProvider>
         <Routes>
+          {/* Layout wrapper for home, auth, profile pages */}
           <Route path="/" element={<Layout />}>
             {/* Public route, redirect to dashboard if already logged in */}
             <Route
@@ -34,16 +35,7 @@ const App = () => {
               }
             />
 
-            {/* Protected routes - require authentication */}
-            <Route
-              path="dashboard"
-              element={
-                <ProtectedRoute requireAuth={true} redirectTo="/auth">
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-
+            {/* Profile page - requires auth */}
             <Route
               path="profile"
               element={
@@ -55,6 +47,16 @@ const App = () => {
 
             <Route path="*" element={<NotFound />} />
           </Route>
+
+          {/* Dashboard has its own layout, no need for the Layout wrapper */}
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRoute requireAuth={true} redirectTo="/auth">
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </AuthProvider>
     </Router>

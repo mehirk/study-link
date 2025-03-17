@@ -1,16 +1,26 @@
-import { useAuth } from "../contexts/AuthContext";
+import { useState } from "react";
+// @ts-ignore - These components exist but TypeScript might need to reload
+import GroupSidebar from "../components/dashboard/GroupSidebar";
+// @ts-ignore - These components exist but TypeScript might need to reload
+import GroupDetails from "../components/dashboard/GroupDetails";
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-65px)] p-4">
-      <div className="max-w-md w-full space-y-8">
-        <h1 className="text-3xl font-bold text-center">Dashboard</h1>
-        <p className="text-center">
-          Welcome to your dashboard{user?.name ? `, ${user.name}` : ""}
-        </p>
-        {/* Add dashboard content here */}
+    <div className="flex h-screen overflow-hidden dashboard">
+      {/* Left Sidebar */}
+      <GroupSidebar onSelectGroup={setSelectedGroup} />
+      
+      {/* Main Content */}
+      <div className="flex-1 p-4 dashboard-content">
+        {selectedGroup ? (
+          <GroupDetails groupId={selectedGroup} />
+        ) : (
+          <div className="flex items-center justify-center h-full border border-gray-800 rounded-lg dashboard-card">
+            <p className="text-lg text-gray-400">Select a group or create a new one to get started</p>
+          </div>
+        )}
       </div>
     </div>
   );
