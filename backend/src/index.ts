@@ -4,6 +4,7 @@ import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./utils/auth";
 import userProfileRoutes from "./routes/userProfile.routes";
+import groupRoutes from "./routes/group.routes";
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -17,11 +18,15 @@ app.use(
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
-  }),
+  })
 );
 
 app.all("/api/auth/*", toNodeHandler(auth));
+
+app.use(express.json());
+
 app.use("/profile", userProfileRoutes);
+app.use("/groups", groupRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

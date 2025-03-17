@@ -1,12 +1,10 @@
 import { Router, Request, Response } from "express";
 import { authenticateUser } from "../middlewares/authenticateUser";
 import { PrismaClient } from "@prisma/client";
+import { User } from "better-auth/types";
 
-// Extend Request type to include user property
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-  };
+export interface AuthenticatedRequest extends Request {
+  user?: User;
 }
 
 const router = Router();
