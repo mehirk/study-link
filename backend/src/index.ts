@@ -5,6 +5,8 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "./utils/auth";
 import userProfileRoutes from "./routes/userProfile.routes";
 import groupRoutes from "./routes/group.routes";
+import { uploadRouter } from "./utils/uploadthing";
+import { createRouteHandler } from "uploadthing/express";
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -22,6 +24,13 @@ app.use(
 );
 
 app.all("/api/auth/*", toNodeHandler(auth));
+
+app.use(
+  "/api/uploadthing",
+  createRouteHandler({
+    router: uploadRouter,
+  })
+);
 
 app.use(express.json());
 
