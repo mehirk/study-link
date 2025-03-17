@@ -5,14 +5,12 @@ import { SignInForm } from "./sign-in";
 import { SignupForm } from "./sign-up";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { authClient } from "@lib/auth-client";
 
 export function AuthTabs() {
-  const { setUser } = useAuth();
+  const { setUser, setIsAuthenticated, refreshSession } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   const handleSignIn = async (credentials: {
     email: string;
@@ -32,7 +30,8 @@ export function AuthTabs() {
       }
 
       setUser(data.user);
-      navigate("/dashboard");
+      setIsAuthenticated(true);
+      refreshSession();
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred during sign in";
@@ -62,7 +61,8 @@ export function AuthTabs() {
       }
 
       setUser(data.user);
-      navigate("/dashboard");
+      setIsAuthenticated(true);
+      refreshSession();
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred during sign up";

@@ -14,6 +14,9 @@ type AuthContextType = {
   user: User | null;
   sessionToken: string | null;
   setUser: (user: User | null) => void;
+  setSessionToken: (sessionToken: string | null) => void;
+  setIsAuthenticated: (isAuthenticated: boolean) => void;
+  refreshSession: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,13 +33,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(true);
         const { data, error } = await authClient.getSession();
 
-        if (error) {
-          throw error;
+        if (data && !error) {
+          setIsAuthenticated(true);
+          setUser(data.user);
+          setSessionToken(data.session.token);
+        } else {
+          setIsAuthenticated(false);
+          setUser(null);
         }
-
-        setIsAuthenticated(true);
-        setUser(data?.user);
-        setSessionToken(data?.session?.token);
       } catch (error) {
         console.error("Auth check error:", error);
         setIsAuthenticated(false);
@@ -49,12 +53,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkAuthStatus();
   }, []);
 
+  const refreshSession = async () => {
+    const { data, error } = await authClient.getSession();
+    if (data && !error) {
+      setIsAuthenticated(true);
+      setSessionToken(data.session.token);
+      setUser(data.user);
+    }
+  };
+
   const value = {
     isAuthenticated,
     isLoading,
     user,
     sessionToken,
     setUser,
+    setSessionToken,
+    setIsAuthenticated,
+    refreshSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
