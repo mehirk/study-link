@@ -6,14 +6,7 @@ import {
   ReactNode,
 } from "react";
 import { authClient } from "@lib/auth-client";
-
-// Properly type the user object
-type User = {
-  id: string;
-  email: string;
-  name?: string;
-  [key: string]: any; // For any additional properties
-};
+import { User } from "better-auth/types";
 
 type AuthContextType = {
   isAuthenticated: boolean;
@@ -22,12 +15,12 @@ type AuthContextType = {
   logout: () => Promise<void>;
   login: (
     email: string,
-    password: string,
+    password: string
   ) => Promise<{ success: boolean; error?: string }>;
   signup: (
     email: string,
     password: string,
-    name?: string,
+    name?: string
   ) => Promise<{ success: boolean; error?: string }>;
 };
 
@@ -36,26 +29,24 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User>();
 
-  // Check auth status on mount
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
         setIsLoading(true);
         const { data, error } = await authClient.getSession();
 
-        if (error || !data) {
-          setIsAuthenticated(false);
-          setUser(null);
-        } else {
-          setIsAuthenticated(true);
-          setUser(data.user);
+        if (error) {
+          throw error;
         }
+
+        setIsAuthenticated(true);
+        setUser(data?.user);
       } catch (error) {
         console.error("Auth check error:", error);
         setIsAuthenticated(false);
-        setUser(null);
+        setUser(undefined);
       } finally {
         setIsLoading(false);
       }
@@ -66,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (
     email: string,
-    password: string,
+    password: string
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       const { error } = await authClient.signIn.email({
@@ -107,7 +98,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signup = async (
     email: string,
     password: string,
-    name?: string,
+    name?: string
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       const { error } = await authClient.signUp.email({

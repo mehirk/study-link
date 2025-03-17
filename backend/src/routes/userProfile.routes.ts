@@ -13,6 +13,8 @@ router.get(
   "/",
   authenticateUser,
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    console.log("req", req.headers);
+
     try {
       const userId = req.user?.id;
 
