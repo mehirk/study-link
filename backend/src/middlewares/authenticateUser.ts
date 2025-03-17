@@ -1,43 +1,26 @@
 import { Request, Response, NextFunction } from "express";
 import { auth } from "../utils/auth";
+import { fromNodeHeaders } from "better-auth/node";
+import { User } from "better-auth/types";
 
-// Define interface to extend Request type with user
 interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email?: string;
-    name?: string;
-    emailVerified?: boolean;
-  };
+  user?: User;
 }
 
 export const authenticateUser = async (
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ): Promise<void> => {
   try {
-    // Check for Authorization header
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({ message: "Authentication required" });
+    const session = await auth.api.getSession({
+      headers: fromNodeHeaders(req.headers),
+    });
+    if (!session?.user) {
+      res.status(401).json({ message: "Authentication failed" });
       return;
     }
-    
-    // Extract the token
-    const token = authHeader.split(' ')[1];
-    
-    if (!token) {
-      res.status(401).json({ message: "Invalid token format" });
-      return;
-    }
-    
-    // Set user ID on request object (placeholder implementation)
-    (req as AuthenticatedRequest).user = {
-      id: "user-id-from-token", // Replace with actual token validation
-    };
-    
+    req.user = session.user;
     next();
   } catch (error) {
     console.error("Authentication error:", error);
