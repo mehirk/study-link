@@ -9,7 +9,8 @@ const Dashboard = () => {
     <div className="flex h-screen overflow-hidden dashboard">
       <GroupSidebar onSelectGroup={setSelectedGroup} />
 
-      <div className="flex-1 p-4 dashboard-content">
+      {/* Main Content */}
+      <div className="flex-1 p-4">
         {selectedGroup ? (
           <GroupDetails groupId={selectedGroup} />
         ) : (
