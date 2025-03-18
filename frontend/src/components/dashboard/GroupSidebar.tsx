@@ -44,7 +44,7 @@ const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
   return (
     <div className="w-64 border-r border-gray-800 h-full flex flex-col dashboard-sidebar">
       <div className="p-4 border-b border-gray-800">
-        <a href="/dashboard" className="text-lg font-semibold">/dashboard</a>
+        <a href="/dashboard" className="text-lg font-semibold text-white hover:text-gray-400 transition-colors cursor-pointer">My Dashboard</a>
       </div>
       
       {/* Create/Join Group buttons */}
