@@ -17,7 +17,7 @@ export const authenticateUser = async (
       headers: fromNodeHeaders(req.headers),
     });
     if (!session?.user) {
-      res.status(401).json({ message: "Authentication failed" });
+      res.status(401).json({ message: "Not Authenticated" });
       return;
     }
     req.user = session.user;

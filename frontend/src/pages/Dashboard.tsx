@@ -1,13 +1,12 @@
+import GroupDetails from "@components/dashboard/GroupDetails";
+import GroupSidebar from "@components/dashboard/GroupSidebar";
 import { useState } from "react";
-import GroupSidebar from "../components/dashboard/GroupSidebar";
-import GroupDetails from "../components/dashboard/GroupDetails";
 
 const Dashboard = () => {
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
 
   return (
     <div className="flex h-screen overflow-hidden dashboard">
-      {/* Left Sidebar */}
       <GroupSidebar onSelectGroup={setSelectedGroup} />
 
       {/* Main Content */}
