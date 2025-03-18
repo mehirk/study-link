@@ -1,6 +1,6 @@
 import { Router, Response } from "express";
 import { authenticateUser } from "../middlewares/authenticateUser";
-import { AuthenticatedRequest } from "./userProfile.routes";
+import { AuthenticatedRequest } from "../types/auth-req";
 import prisma from "../utils/prisma";
 
 const router = Router();
@@ -13,7 +13,7 @@ router.get(
       const groups = await prisma.group.findMany({
         where: {
           members: {
-            some: { userId: req.user?.id as string },
+            some: { userId: req.user?.id },
           },
         },
       });
@@ -40,7 +40,7 @@ router.post(
       });
       await prisma.groupMember.create({
         data: {
-          userId: req.user?.id as string,
+          userId: req.user?.id!,
           groupId: group.id,
           role: "ADMIN",
         },
@@ -54,17 +54,28 @@ router.post(
 );
 
 router.post(
-  "/add-member",
+  "/join-group/:groupId",
   authenticateUser,
   async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { groupId, userId } = req.body;
+      const { groupId } = req.params;
+      const { password } = req.query;
 
-      // Check if user is already a member of the group
+      const group = await prisma.group.findUnique({
+        where: {
+          id: parseInt(groupId),
+        },
+      });
+
+      if (group?.private && group.password !== password) {
+        res.status(401).json({ message: "Invalid password" });
+        return;
+      }
+
       const existingMember = await prisma.groupMember.findFirst({
         where: {
-          userId,
-          groupId,
+          userId: req.user?.id!,
+          groupId: parseInt(groupId),
         },
       });
 
@@ -75,11 +86,10 @@ router.post(
         return;
       }
 
-      // Add user to group
       await prisma.groupMember.create({
         data: {
-          userId,
-          groupId,
+          userId: req.user?.id!,
+          groupId: parseInt(groupId),
           role: "MEMBER",
         },
       });
@@ -92,6 +102,27 @@ router.post(
   }
 );
 
+router.post(
+  "/leave-group/:groupId",
+  authenticateUser,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { groupId } = req.params;
+      await prisma.groupMember.delete({
+        where: {
+          userId_groupId: {
+            userId: req.user?.id!,
+            groupId: parseInt(groupId),
+          },
+        },
+      });
+      res.status(200).json({ message: "User removed from group successfully" });
+    } catch (error) {
+      console.error("Error removing user from group:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
 // Test later
 // router.put(
 //   "/:id",
