@@ -1,6 +1,4 @@
 import { createUploadthing, type FileRouter } from "uploadthing/express";
-import { auth } from "./auth";
-import { fromNodeHeaders } from "better-auth/node";
 import { UploadThingError } from "uploadthing/server";
 import prisma from "./prisma";
 import { z } from "zod";
