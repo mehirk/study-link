@@ -6,6 +6,7 @@ import { SignupForm } from "./sign-up";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
 import { authClient } from "@lib/auth-client";
+import { Card } from "./ui/card";
 
 export function AuthTabs() {
   const { setUser, setIsAuthenticated, refreshSession } = useAuth();
@@ -79,20 +80,20 @@ export function AuthTabs() {
         <TabsTrigger value="signin">Sign In</TabsTrigger>
         <TabsTrigger value="signup">Sign Up</TabsTrigger>
       </TabsList>
+      <Card className="my-2">
+        {error && (
+          <div className="m-2 p-3 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-200 rounded">
+            {error}
+          </div>
+        )}
+        <TabsContent value="signin">
+          <SignInForm onSubmit={handleSignIn} isLoading={isLoading} />
+        </TabsContent>
 
-      {error && (
-        <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
-        </div>
-      )}
-
-      <TabsContent value="signin">
-        <SignInForm onSubmit={handleSignIn} isLoading={isLoading} />
-      </TabsContent>
-
-      <TabsContent value="signup">
-        <SignupForm onSubmit={handleSignUp} isLoading={isLoading} />
-      </TabsContent>
+        <TabsContent value="signup">
+          <SignupForm onSubmit={handleSignUp} isLoading={isLoading} />
+        </TabsContent>
+      </Card>
     </Tabs>
   );
 }
