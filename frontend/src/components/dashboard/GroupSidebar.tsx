@@ -44,23 +44,26 @@ const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
   };
 
   return (
-    <div className="w-64 border-r h-full flex flex-col bg-background">
-      <div className="p-4 border-b">
-        <a href="/dashboard" className="text-lg font-semibold hover:text-muted-foreground transition-colors cursor-pointer">
+    <div className="w-64 border-r h-full flex flex-col">
+      <div className="p-4 border-b flex items-center justify-center">
+        <a
+          href="/dashboard"
+          className="text-lg font-semibold hover:text-muted-foreground transition-colors cursor-pointer"
+        >
           My Dashboard
         </a>
       </div>
-      
+
       {/* Create/Join Group buttons */}
       <div className="p-4 space-y-2">
-        <Button 
+        <Button
           variant="outline"
           className="w-full"
           onClick={() => setIsCreateModalOpen(true)}
         >
           Create Group
         </Button>
-        <Button 
+        <Button
           variant="outline"
           className="w-full"
           onClick={() => setIsJoinModalOpen(true)}
@@ -68,12 +71,12 @@ const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
           Join Group
         </Button>
       </div>
-      
+
       {/* Groups heading */}
       <div className="px-4 py-2 text-sm font-medium uppercase text-muted-foreground">
         Groups
       </div>
-      
+
       {/* Groups list */}
       <ScrollArea className="flex-1">
         <div className="px-2">
@@ -83,7 +86,8 @@ const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
               className={cn(
                 "w-full px-2 py-2 text-left rounded-md transition-colors",
                 "hover:bg-accent hover:text-accent-foreground",
-                selectedGroupId === group.id && "bg-accent text-accent-foreground"
+                selectedGroupId === group.id &&
+                  "bg-accent text-accent-foreground border-1 border-primary"
               )}
               onClick={() => handleGroupClick(group.id)}
             >
@@ -94,7 +98,7 @@ const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
       </ScrollArea>
 
       {/* Modals */}
-      <CreateGroupModal 
+      <CreateGroupModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreateGroup={handleCreateGroup}
@@ -108,4 +112,4 @@ const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
   );
 };
 
-export default GroupSidebar; 
+export default GroupSidebar;

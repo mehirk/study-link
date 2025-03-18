@@ -96,46 +96,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings:
-      "rlig" 1,
-      "calt" 1;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
-}
-
-/* Dashboard specific styles */
-.dashboard {
-  background-color: black;
-  color: white;
-}
-
-.dashboard-sidebar {
-  background-color: #111111;
-  border-color: #222222;
-}
-
-.dashboard-content {
-  background-color: black;
-}
-
-.dashboard-card {
-  background-color: #111111;
-  border-color: #222222;
-}
-
-.dashboard-button {
-  background-color: transparent;
-  border-color: #444444;
-}
-
-.dashboard-button:hover {
-  background-color: #222222;
-}
-
-.dashboard-tabs-button {
-  color: #777777;
-}
-
-.dashboard-tabs-button.active {
-  color: white;
-  border-bottom: 2px solid white;
 }

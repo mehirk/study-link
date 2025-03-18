@@ -16,7 +16,11 @@ interface CreateGroupModalProps {
   onCreateGroup: (groupName: string, groupDescription: string) => void;
 }
 
-const CreateGroupModal = ({ isOpen, onClose, onCreateGroup }: CreateGroupModalProps) => {
+const CreateGroupModal = ({
+  isOpen,
+  onClose,
+  onCreateGroup,
+}: CreateGroupModalProps) => {
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
 
@@ -36,7 +40,7 @@ const CreateGroupModal = ({ isOpen, onClose, onCreateGroup }: CreateGroupModalPr
         <DialogHeader>
           <DialogTitle>Create a New Group</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="groupName">Group Name</Label>
@@ -48,7 +52,7 @@ const CreateGroupModal = ({ isOpen, onClose, onCreateGroup }: CreateGroupModalPr
               required
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="groupDescription">Description (Optional)</Label>
             <Textarea
@@ -58,20 +62,12 @@ const CreateGroupModal = ({ isOpen, onClose, onCreateGroup }: CreateGroupModalPr
               onChange={(e) => setGroupDescription(e.target.value)}
             />
           </div>
-          
+
           <div className="flex justify-end space-x-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-            >
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-            >
-              Create Group
-            </Button>
+            <Button type="submit">Create Group</Button>
           </div>
         </form>
       </DialogContent>
@@ -79,4 +75,4 @@ const CreateGroupModal = ({ isOpen, onClose, onCreateGroup }: CreateGroupModalPr
   );
 };
 
-export default CreateGroupModal; 
+export default CreateGroupModal;
