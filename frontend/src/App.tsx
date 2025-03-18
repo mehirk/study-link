@@ -13,34 +13,48 @@ const App = () => {
     <Router>
       <AuthProvider>
         <Routes>
+          {/* Layout wrapper for all pages */}
           <Route path="/" element={<Layout />}>
             {/* Public route, redirect to dashboard if already logged in */}
-            <Route index element={
-              <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
-                <Home />
-              </ProtectedRoute>
-            } />
-            
+            <Route
+              index
+              element={
+                <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Auth route, redirect to dashboard if already logged in */}
-            <Route path="auth" element={
-              <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
-                <Auth />
-              </ProtectedRoute>
-            } />
-            
-            {/* Protected routes - require authentication */}
-            <Route path="dashboard" element={
-              <ProtectedRoute requireAuth={true} redirectTo="/auth">
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="profile" element={
-              <ProtectedRoute requireAuth={true} redirectTo="/auth">
-                <Profile />
-              </ProtectedRoute>
-            } />
-            
+            <Route
+              path="auth"
+              element={
+                <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
+                  <Auth />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Profile page - requires auth */}
+            <Route
+              path="profile"
+              element={
+                <ProtectedRoute requireAuth={true} redirectTo="/auth">
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Dashboard - requires auth */}
+            <Route
+              path="dashboard"
+              element={
+                <ProtectedRoute requireAuth={true} redirectTo="/auth">
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

@@ -7,7 +7,7 @@ import { Button } from "./ui/button";
 
 export function SignupForm({
   onSubmit,
-  isLoading = false
+  isLoading = false,
 }: {
   onSubmit: (data: { email: string; password: string; name: string }) => void;
   isLoading?: boolean;
@@ -20,9 +20,9 @@ export function SignupForm({
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     setValidationError(null);
-    
+
     if (password !== confirmPassword) {
       setValidationError("Passwords do not match");
       return;
@@ -102,12 +102,7 @@ export function SignupForm({
           />
         </LabelInputContainer>
 
-        <Button
-          className="w-full"
-          size="lg"
-          disabled={isLoading}
-          type="submit"
-        >
+        <Button className="w-full" size="lg" disabled={isLoading} type="submit">
           {isLoading ? (
             <div className="flex items-center justify-center gap-1">
               <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
@@ -130,8 +125,6 @@ const LabelInputContainer = ({
   className?: string;
 }) => {
   return (
-    <div className={cn("flex flex-col space-y-2", className)}>
-      {children}
-    </div>
+    <div className={cn("flex flex-col space-y-2", className)}>{children}</div>
   );
 };

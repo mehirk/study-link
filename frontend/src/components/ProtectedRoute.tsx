@@ -1,6 +1,6 @@
-import { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { ReactNode } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 type ProtectedRouteProps = {
   children: ReactNode;
@@ -11,7 +11,7 @@ type ProtectedRouteProps = {
 const ProtectedRoute = ({
   children,
   requireAuth,
-  redirectTo
+  redirectTo,
 }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -38,4 +38,4 @@ const ProtectedRoute = ({
   return <>{children}</>;
 };
 
-export default ProtectedRoute; 
+export default ProtectedRoute;

@@ -10,7 +10,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/');
+    navigate("/");
   };
 
   return (
@@ -18,7 +18,7 @@ const Navbar = () => {
       <Link to="/" className="text-xl font-bold">
         Study Link
       </Link>
-      
+
       <div className="flex items-center gap-6">
         {!isAuthenticated && (
           <Link to="/" className="hover:underline flex items-center gap-1">
@@ -26,7 +26,7 @@ const Navbar = () => {
             Home
           </Link>
         )}
-        
+
         {isLoading ? (
           <span className="flex items-center gap-1 text-sm">
             <div className="h-3 w-3 animate-spin rounded-full border-b-2 border-primary"></div>
@@ -37,16 +37,22 @@ const Navbar = () => {
             {isAuthenticated ? (
               /* Authenticated user navigation */
               <>
-                <Link to="/dashboard" className="hover:underline flex items-center gap-1">
+                <Link
+                  to="/dashboard"
+                  className="hover:underline flex items-center gap-1"
+                >
                   <BookOpen className="h-4 w-4" />
                   Dashboard
                 </Link>
-                <Link to="/profile" className="hover:underline flex items-center gap-1">
+                <Link
+                  to="/profile"
+                  className="hover:underline flex items-center gap-1"
+                >
                   <User className="h-4 w-4" />
                   Profile
                 </Link>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={handleLogout}
                   className="flex items-center gap-1"
@@ -63,11 +69,11 @@ const Navbar = () => {
             )}
           </>
         )}
-        
+
         <ModeToggle />
       </div>
     </nav>
   );
 };
 
-export default Navbar; 
+export default Navbar;
