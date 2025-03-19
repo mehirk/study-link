@@ -1,21 +1,112 @@
-import { useState } from "react";
-import { Card, CardHeader, CardContent } from "@components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@components/ui/tabs";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useAuth } from "../../contexts/AuthContext";
+import { Card, CardHeader, CardContent } from "../ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
+import GroupMembers from "./GroupMembers";
+import GroupSettings from "./GroupSettings";
+import { Loader2, ShieldAlert } from "lucide-react";
+import { getGroupById, Group as ApiGroup, getGroupMembers } from "../../lib/api/group";
 
 interface GroupDetailsProps {
   groupId: number;
 }
 
+interface GroupData {
+  id: number;
+  name: string;
+  description: string;
+  members?: {
+    userId: number;
+    role: "ADMIN" | "MEMBER";
+  }[];
+}
+
+// User interface to match the AuthContext
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
 const GroupDetails = ({ groupId }: GroupDetailsProps) => {
-  // Mock data - in a real app, this would come from an API
-  const group = {
-    id: groupId,
-    name: "Group Name",
-    description: "Description",
+  const [group, setGroup] = useState<GroupData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("discussions");
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Debug logs
+  console.log("GroupDetails rendered with groupId:", groupId);
+  console.log("Current user:", user);
+  console.log("isAdmin status:", isAdmin);
+  console.log("Active tab:", activeTab);
+
+  useEffect(() => {
+    const fetchGroupDetails = async () => {
+      try {
+        console.log("Fetching group details for groupId:", groupId);
+        setLoading(true);
+        setError(null);
+        
+        // Use the API client instead of direct axios call
+        const groupData = await getGroupById(groupId);
+        const members = await getGroupMembers(groupId);
+        
+        console.log("Group data received:", groupData); // Debug
+        console.log("Members received:", members); // Debug
+        
+        // Convert API Group type to our GroupData type
+        const formattedGroup: GroupData = {
+          id: groupData.id,
+          name: groupData.name,
+          description: groupData.description || "", // Handle potential undefined
+          members: members.map(m => ({
+            userId: Number(m.userId),
+            role: m.role
+          }))
+        };
+        
+        console.log("Formatted group:", formattedGroup);
+        setGroup(formattedGroup);
+        
+        // Check if the current user is an admin of this group
+        if (user) {
+          const currentUserMembership = members.find(
+            member => Number(member.userId) === Number(user.id)
+          );
+          console.log("Current user membership:", currentUserMembership);
+          const adminStatus = currentUserMembership?.role === "ADMIN";
+          console.log("Setting admin status to:", adminStatus);
+          setIsAdmin(adminStatus);
+        }
+      } catch (error) {
+        console.error("Error fetching group details:", error);
+        setError("Failed to load group details. Please try again.");
+        // Don't set group to null here, keep the previous state
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (groupId) {
+      fetchGroupDetails();
+    } else {
+      console.log("No groupId provided, skipping API call");
+    }
+  }, [groupId, user]);
+
+  const handleGroupUpdated = (updatedGroup: GroupData) => {
+    setGroup(updatedGroup);
   };
 
-  const [activeTab, setActiveTab] = useState("discussions");
+  const handleGroupDeleted = () => {
+    // Redirect to dashboard or do something else
+    window.location.href = "/dashboard";
+  };
 
+  // Define all tabs
   const tabs = [
     { id: "discussions", label: "Discussions" },
     { id: "files", label: "Files & Resources" },
@@ -24,11 +115,58 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
     { id: "settings", label: "Settings" },
   ];
 
+  if (loading) {
+    return (
+      <Card className="h-full flex flex-col items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="h-full flex flex-col items-center justify-center">
+        <p className="text-destructive">{error}</p>
+      </Card>
+    );
+  }
+
+  if (!group) {
+    return (
+      <Card className="h-full flex flex-col items-center justify-center">
+        <p className="text-muted-foreground">Group not found. Please select another group.</p>
+      </Card>
+    );
+  }
+
+  // Just a basic access check message for non-admin users trying to view settings
+  const AdminOnlyMessage = () => (
+    <div className="w-full h-full flex flex-col items-center justify-center">
+      <div className="text-center max-w-md">
+        <ShieldAlert className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+        <h3 className="text-lg font-medium mb-2">Admin Access Required</h3>
+        <p className="text-muted-foreground">
+          Only group administrators can access and modify settings.
+        </p>
+      </div>
+    </div>
+  );
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <h1 className="text-2xl font-semibold">{group.name}</h1>
-        <p className="text-muted-foreground">{group.description}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">{group.name}</h1>
+            <p className="text-muted-foreground">{group.description}</p>
+          </div>
+          {isAdmin && (
+            <div className="flex items-center text-xs font-medium text-primary">
+              <ShieldAlert className="w-4 h-4 mr-1" />
+              Admin
+            </div>
+          )}
+        </div>
       </CardHeader>
 
       <CardContent className="flex-1 p-0">
@@ -45,17 +183,56 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
             ))}
           </TabsList>
           
-          {tabs.map((tab) => (
-            <TabsContent
-              key={tab.id}
-              value={tab.id}
-              className="flex-1 border-none p-6 data-[state=active]:flex items-center justify-center"
-            >
-              <p className="text-muted-foreground">
-                {tab.label} content will go here
-              </p>
-            </TabsContent>
-          ))}
+          <TabsContent
+            value="discussions"
+            className="flex-1 border-none p-6 data-[state=active]:flex items-center justify-center"
+          >
+            <p className="text-muted-foreground">
+              Discussions content will go here
+            </p>
+          </TabsContent>
+          
+          <TabsContent
+            value="files"
+            className="flex-1 border-none p-6 data-[state=active]:flex items-center justify-center"
+          >
+            <p className="text-muted-foreground">
+              Files & Resources content will go here
+            </p>
+          </TabsContent>
+          
+          <TabsContent
+            value="members"
+            className="flex-1 border-none p-6 data-[state=active]:flex"
+          >
+            <GroupMembers groupId={groupId} isAdmin={isAdmin} />
+          </TabsContent>
+          
+          <TabsContent
+            value="academic"
+            className="flex-1 border-none p-6 data-[state=active]:flex items-center justify-center"
+          >
+            <p className="text-muted-foreground">
+              Academic/Progress content will go here
+            </p>
+          </TabsContent>
+          
+          <TabsContent
+            value="settings"
+            className="flex-1 border-none p-6 data-[state=active]:flex"
+          >
+            {isAdmin ? (
+              <GroupSettings 
+                groupId={groupId} 
+                groupData={group} 
+                isAdmin={isAdmin} 
+                onGroupUpdated={handleGroupUpdated}
+                onGroupDeleted={handleGroupDeleted}
+              />
+            ) : (
+              <AdminOnlyMessage />
+            )}
+          </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
