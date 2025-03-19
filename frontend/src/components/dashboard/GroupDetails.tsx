@@ -43,6 +43,30 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
   console.log("isAdmin status:", isAdmin);
   console.log("Active tab:", activeTab);
 
+  // Add effect to track isAdmin changes
+  useEffect(() => {
+    console.log("isAdmin changed to:", isAdmin);
+  }, [isAdmin]);
+
+  // Make sure admin status check runs when switching to settings tab
+  useEffect(() => {
+    if (activeTab === "settings" && group && user) {
+      console.log("Settings tab selected, verifying admin status");
+      // Re-check admin status from the group data when settings tab is selected
+      const members = group.members || [];
+      const isMemberAdmin = members.some(
+        member => 
+          String(member.userId) === String(user.id) && 
+          member.role === "ADMIN"
+      );
+      
+      if (isMemberAdmin && !isAdmin) {
+        console.log("Fixing admin status to true for settings tab");
+        setIsAdmin(true);
+      }
+    }
+  }, [activeTab, group, user, isAdmin]);
+
   useEffect(() => {
     const fetchGroupDetails = async () => {
       try {
@@ -56,6 +80,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
         
         console.log("Group data received:", groupData); // Debug
         console.log("Members received:", members); // Debug
+        console.log("Raw members data:", JSON.stringify(members, null, 2)); // Show complete JSON structure
         
         // Convert API Group type to our GroupData type
         const formattedGroup: GroupData = {
@@ -73,12 +98,23 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
         
         // Check if the current user is an admin of this group
         if (user) {
+          // Check admin status directly from the API response
           const currentUserMembership = members.find(
-            member => Number(member.userId) === Number(user.id)
+            member => String(member.userId) === String(user.id)
           );
-          console.log("Current user membership:", currentUserMembership);
-          const adminStatus = currentUserMembership?.role === "ADMIN";
+          
+          console.log("Current user ID:", user.id);
+          console.log("Current user membership from API:", currentUserMembership);
+          
+          // Force the role check to be case-insensitive and ensure it's a string comparison
+          const userRole = currentUserMembership?.role;
+          const adminStatus = typeof userRole === 'string' && 
+                             userRole.toUpperCase() === "ADMIN";
+          
+          console.log("User role from API:", userRole);
           console.log("Setting admin status to:", adminStatus);
+          
+          // Ensure we update the state correctly
           setIsAdmin(adminStatus);
         }
       } catch (error) {
@@ -114,6 +150,17 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
     { id: "academic", label: "Academic/Progress" },
     { id: "settings", label: "Settings" },
   ];
+
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    console.log("Tab changed to:", value);
+    setActiveTab(value);
+    
+    // If switching to settings tab, verify admin status
+    if (value === "settings" && user && group?.members) {
+      console.log("Verifying admin status for settings tab");
+    }
+  };
 
   if (loading) {
     return (
@@ -170,7 +217,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
       </CardHeader>
 
       <CardContent className="flex-1 p-0">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
           <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
             {tabs.map((tab) => (
               <TabsTrigger
@@ -221,7 +268,8 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
             value="settings"
             className="flex-1 border-none p-6 data-[state=active]:flex"
           >
-            {isAdmin ? (
+            {/* The settings tab will render for admins only */}
+            {(isAdmin === true) ? (
               <GroupSettings 
                 groupId={groupId} 
                 groupData={group} 
