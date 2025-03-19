@@ -5,6 +5,8 @@ export interface Group {
   name: string;
   description?: string;
   private: boolean;
+  requireApproval: boolean;
+  password?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -56,8 +58,17 @@ export const getGroupById = async (groupId: number): Promise<Group> => {
 };
 
 // Update a group
-export const updateGroup = async (groupId: number, groupData: UpdateGroupRequest): Promise<Group> => {
-  const response = await apiClient.put(`/groups/${groupId}`, groupData);
+export const updateGroup = async (
+  groupId: number, 
+  data: { 
+    name: string; 
+    description: string;
+    isPrivate: boolean;
+    requireApproval: boolean;
+    password?: string;
+  }
+): Promise<Group> => {
+  const response = await apiClient.put(`/groups/${groupId}`, data);
   return response.data;
 };
 

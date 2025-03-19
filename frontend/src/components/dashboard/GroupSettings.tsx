@@ -30,6 +30,9 @@ interface GroupData {
   id: number;
   name: string;
   description: string;
+  private: boolean;
+  requireApproval: boolean;
+  password?: string;
 }
 
 interface GroupSettingsProps {
@@ -48,10 +51,10 @@ const GroupSettings = ({
   onGroupDeleted 
 }: GroupSettingsProps) => {
   const [name, setName] = useState(groupData.name);
-  const [description, setDescription] = useState(groupData.description);
-  const [isPrivate, setIsPrivate] = useState(false);
-  const [requireApproval, setRequireApproval] = useState(false);
-  const [groupPassword, setGroupPassword] = useState("");
+  const [description, setDescription] = useState(groupData.description || "");
+  const [isPrivate, setIsPrivate] = useState(Boolean(groupData.private));
+  const [requireApproval, setRequireApproval] = useState(Boolean(groupData.requireApproval));
+  const [groupPassword, setGroupPassword] = useState(groupData.password || "");
   
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -80,6 +83,7 @@ const GroupSettings = ({
         name, 
         description,
         isPrivate,
+        requireApproval,
         password: isPrivate && groupPassword ? groupPassword : undefined 
       });
       
@@ -88,6 +92,9 @@ const GroupSettings = ({
         id: response.id,
         name: response.name,
         description: response.description || "",
+        private: response.private,
+        requireApproval: response.requireApproval,
+        password: response.password
       };
       
       onGroupUpdated(updatedGroup);

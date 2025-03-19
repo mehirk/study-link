@@ -194,7 +194,7 @@ router.put(
   async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id } = req.params;
-      const { name, description, isPrivate, password } = req.body;
+      const { name, description, isPrivate, requireApproval, password } = req.body;
       
       // Check if user is an admin of the group
       const groupMember = await prisma.groupMember.findUnique({
@@ -213,17 +213,21 @@ router.put(
         return;
       }
       
-      const group = await prisma.group.update({
+      // Update group with all privacy settings
+      const updatedGroup = await prisma.group.update({
         where: { id: parseInt(id) },
-        data: { 
-          name, 
+        data: {
+          name,
           description,
-          private: isPrivate !== undefined ? isPrivate : undefined,
-          password: password !== undefined ? password : undefined
+          private: isPrivate, 
+          password: isPrivate ? password : null,
         },
       });
       
-      res.status(200).json(group);
+      // Remove password from response
+      const { password: _, ...groupWithoutPassword } = updatedGroup;
+      
+      res.status(200).json(groupWithoutPassword);
     } catch (error) {
       console.error("Error updating group:", error);
       res.status(500).json({ message: "Internal server error" });

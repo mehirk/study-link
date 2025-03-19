@@ -16,6 +16,9 @@ interface GroupData {
   id: number;
   name: string;
   description: string;
+  private?: boolean;
+  requireApproval?: boolean;
+  password?: string;
   members?: {
     userId: number;
     role: "ADMIN" | "MEMBER";
@@ -87,6 +90,9 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
           id: groupData.id,
           name: groupData.name,
           description: groupData.description || "", // Handle potential undefined
+          private: groupData.private,
+          requireApproval: groupData.requireApproval,
+          password: groupData.password,
           members: members.map(m => ({
             userId: Number(m.userId),
             role: m.role
@@ -134,7 +140,16 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
   }, [groupId, user]);
 
   const handleGroupUpdated = (updatedGroup: GroupData) => {
-    setGroup(updatedGroup);
+    // Ensure we preserve all fields from the updated group
+    setGroup({
+      ...updatedGroup,
+      // Make sure we explicitly include these fields to avoid them being lost
+      private: updatedGroup.private,
+      requireApproval: updatedGroup.requireApproval,
+      password: updatedGroup.password,
+      // If members aren't included in the updatedGroup, keep the current ones
+      members: updatedGroup.members || group?.members
+    });
   };
 
   const handleGroupDeleted = () => {
