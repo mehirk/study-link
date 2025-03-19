@@ -21,7 +21,7 @@ export const uploadRouter = {
       return { userId: input.userId };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      const user = await prisma.user.update({
+      await prisma.user.update({
         where: { id: metadata.userId },
         data: {
           image: file.ufsUrl,

@@ -12,17 +12,23 @@ import { Label } from "@components/ui/label";
 interface JoinGroupModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onJoinGroup: (groupCode: string) => void;
+  onJoinGroup: (groupId: string, password?: string) => void;
 }
 
-const JoinGroupModal = ({ isOpen, onClose, onJoinGroup }: JoinGroupModalProps) => {
-  const [groupCode, setGroupCode] = useState("");
+const JoinGroupModal = ({
+  isOpen,
+  onClose,
+  onJoinGroup,
+}: JoinGroupModalProps) => {
+  const [groupId, setGroupId] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (groupCode.trim()) {
-      onJoinGroup(groupCode);
-      setGroupCode("");
+    if (groupId.trim()) {
+      onJoinGroup(groupId, password || undefined);
+      setGroupId("");
+      setPassword("");
       onClose();
     }
   };
@@ -33,36 +39,36 @@ const JoinGroupModal = ({ isOpen, onClose, onJoinGroup }: JoinGroupModalProps) =
         <DialogHeader>
           <DialogTitle>Join a Group</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="groupCode">Group Code</Label>
+            <Label htmlFor="groupId">Group ID</Label>
             <Input
               type="text"
-              id="groupCode"
-              value={groupCode}
-              onChange={(e) => setGroupCode(e.target.value)}
-              placeholder="Enter the group code"
+              id="groupId"
+              value={groupId}
+              onChange={(e) => setGroupId(e.target.value)}
               required
+              placeholder="Enter the group ID"
             />
-            <p className="text-sm text-muted-foreground">
-              The group code is provided by the group administrator.
-            </p>
           </div>
-          
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password (if required)</Label>
+            <Input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter the group password if it's private"
+            />
+          </div>
+
           <div className="flex justify-end space-x-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-            >
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-            >
-              Join Group
-            </Button>
+            <Button type="submit">Join Group</Button>
           </div>
         </form>
       </DialogContent>

@@ -3,7 +3,7 @@ import { Card, CardHeader, CardContent } from "@components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@components/ui/tabs";
 
 interface GroupDetailsProps {
-  groupId: string;
+  groupId: number;
 }
 
 const GroupDetails = ({ groupId }: GroupDetailsProps) => {

@@ -3,7 +3,7 @@ import GroupSidebar from "@components/dashboard/GroupSidebar";
 import { useState } from "react";
 
 const Dashboard = () => {
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
 
   return (
     <div className="flex h-screen overflow-hidden dashboard">
