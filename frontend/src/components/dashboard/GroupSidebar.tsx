@@ -85,7 +85,7 @@ const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
   };
 
   return (
-    <div className="w-64 border-r h-full flex flex-col">
+    <div className="w-64 border-r h-auto flex flex-col">
       <div className="p-4 border-b flex items-center justify-center">
         <a
           href="/dashboard"

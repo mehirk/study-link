@@ -19,7 +19,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden dashboard">
+    <div className="flex min-h-screens dashboard">
       <GroupSidebar onSelectGroup={handleGroupSelect} />
 
       {/* Main Content */}

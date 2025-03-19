@@ -216,7 +216,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 p-0">
+      <CardContent className="flex-1 p-0 h-full ">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
           <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
             {tabs.map((tab) => (
