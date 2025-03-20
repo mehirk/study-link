@@ -56,7 +56,7 @@ const GroupMembers = ({
 
   const handleChangeRole = async (
     userId: string,
-    newRole: "ADMIN" | "MEMBER"
+    newRole: "ADMIN" | "MEMBER",
   ) => {
     try {
       setChangingRole(userId);
@@ -116,7 +116,7 @@ const GroupMembers = ({
                         onClick={() =>
                           handleChangeRole(
                             member.userId,
-                            member.role === "ADMIN" ? "MEMBER" : "ADMIN"
+                            member.role === "ADMIN" ? "MEMBER" : "ADMIN",
                           )
                         }
                         disabled={!!changingRole}

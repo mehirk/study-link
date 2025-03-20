@@ -43,7 +43,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
         const userIsAdmin = members.some(
           (member) =>
             String(member.userId) === String(user?.id) &&
-            member.role === "ADMIN"
+            member.role === "ADMIN",
         );
         setIsAdmin(userIsAdmin);
       } catch (error) {
