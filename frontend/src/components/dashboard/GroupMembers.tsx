@@ -46,11 +46,11 @@ const GroupMembers = ({
     try {
       setRemovingUser(user.id);
       await leaveGroup(groupId);
+      window.location.reload();
     } catch (error) {
       console.error("Error leaving group:", error);
     } finally {
       setRemovingUser(null);
-      setFetchTrigger(1);
     }
   };
 

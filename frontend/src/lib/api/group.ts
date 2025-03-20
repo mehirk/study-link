@@ -109,3 +109,9 @@ export const removeMember = async (
 ): Promise<void> => {
   await apiClient.delete(`/groups/${groupId}/members/${userId}`);
 };
+
+// Search for groups by name
+export const searchGroups = async (query: string) => {
+  const response = await apiClient.get(`/groups/search?query=${query}`);
+  return response.data;
+};

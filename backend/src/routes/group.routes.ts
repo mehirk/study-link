@@ -490,6 +490,61 @@ router.delete(
   }
 );
 
+// Search for groups by name
+router.get(
+  "/search",
+  authenticateUser,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { query } = req.query;
+
+      // if (!query || typeof query !== "string") {
+      //   res.status(400).json({ message: "Search query is required" });
+      //   return;
+      // }
+
+      // Search for groups that match the query
+      // Return public groups and private groups the user is already a member of
+      const groups = await prisma.group.findMany({
+        where: {
+          name: {
+            contains: query as string,
+            mode: "insensitive", // Case insensitive search
+          },
+        },
+        // Limit the number of results
+        take: 20,
+        // Select only the necessary fields
+        select: {
+          id: true,
+          name: true,
+          private: true,
+          description: true,
+          // Count the number of members
+          _count: {
+            select: {
+              members: true,
+            },
+          },
+        },
+      });
+
+      // Transform the results to include member count
+      const formattedGroups = groups.map((group) => ({
+        id: group.id,
+        name: group.name,
+        private: group.private,
+        description: group.description,
+        memberCount: group._count.members,
+      }));
+
+      res.status(200).json(formattedGroups);
+    } catch (error) {
+      console.error("Error searching groups:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
 // Get group details by ID
 router.get(
   "/:id",
@@ -497,7 +552,6 @@ router.get(
   async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id } = req.params;
-
       const group = await prisma.group.findUnique({
         where: { id: parseInt(id) },
         include: {

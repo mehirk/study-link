@@ -52,7 +52,7 @@ const GroupSidebar = ({
   const handleJoinGroup = async (groupId: string, password?: string) => {
     try {
       await joinGroup(Number(groupId), password);
-      await refreshGroups();
+      await refreshGroups(Number(groupId));
       toast({
         title: "Success",
         description: "Successfully joined the group",
