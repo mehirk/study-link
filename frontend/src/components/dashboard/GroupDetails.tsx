@@ -4,6 +4,9 @@ import { Card, CardHeader, CardContent } from "../ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import GroupMembers from "./GroupMembers";
 import GroupSettings from "./GroupSettings";
+import GroupDiscussions from "./GroupDiscussions";
+import DiscussionView from "./DiscussionView";
+import AuthorDiscussionsView from "./AuthorDiscussions";
 import { Loader2, ShieldAlert } from "lucide-react";
 import {
   getGroupById,
@@ -25,6 +28,8 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [fetchTrigger, setFetchTrigger] = useState(0);
+  const [selectedDiscussionId, setSelectedDiscussionId] = useState<number | null>(null);
+  const [selectedAuthorId, setSelectedAuthorId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchGroupDetails = async () => {
@@ -66,6 +71,24 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
     { id: "members", label: "Members" },
     ...(isAdmin ? [{ id: "settings", label: "Settings" }] : []),
   ];
+
+  const handleSelectDiscussion = (discussionId: number) => {
+    setSelectedDiscussionId(discussionId);
+    setSelectedAuthorId(null);
+  };
+
+  const handleBackToDiscussions = () => {
+    setSelectedDiscussionId(null);
+  };
+
+  const handleViewAuthorDiscussions = (authorId: string) => {
+    setSelectedAuthorId(authorId);
+    setSelectedDiscussionId(null);
+  };
+
+  const handleBackFromAuthorView = () => {
+    setSelectedAuthorId(null);
+  };
 
   if (loading) {
     return (
@@ -130,11 +153,32 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
 
           <TabsContent
             value="discussions"
-            className="flex-1 border-none p-6 data-[state=active]:flex items-center justify-center"
+            className="flex-1 border-none p-6 data-[state=active]:flex"
           >
-            <p className="text-muted-foreground">
-              Discussions content will go here
-            </p>
+            {selectedAuthorId ? (
+              <AuthorDiscussionsView 
+                groupId={groupId}
+                authorId={selectedAuthorId}
+                onBack={handleBackFromAuthorView}
+                onSelectDiscussion={handleSelectDiscussion}
+              />
+            ) : selectedDiscussionId ? (
+              <DiscussionView 
+                groupId={groupId}
+                discussionId={selectedDiscussionId}
+                isAdmin={isAdmin}
+                onBack={handleBackToDiscussions}
+              />
+            ) : (
+              <div className="w-full">
+                <GroupDiscussions 
+                  groupId={groupId}
+                  isAdmin={isAdmin}
+                  onSelectDiscussion={handleSelectDiscussion}
+                  onViewAuthorDiscussions={handleViewAuthorDiscussions}
+                />
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent

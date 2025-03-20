@@ -584,4 +584,644 @@ router.get(
   }
 );
 
+// Discussions
+
+// Get all discussions for a group
+router.get(
+  "/:groupId/discussions",
+  authenticateUser,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { groupId } = req.params;
+      const parsedGroupId = parseInt(groupId);
+
+      // Check if user is a member of the group
+      const isMember = await prisma.groupMember.findFirst({
+        where: {
+          userId: req.user?.id!,
+          groupId: parsedGroupId,
+        },
+      });
+
+      if (!isMember) {
+        res.status(403).json({ message: "Not a member of this group" });
+        return;
+      }
+
+      const discussions = await prisma.discussion.findMany({
+        where: {
+          groupId: parsedGroupId,
+          deletedAt: null,
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+          _count: {
+            select: {
+              comments: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      res.status(200).json(discussions);
+    } catch (error) {
+      console.error("Error fetching discussions:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
+// Get a single discussion with comments
+router.get(
+  "/:groupId/discussions/:discussionId",
+  authenticateUser,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { groupId, discussionId } = req.params;
+      const parsedGroupId = parseInt(groupId);
+      const parsedDiscussionId = parseInt(discussionId);
+
+      // Check if user is a member of the group
+      const isMember = await prisma.groupMember.findFirst({
+        where: {
+          userId: req.user?.id!,
+          groupId: parsedGroupId,
+        },
+      });
+
+      if (!isMember) {
+        res.status(403).json({ message: "Not a member of this group" });
+        return;
+      }
+
+      const discussion = await prisma.discussion.findFirst({
+        where: {
+          id: parsedDiscussionId,
+          groupId: parsedGroupId,
+          deletedAt: null,
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+          comments: {
+            where: {
+              deletedAt: null,
+            },
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  image: true,
+                },
+              },
+            },
+            orderBy: {
+              createdAt: "asc",
+            },
+          },
+        },
+      });
+
+      if (!discussion) {
+        res.status(404).json({ message: "Discussion not found" });
+        return;
+      }
+
+      res.status(200).json(discussion);
+    } catch (error) {
+      console.error("Error fetching discussion:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
+// Create a new discussion
+router.post(
+  "/:groupId/discussions",
+  authenticateUser,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { groupId } = req.params;
+      const { title, content } = req.body;
+      const parsedGroupId = parseInt(groupId);
+
+      if (!title) {
+        res.status(400).json({ message: "Title is required" });
+        return;
+      }
+
+      // Check if user is a member of the group
+      const isMember = await prisma.groupMember.findFirst({
+        where: {
+          userId: req.user?.id!,
+          groupId: parsedGroupId,
+        },
+      });
+
+      if (!isMember) {
+        res.status(403).json({ message: "Not a member of this group" });
+        return;
+      }
+
+      const discussion = await prisma.discussion.create({
+        data: {
+          title,
+          content,
+          groupId: parsedGroupId,
+          authorId: req.user?.id!,
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+        },
+      });
+
+      res.status(201).json(discussion);
+    } catch (error) {
+      console.error("Error creating discussion:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
+// Add a comment to a discussion
+router.post(
+  "/:groupId/discussions/:discussionId/comments",
+  authenticateUser,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { groupId, discussionId } = req.params;
+      const { content } = req.body;
+      const parsedGroupId = parseInt(groupId);
+      const parsedDiscussionId = parseInt(discussionId);
+
+      if (!content) {
+        res.status(400).json({ message: "Content is required" });
+        return;
+      }
+
+      // Check if user is a member of the group
+      const isMember = await prisma.groupMember.findFirst({
+        where: {
+          userId: req.user?.id!,
+          groupId: parsedGroupId,
+        },
+      });
+
+      if (!isMember) {
+        res.status(403).json({ message: "Not a member of this group" });
+        return;
+      }
+
+      // Check if discussion exists and belongs to the group
+      const discussion = await prisma.discussion.findFirst({
+        where: {
+          id: parsedDiscussionId,
+          groupId: parsedGroupId,
+          deletedAt: null,
+        },
+      });
+
+      if (!discussion) {
+        res.status(404).json({ message: "Discussion not found" });
+        return;
+      }
+
+      const comment = await prisma.comment.create({
+        data: {
+          content,
+          discussionId: parsedDiscussionId,
+          authorId: req.user?.id!,
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+        },
+      });
+
+      res.status(201).json(comment);
+    } catch (error) {
+      console.error("Error creating comment:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
+// Delete a discussion (soft delete)
+router.delete(
+  "/:groupId/discussions/:discussionId",
+  authenticateUser,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { groupId, discussionId } = req.params;
+      const parsedGroupId = parseInt(groupId);
+      const parsedDiscussionId = parseInt(discussionId);
+
+      // Check if discussion exists
+      const discussion = await prisma.discussion.findFirst({
+        where: {
+          id: parsedDiscussionId,
+          groupId: parsedGroupId,
+          deletedAt: null,
+        },
+      });
+
+      if (!discussion) {
+        res.status(404).json({ message: "Discussion not found" });
+        return;
+      }
+
+      // Check if user is the author or an admin
+      const userRole = await prisma.groupMember.findFirst({
+        where: {
+          userId: req.user?.id!,
+          groupId: parsedGroupId,
+        },
+        select: {
+          role: true,
+        },
+      });
+
+      if (
+        discussion.authorId !== req.user?.id &&
+        userRole?.role !== "ADMIN"
+      ) {
+        res
+          .status(403)
+          .json({ message: "Not authorized to delete this discussion" });
+        return;
+      }
+
+      // Soft delete
+      await prisma.discussion.update({
+        where: {
+          id: parsedDiscussionId,
+        },
+        data: {
+          deletedAt: new Date(),
+        },
+      });
+
+      res.status(200).json({ message: "Discussion deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting discussion:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
+// Delete a comment (soft delete)
+router.delete(
+  "/:groupId/discussions/:discussionId/comments/:commentId",
+  authenticateUser,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { groupId, discussionId, commentId } = req.params;
+      const parsedGroupId = parseInt(groupId);
+      const parsedDiscussionId = parseInt(discussionId);
+      const parsedCommentId = parseInt(commentId);
+
+      // Check if comment exists
+      const comment = await prisma.comment.findFirst({
+        where: {
+          id: parsedCommentId,
+          discussionId: parsedDiscussionId,
+          deletedAt: null,
+        },
+        include: {
+          discussion: {
+            select: {
+              groupId: true,
+            },
+          },
+        },
+      });
+
+      if (!comment || comment.discussion.groupId !== parsedGroupId) {
+        res.status(404).json({ message: "Comment not found" });
+        return;
+      }
+
+      // Check if user is the author or an admin
+      const userRole = await prisma.groupMember.findFirst({
+        where: {
+          userId: req.user?.id!,
+          groupId: parsedGroupId,
+        },
+        select: {
+          role: true,
+        },
+      });
+
+      if (comment.authorId !== req.user?.id && userRole?.role !== "ADMIN") {
+        res
+          .status(403)
+          .json({ message: "Not authorized to delete this comment" });
+        return;
+      }
+
+      // Soft delete
+      await prisma.comment.update({
+        where: {
+          id: parsedCommentId,
+        },
+        data: {
+          deletedAt: new Date(),
+        },
+      });
+
+      res.status(200).json({ message: "Comment deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
+// Edit a discussion
+router.put(
+  "/:groupId/discussions/:discussionId",
+  authenticateUser,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { groupId, discussionId } = req.params;
+      const { title, content } = req.body;
+      const parsedGroupId = parseInt(groupId);
+      const parsedDiscussionId = parseInt(discussionId);
+
+      if (!title) {
+        res.status(400).json({ message: "Title is required" });
+        return;
+      }
+
+      // Check if discussion exists
+      const discussion = await prisma.discussion.findFirst({
+        where: {
+          id: parsedDiscussionId,
+          groupId: parsedGroupId,
+          deletedAt: null,
+        },
+      });
+
+      if (!discussion) {
+        res.status(404).json({ message: "Discussion not found" });
+        return;
+      }
+
+      // Check if user is the author or an admin
+      const userRole = await prisma.groupMember.findFirst({
+        where: {
+          userId: req.user?.id!,
+          groupId: parsedGroupId,
+        },
+        select: {
+          role: true,
+        },
+      });
+
+      if (
+        discussion.authorId !== req.user?.id &&
+        userRole?.role !== "ADMIN"
+      ) {
+        res
+          .status(403)
+          .json({ message: "Not authorized to edit this discussion" });
+        return;
+      }
+
+      // Update the discussion
+      const updatedDiscussion = await prisma.discussion.update({
+        where: {
+          id: parsedDiscussionId,
+        },
+        data: {
+          title,
+          content,
+          updatedAt: new Date(),
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+        },
+      });
+
+      res.status(200).json(updatedDiscussion);
+    } catch (error) {
+      console.error("Error updating discussion:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
+// Edit a comment
+router.put(
+  "/:groupId/discussions/:discussionId/comments/:commentId",
+  authenticateUser,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { groupId, discussionId, commentId } = req.params;
+      const { content } = req.body;
+      const parsedGroupId = parseInt(groupId);
+      const parsedDiscussionId = parseInt(discussionId);
+      const parsedCommentId = parseInt(commentId);
+
+      if (!content) {
+        res.status(400).json({ message: "Content is required" });
+        return;
+      }
+
+      // Check if comment exists
+      const comment = await prisma.comment.findFirst({
+        where: {
+          id: parsedCommentId,
+          discussionId: parsedDiscussionId,
+          deletedAt: null,
+        },
+        include: {
+          discussion: {
+            select: {
+              groupId: true,
+            },
+          },
+        },
+      });
+
+      if (!comment || comment.discussion.groupId !== parsedGroupId) {
+        res.status(404).json({ message: "Comment not found" });
+        return;
+      }
+
+      // Check if user is the author or an admin
+      const userRole = await prisma.groupMember.findFirst({
+        where: {
+          userId: req.user?.id!,
+          groupId: parsedGroupId,
+        },
+        select: {
+          role: true,
+        },
+      });
+
+      if (comment.authorId !== req.user?.id && userRole?.role !== "ADMIN") {
+        res
+          .status(403)
+          .json({ message: "Not authorized to edit this comment" });
+        return;
+      }
+
+      // Update the comment
+      const updatedComment = await prisma.comment.update({
+        where: {
+          id: parsedCommentId,
+        },
+        data: {
+          content,
+          updatedAt: new Date(),
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+        },
+      });
+
+      res.status(200).json(updatedComment);
+    } catch (error) {
+      console.error("Error updating comment:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
+// Get discussions by author in a group
+router.get(
+  "/:groupId/discussions/by-author/:authorId",
+  authenticateUser,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { groupId, authorId } = req.params;
+      const parsedGroupId = parseInt(groupId);
+
+      // Check if user is a member of the group
+      const isMember = await prisma.groupMember.findFirst({
+        where: {
+          userId: req.user?.id!,
+          groupId: parsedGroupId,
+        },
+      });
+
+      if (!isMember) {
+        res.status(403).json({ message: "Not a member of this group" });
+        return;
+      }
+
+      // Get the author details
+      const author = await prisma.user.findUnique({
+        where: {
+          id: authorId,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+        },
+      });
+
+      if (!author) {
+        res.status(404).json({ message: "Author not found" });
+        return;
+      }
+
+      // Check if the author is a member of the group
+      const isAuthorMember = await prisma.groupMember.findFirst({
+        where: {
+          userId: authorId,
+          groupId: parsedGroupId,
+        },
+      });
+
+      if (!isAuthorMember) {
+        res.status(404).json({ message: "Author is not a member of this group" });
+        return;
+      }
+
+      const discussions = await prisma.discussion.findMany({
+        where: {
+          groupId: parsedGroupId,
+          authorId: authorId,
+          deletedAt: null,
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+          _count: {
+            select: {
+              comments: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      res.status(200).json({
+        author,
+        discussions,
+      });
+    } catch (error) {
+      console.error("Error fetching discussions by author:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
 export default router;

@@ -32,6 +32,41 @@ export interface GroupMember {
   };
 }
 
+export interface Discussion {
+  id: number;
+  title: string;
+  content: string | null;
+  authorId: string;
+  groupId: number;
+  createdAt: string;
+  updatedAt: string;
+  author: {
+    id: string;
+    name: string;
+    email: string;
+    image?: string;
+  };
+  comments?: Comment[];
+  _count?: {
+    comments: number;
+  };
+}
+
+export interface Comment {
+  id: number;
+  content: string;
+  authorId: string;
+  discussionId: number;
+  createdAt: string;
+  updatedAt: string;
+  author: {
+    id: string;
+    name: string;
+    email: string;
+    image?: string;
+  };
+}
+
 // Fetch all groups the user is a member of
 export const fetchUserGroups = async (): Promise<Group[]> => {
   const response = await apiClient.get("/groups");
@@ -113,5 +148,113 @@ export const removeMember = async (
 // Search for groups by name
 export const searchGroups = async (query: string) => {
   const response = await apiClient.get(`/groups/search?query=${query}`);
+  return response.data;
+};
+
+// Fetch discussions for a group
+export const fetchGroupDiscussions = async (
+  groupId: number
+): Promise<Discussion[]> => {
+  const response = await apiClient.get(`/groups/${groupId}/discussions`);
+  return response.data;
+};
+
+// Get a specific discussion with comments
+export const getDiscussion = async (
+  groupId: number,
+  discussionId: number
+): Promise<Discussion> => {
+  const response = await apiClient.get(
+    `/groups/${groupId}/discussions/${discussionId}`
+  );
+  return response.data;
+};
+
+// Create a new discussion
+export const createDiscussion = async (
+  groupId: number,
+  data: { title: string; content?: string }
+): Promise<Discussion> => {
+  const response = await apiClient.post(`/groups/${groupId}/discussions`, data);
+  return response.data;
+};
+
+// Add a comment to a discussion
+export const addComment = async (
+  groupId: number,
+  discussionId: number,
+  data: { content: string }
+): Promise<Comment> => {
+  const response = await apiClient.post(
+    `/groups/${groupId}/discussions/${discussionId}/comments`,
+    data
+  );
+  return response.data;
+};
+
+// Delete a discussion
+export const deleteDiscussion = async (
+  groupId: number,
+  discussionId: number
+): Promise<void> => {
+  await apiClient.delete(`/groups/${groupId}/discussions/${discussionId}`);
+};
+
+// Delete a comment
+export const deleteComment = async (
+  groupId: number,
+  discussionId: number,
+  commentId: number
+): Promise<void> => {
+  await apiClient.delete(
+    `/groups/${groupId}/discussions/${discussionId}/comments/${commentId}`
+  );
+};
+
+// Update a discussion
+export const updateDiscussion = async (
+  groupId: number,
+  discussionId: number,
+  data: { title: string; content?: string }
+): Promise<Discussion> => {
+  const response = await apiClient.put(
+    `/groups/${groupId}/discussions/${discussionId}`,
+    data
+  );
+  return response.data;
+};
+
+// Update a comment
+export const updateComment = async (
+  groupId: number,
+  discussionId: number,
+  commentId: number,
+  data: { content: string }
+): Promise<Comment> => {
+  const response = await apiClient.put(
+    `/groups/${groupId}/discussions/${discussionId}/comments/${commentId}`,
+    data
+  );
+  return response.data;
+};
+
+// Get discussions by author
+export interface AuthorDiscussions {
+  author: {
+    id: string;
+    name: string;
+    email: string;
+    image?: string;
+  };
+  discussions: Discussion[];
+}
+
+export const getDiscussionsByAuthor = async (
+  groupId: number,
+  authorId: string
+): Promise<AuthorDiscussions> => {
+  const response = await apiClient.get(
+    `/groups/${groupId}/discussions/by-author/${authorId}`
+  );
   return response.data;
 };
