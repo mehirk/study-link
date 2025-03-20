@@ -504,6 +504,9 @@ router.get(
             contains: query as string,
             mode: "insensitive", // Case insensitive search
           },
+          members: {
+            none: { userId: req.user?.id },
+          },
         },
         // Limit the number of results
         take: 20,
