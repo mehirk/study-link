@@ -4,47 +4,72 @@ import JoinGroupModal from "./JoinGroupModal";
 import { Button } from "@components/ui/button";
 import { ScrollArea } from "@components/ui/scroll-area";
 import { cn } from "@lib/utils";
+import { createGroup, joinGroup, Group } from "@lib/api/group";
+import { useToast } from "@components/ui/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface GroupSidebarProps {
-  onSelectGroup: (groupId: string | null) => void;
+  onSelectGroup: (groupId: number | null) => void;
+  selectedGroupId: number | null;
+  groups: Group[];
+  loading: boolean;
+  refreshGroups: (groupId?: number) => Promise<void>;
 }
 
-const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
-  // Mock data for groups
-  const [groups, setGroups] = useState([
-    { id: "1", name: "Group 1" },
-    { id: "2", name: "Group 2" },
-    { id: "3", name: "Group 3" },
-    { id: "4", name: "Group 4" },
-    { id: "5", name: "Group 5" },
-  ]);
-
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+const GroupSidebar = ({
+  onSelectGroup,
+  selectedGroupId,
+  groups,
+  loading,
+  refreshGroups,
+}: GroupSidebarProps) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const { toast } = useToast();
 
-  const handleGroupClick = (groupId: string) => {
-    setSelectedGroupId(groupId);
+  const handleGroupClick = (groupId: number) => {
     onSelectGroup(groupId);
   };
 
-  const handleCreateGroup = (name: string, description: string) => {
-    // In a real app, this would make an API call and use the description
-    const newGroup = {
-      id: `${groups.length + 1}`,
-      name,
-      description,
-    };
-    setGroups([...groups, newGroup]);
+  const handleCreateGroup = async (name: string, description: string) => {
+    try {
+      const newGroup = await createGroup({ name, description });
+      await refreshGroups(newGroup.id);
+      toast({
+        title: "Success",
+        description: "Group created successfully",
+      });
+    } catch (error) {
+      console.error("Failed to create group:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create group. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleJoinGroup = (groupCode: string) => {
-    // In a real app, this would make an API call using the group code
-    console.log(`Joining group with code: ${groupCode}`);
+  const handleJoinGroup = async (groupId: string, password?: string) => {
+    try {
+      await joinGroup(Number(groupId), password);
+      await refreshGroups(Number(groupId));
+      toast({
+        title: "Success",
+        description: "Successfully joined the group",
+      });
+    } catch (error) {
+      console.error("Failed to join group:", error);
+      toast({
+        title: "Error",
+        description:
+          "Failed to join group. Please check the group ID and password.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <div className="w-64 border-r h-full flex flex-col">
+    <div className="w-64 border-r h-auto flex flex-col">
       <div className="p-4 border-b flex items-center justify-center">
         <a
           href="/dashboard"
@@ -56,11 +81,7 @@ const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
 
       {/* Create/Join Group buttons */}
       <div className="p-4 space-y-2">
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => setIsCreateModalOpen(true)}
-        >
+        <Button className="w-full" onClick={() => setIsCreateModalOpen(true)}>
           Create Group
         </Button>
         <Button
@@ -73,27 +94,37 @@ const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
       </div>
 
       {/* Groups heading */}
-      <div className="px-4 py-2 text-sm font-medium uppercase text-muted-foreground">
+      <div className="px-4 py-4 text-base font-extrabold text-muted-foreground">
         Groups
       </div>
 
       {/* Groups list */}
       <ScrollArea className="flex-1">
         <div className="px-2">
-          {groups.map((group) => (
-            <button
-              key={group.id}
-              className={cn(
-                "w-full px-2 py-2 text-left rounded-md transition-colors",
-                "hover:bg-accent hover:text-accent-foreground",
-                selectedGroupId === group.id &&
-                  "bg-accent text-accent-foreground border-1 border-primary"
-              )}
-              onClick={() => handleGroupClick(group.id)}
-            >
-              {group.name}
-            </button>
-          ))}
+          {loading ? (
+            <div className="flex justify-center p-4">
+              <Loader2 className="animate-spin" />
+            </div>
+          ) : groups.length > 0 ? (
+            groups.map((group) => (
+              <button
+                key={group.id}
+                className={cn(
+                  "w-full px-2 my-1 py-2 text-left rounded-md transition-colors",
+                  "hover:bg-accent hover:text-accent-foreground",
+                  selectedGroupId === group.id &&
+                    "bg-accent text-accent-foreground border-1 border-primary",
+                )}
+                onClick={() => handleGroupClick(group.id)}
+              >
+                {group.name}
+              </button>
+            ))
+          ) : (
+            <div className="text-center p-4 text-muted-foreground">
+              No groups yet. Create or join a group to get started.
+            </div>
+          )}
         </div>
       </ScrollArea>
 

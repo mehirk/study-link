@@ -5,7 +5,7 @@ import { SignInForm } from "./sign-in";
 import { SignupForm } from "./sign-up";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
-import { authClient } from "@lib/auth-client";
+import { authClient } from "@lib/api-client";
 import { Card } from "./ui/card";
 
 export function AuthTabs() {

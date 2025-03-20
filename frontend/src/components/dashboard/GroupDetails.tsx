@@ -1,38 +1,121 @@
-import { useState } from "react";
-import { Card, CardHeader, CardContent } from "@components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@components/ui/tabs";
+import { useState, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { Card, CardHeader, CardContent } from "../ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
+import GroupMembers from "./GroupMembers";
+import GroupSettings from "./GroupSettings";
+import { Loader2, ShieldAlert } from "lucide-react";
+import {
+  getGroupById,
+  getGroupMembers,
+  Group,
+  GroupMember,
+} from "../../lib/api/group";
 
 interface GroupDetailsProps {
-  groupId: string;
+  groupId: number;
 }
 
 const GroupDetails = ({ groupId }: GroupDetailsProps) => {
-  // Mock data - in a real app, this would come from an API
-  const group = {
-    id: groupId,
-    name: "Group Name",
-    description: "Description",
-  };
-
+  const [group, setGroup] = useState<Group | null>(null);
+  const [members, setMembers] = useState<GroupMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("discussions");
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [fetchTrigger, setFetchTrigger] = useState(0);
+
+  useEffect(() => {
+    const fetchGroupDetails = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const [groupData, members] = await Promise.all([
+          getGroupById(groupId),
+          getGroupMembers(groupId),
+        ]);
+
+        setMembers(members);
+        setGroup(groupData);
+
+        const userIsAdmin = members.some(
+          (member) =>
+            String(member.userId) === String(user?.id) &&
+            member.role === "ADMIN",
+        );
+        setIsAdmin(userIsAdmin);
+      } catch (error) {
+        console.error("Error fetching group details:", error);
+        setError("Failed to load group details. Please try again.");
+      } finally {
+        setLoading(false);
+        setFetchTrigger(0);
+      }
+    };
+
+    if (groupId) {
+      fetchGroupDetails();
+    }
+  }, [groupId, user, fetchTrigger]);
 
   const tabs = [
     { id: "discussions", label: "Discussions" },
     { id: "files", label: "Files & Resources" },
     { id: "members", label: "Members" },
-    { id: "academic", label: "Academic/Progress" },
-    { id: "settings", label: "Settings" },
+    ...(isAdmin ? [{ id: "settings", label: "Settings" }] : []),
   ];
+
+  if (loading) {
+    return (
+      <Card className="h-full flex flex-col items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="h-full flex flex-col items-center justify-center">
+        <p className="text-destructive">{error}</p>
+      </Card>
+    );
+  }
+
+  if (!group) {
+    return (
+      <Card className="h-full flex flex-col items-center justify-center">
+        <p className="text-muted-foreground">
+          Group not found. Please select another group.
+        </p>
+      </Card>
+    );
+  }
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <h1 className="text-2xl font-semibold">{group.name}</h1>
-        <p className="text-muted-foreground">{group.description}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">{group.name}</h1>
+            <p className="text-muted-foreground">{group.description}</p>
+          </div>
+          {isAdmin && (
+            <div className="flex items-center text-xs font-medium text-primary">
+              <ShieldAlert className="w-4 h-4 mr-1" />
+              Admin
+            </div>
+          )}
+        </div>
       </CardHeader>
 
-      <CardContent className="flex-1 p-0">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+      <CardContent className="flex-1 p-0 h-full ">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="h-full flex flex-col"
+        >
           <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
             {tabs.map((tab) => (
               <TabsTrigger
@@ -44,22 +127,67 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
               </TabsTrigger>
             ))}
           </TabsList>
-          
-          {tabs.map((tab) => (
-            <TabsContent
-              key={tab.id}
-              value={tab.id}
-              className="flex-1 border-none p-6 data-[state=active]:flex items-center justify-center"
-            >
-              <p className="text-muted-foreground">
-                {tab.label} content will go here
-              </p>
-            </TabsContent>
-          ))}
+
+          <TabsContent
+            value="discussions"
+            className="flex-1 border-none p-6 data-[state=active]:flex items-center justify-center"
+          >
+            <p className="text-muted-foreground">
+              Discussions content will go here
+            </p>
+          </TabsContent>
+
+          <TabsContent
+            value="files"
+            className="flex-1 border-none p-6 data-[state=active]:flex items-center justify-center"
+          >
+            <p className="text-muted-foreground">
+              Files & Resources content will go here
+            </p>
+          </TabsContent>
+
+          <TabsContent
+            value="members"
+            className="flex-1 border-none p-6 data-[state=active]:flex"
+          >
+            <GroupMembers
+              groupId={groupId}
+              isAdmin={isAdmin}
+              members={members}
+              setFetchTrigger={setFetchTrigger}
+            />
+          </TabsContent>
+
+          <TabsContent
+            value="settings"
+            className="flex-1 border-none p-6 data-[state=active]:flex"
+          >
+            {isAdmin === true ? (
+              <GroupSettings
+                groupId={groupId}
+                isAdmin={isAdmin}
+                groupData={group}
+                onGroupUpdated={setGroup}
+                setFetchTrigger={setFetchTrigger}
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center">
+                <div className="text-center max-w-md">
+                  <ShieldAlert className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">
+                    Admin Access Required
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Only group administrators can access and modify settings.
+                  </p>
+                </div>
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
   );
 };
 
-export default GroupDetails; 
+export default GroupDetails;
