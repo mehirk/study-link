@@ -5,7 +5,12 @@ import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Loader2, UserX, ShieldAlert } from "lucide-react";
-import { changeUserRole, removeMember, GroupMember } from "../../lib/api/group";
+import {
+  changeUserRole,
+  removeMember,
+  leaveGroup,
+  GroupMember,
+} from "../../lib/api/group";
 
 interface GroupMembersProps {
   groupId: number;
@@ -30,6 +35,19 @@ const GroupMembers = ({
       await removeMember(groupId, userId);
     } catch (error) {
       console.error("Error removing member:", error);
+    } finally {
+      setRemovingUser(null);
+      setFetchTrigger(1);
+    }
+  };
+
+  const handleLeaveGroup = async () => {
+    if (!user) return;
+    try {
+      setRemovingUser(user.id);
+      await leaveGroup(groupId);
+    } catch (error) {
+      console.error("Error leaving group:", error);
     } finally {
       setRemovingUser(null);
       setFetchTrigger(1);
@@ -122,6 +140,25 @@ const GroupMembers = ({
                           <UserX className="w-4 h-4 mr-2" />
                         )}
                         Remove
+                      </Button>
+                    </div>
+                  )}
+                {user &&
+                  member.userId === user.id &&
+                  member.role === "MEMBER" && (
+                    <div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleLeaveGroup}
+                        disabled={!!removingUser}
+                      >
+                        {removingUser === user.id ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <UserX className="w-4 h-4 mr-2" />
+                        )}
+                        Leave Group
                       </Button>
                     </div>
                   )}

@@ -57,29 +57,15 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
 
     if (groupId) {
       fetchGroupDetails();
-    } else {
-      console.log("No groupId provided, skipping API call");
     }
   }, [groupId, user, fetchTrigger]);
 
-  // Define all tabs
   const tabs = [
     { id: "discussions", label: "Discussions" },
     { id: "files", label: "Files & Resources" },
     { id: "members", label: "Members" },
-    { id: "settings", label: "Settings" },
+    ...(isAdmin ? [{ id: "settings", label: "Settings" }] : []),
   ];
-
-  // Handle tab change
-  const handleTabChange = (value: string) => {
-    console.log("Tab changed to:", value);
-    setActiveTab(value);
-
-    // If switching to settings tab, verify admin status
-    if (value === "settings" && user && members) {
-      console.log("Verifying admin status for settings tab");
-    }
-  };
 
   if (loading) {
     return (
@@ -107,19 +93,6 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
     );
   }
 
-  // Just a basic access check message for non-admin users trying to view settings
-  const AdminOnlyMessage = () => (
-    <div className="w-full h-full flex flex-col items-center justify-center">
-      <div className="text-center max-w-md">
-        <ShieldAlert className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-medium mb-2">Admin Access Required</h3>
-        <p className="text-muted-foreground">
-          Only group administrators can access and modify settings.
-        </p>
-      </div>
-    </div>
-  );
-
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
@@ -140,7 +113,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
       <CardContent className="flex-1 p-0 h-full ">
         <Tabs
           value={activeTab}
-          onValueChange={handleTabChange}
+          onValueChange={setActiveTab}
           className="h-full flex flex-col"
         >
           <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
@@ -189,7 +162,6 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
             value="settings"
             className="flex-1 border-none p-6 data-[state=active]:flex"
           >
-            {/* The settings tab will render for admins only */}
             {isAdmin === true ? (
               <GroupSettings
                 groupId={groupId}
@@ -199,7 +171,17 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
                 setFetchTrigger={setFetchTrigger}
               />
             ) : (
-              <AdminOnlyMessage />
+              <div className="w-full h-full flex flex-col items-center justify-center">
+                <div className="text-center max-w-md">
+                  <ShieldAlert className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">
+                    Admin Access Required
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Only group administrators can access and modify settings.
+                  </p>
+                </div>
+              </div>
             )}
           </TabsContent>
         </Tabs>

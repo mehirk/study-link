@@ -1,55 +1,40 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import CreateGroupModal from "./CreateGroupModal";
 import JoinGroupModal from "./JoinGroupModal";
 import { Button } from "@components/ui/button";
 import { ScrollArea } from "@components/ui/scroll-area";
 import { cn } from "@lib/utils";
-import { fetchUserGroups, createGroup, joinGroup, Group } from "@lib/api/group";
+import { createGroup, joinGroup, Group } from "@lib/api/group";
 import { useToast } from "@components/ui/use-toast";
 import { Loader2 } from "lucide-react";
+
 interface GroupSidebarProps {
   onSelectGroup: (groupId: number | null) => void;
+  selectedGroupId: number | null;
+  groups: Group[];
+  loading: boolean;
+  refreshGroups: (groupId?: number) => Promise<void>;
 }
 
-const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+const GroupSidebar = ({
+  onSelectGroup,
+  selectedGroupId,
+  groups,
+  loading,
+  refreshGroups,
+}: GroupSidebarProps) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const { toast } = useToast();
 
-  // Fetch user's groups on component mount
-  useEffect(() => {
-    const loadGroups = async () => {
-      try {
-        setLoading(true);
-        const userGroups = await fetchUserGroups();
-        setGroups(userGroups);
-      } catch (error) {
-        console.error("Failed to load groups:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load your groups. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadGroups();
-  }, [toast]);
-
   const handleGroupClick = (groupId: number) => {
-    setSelectedGroupId(groupId);
     onSelectGroup(groupId);
   };
 
   const handleCreateGroup = async (name: string, description: string) => {
     try {
       const newGroup = await createGroup({ name, description });
-      setGroups([...groups, newGroup]);
+      await refreshGroups(newGroup.id);
       toast({
         title: "Success",
         description: "Group created successfully",
@@ -67,9 +52,7 @@ const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
   const handleJoinGroup = async (groupId: string, password?: string) => {
     try {
       await joinGroup(Number(groupId), password);
-      // Refresh groups after joining
-      const updatedGroups = await fetchUserGroups();
-      setGroups(updatedGroups);
+      await refreshGroups();
       toast({
         title: "Success",
         description: "Successfully joined the group",
@@ -98,11 +81,7 @@ const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
 
       {/* Create/Join Group buttons */}
       <div className="p-4 space-y-2">
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => setIsCreateModalOpen(true)}
-        >
+        <Button className="w-full" onClick={() => setIsCreateModalOpen(true)}>
           Create Group
         </Button>
         <Button
