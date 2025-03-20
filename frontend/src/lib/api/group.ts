@@ -205,10 +205,11 @@ export const deleteComment = async (
   groupId: number,
   discussionId: number,
   commentId: number
-): Promise<void> => {
-  await apiClient.delete(
+): Promise<{ discussionId: number; commentCount: number }> => {
+  const response = await apiClient.delete(
     `/groups/${groupId}/discussions/${discussionId}/comments/${commentId}`
   );
+  return response.data;
 };
 
 // Update a discussion

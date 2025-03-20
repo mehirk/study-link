@@ -14,6 +14,7 @@ import {
   Group,
   GroupMember,
 } from "../../lib/api/group";
+import { toast } from "../ui/use-toast";
 
 interface GroupDetailsProps {
   groupId: number;
@@ -30,6 +31,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
   const [fetchTrigger, setFetchTrigger] = useState(0);
   const [selectedDiscussionId, setSelectedDiscussionId] = useState<number | null>(null);
   const [selectedAuthorId, setSelectedAuthorId] = useState<string | null>(null);
+  const [refreshDiscussions, setRefreshDiscussions] = useState(0);
 
   useEffect(() => {
     const fetchGroupDetails = async () => {
@@ -79,6 +81,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
 
   const handleBackToDiscussions = () => {
     setSelectedDiscussionId(null);
+    setRefreshDiscussions(prev => prev + 1);
   };
 
   const handleViewAuthorDiscussions = (authorId: string) => {
@@ -88,6 +91,11 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
 
   const handleBackFromAuthorView = () => {
     setSelectedAuthorId(null);
+    setRefreshDiscussions(prev => prev + 1);
+  };
+
+  const handleCommentDeleted = () => {
+    setRefreshDiscussions(prev => prev + 1);
   };
 
   if (loading) {
@@ -168,6 +176,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
                 discussionId={selectedDiscussionId}
                 isAdmin={isAdmin}
                 onBack={handleBackToDiscussions}
+                onCommentDeleted={handleCommentDeleted}
               />
             ) : (
               <div className="w-full">
@@ -176,6 +185,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
                   isAdmin={isAdmin}
                   onSelectDiscussion={handleSelectDiscussion}
                   onViewAuthorDiscussions={handleViewAuthorDiscussions}
+                  refreshTrigger={refreshDiscussions}
                 />
               </div>
             )}

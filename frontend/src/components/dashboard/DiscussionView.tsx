@@ -9,6 +9,14 @@ import { Input } from "../ui/input";
 import { useToast } from "../ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import {
   getDiscussion,
   addComment,
   deleteComment,
@@ -25,6 +33,7 @@ interface DiscussionViewProps {
   discussionId: number;
   isAdmin: boolean;
   onBack: () => void;
+  onCommentDeleted?: (discussionId: number, commentCount: number) => void;
 }
 
 const DiscussionView = ({
@@ -32,6 +41,7 @@ const DiscussionView = ({
   discussionId,
   isAdmin,
   onBack,
+  onCommentDeleted,
 }: DiscussionViewProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -46,6 +56,8 @@ const DiscussionView = ({
   });
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editedCommentContent, setEditedCommentContent] = useState("");
+  const [deleteCommentDialogOpen, setDeleteCommentDialogOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
 
   const loadDiscussion = useCallback(async () => {
     if (!groupId || !discussionId) return;
@@ -98,10 +110,16 @@ const DiscussionView = ({
       });
 
       // Update the local state with the new comment
-      if (discussion?.comments) {
+      if (discussion) {
+        const updatedComments = [...(discussion.comments || []), comment];
+        
         setDiscussion({
           ...discussion,
-          comments: [...discussion.comments, comment],
+          comments: updatedComments,
+          _count: {
+            ...discussion._count,
+            comments: updatedComments.length
+          }
         });
       }
 
@@ -122,19 +140,28 @@ const DiscussionView = ({
     }
   };
 
-  const handleDeleteComment = async (commentId: number) => {
-    if (!window.confirm("Are you sure you want to delete this comment?")) {
-      return;
-    }
+  const openDeleteCommentDialog = (commentId: number) => {
+    setCommentToDelete(commentId);
+    setDeleteCommentDialogOpen(true);
+  };
+
+  const handleDeleteComment = async () => {
+    if (!commentToDelete) return;
 
     try {
-      await deleteComment(groupId, discussionId, commentId);
+      const result = await deleteComment(groupId, discussionId, commentToDelete);
       
       // Update the local state by removing the deleted comment
       if (discussion?.comments) {
+        const updatedComments = discussion.comments.filter((c) => c.id !== commentToDelete);
+        
         setDiscussion({
           ...discussion,
-          comments: discussion.comments.filter((c) => c.id !== commentId),
+          comments: updatedComments,
+          _count: {
+            ...discussion._count,
+            comments: result.commentCount
+          }
         });
       }
 
@@ -142,6 +169,10 @@ const DiscussionView = ({
         title: "Success",
         description: "Comment deleted successfully.",
       });
+
+      if (onCommentDeleted) {
+        onCommentDeleted(discussionId, result.commentCount);
+      }
     } catch (error) {
       console.error("Failed to delete comment:", error);
       toast({
@@ -149,6 +180,9 @@ const DiscussionView = ({
         title: "Error",
         description: "Failed to delete comment. Please try again.",
       });
+    } finally {
+      setCommentToDelete(null);
+      setDeleteCommentDialogOpen(false);
     }
   };
 
@@ -445,7 +479,7 @@ const DiscussionView = ({
                               variant="ghost"
                               size="icon"
                               className="h-6 w-6"
-                              onClick={() => handleDeleteComment(comment.id)}
+                              onClick={() => openDeleteCommentDialog(comment.id)}
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
@@ -497,6 +531,32 @@ const DiscussionView = ({
           </Button>
         </form>
       </div>
+
+      {/* Delete Comment Dialog */}
+      <Dialog open={deleteCommentDialogOpen} onOpenChange={setDeleteCommentDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Comment</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this comment? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteCommentDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteComment}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -39,13 +39,15 @@ interface GroupDiscussionsProps {
   isAdmin: boolean;
   onSelectDiscussion?: (discussionId: number) => void;
   onViewAuthorDiscussions?: (authorId: string) => void;
+  refreshTrigger?: number;
 }
 
 const GroupDiscussions = ({ 
   groupId, 
   isAdmin,
   onSelectDiscussion,
-  onViewAuthorDiscussions
+  onViewAuthorDiscussions,
+  refreshTrigger = 0
 }: GroupDiscussionsProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -64,6 +66,8 @@ const GroupDiscussions = ({
     title: "",
     content: ""
   });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [discussionToDelete, setDiscussionToDelete] = useState<number | null>(null);
 
   const loadDiscussions = useCallback(async () => {
     if (!groupId) return;
@@ -84,10 +88,10 @@ const GroupDiscussions = ({
     }
   }, [groupId, toast]);
 
-  // Load discussions when component mounts or groupId changes
+  // Load discussions when component mounts, groupId changes, or refreshTrigger changes
   useEffect(() => {
     loadDiscussions();
-  }, [loadDiscussions]);
+  }, [loadDiscussions, refreshTrigger]);
 
   const handleCreateDiscussion = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,14 +132,18 @@ const GroupDiscussions = ({
     }
   };
 
-  const handleDeleteDiscussion = async (discussionId: number) => {
-    if (!window.confirm("Are you sure you want to delete this discussion?")) {
-      return;
-    }
+  const openDeleteDialog = (discussionId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDiscussionToDelete(discussionId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteDiscussion = async () => {
+    if (discussionToDelete === null) return;
     
     try {
-      await deleteDiscussion(groupId, discussionId);
-      setDiscussions(discussions.filter((d) => d.id !== discussionId));
+      await deleteDiscussion(groupId, discussionToDelete);
+      setDiscussions(discussions.filter((d) => d.id !== discussionToDelete));
       toast({
         title: "Success",
         description: "Discussion deleted successfully.",
@@ -147,6 +155,9 @@ const GroupDiscussions = ({
         title: "Error",
         description: "Failed to delete discussion. Please try again.",
       });
+    } finally {
+      setDiscussionToDelete(null);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -334,10 +345,7 @@ const GroupDiscussions = ({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteDiscussion(discussion.id);
-                            }}
+                            onClick={(e) => openDeleteDialog(discussion.id, e)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -482,6 +490,32 @@ const GroupDiscussions = ({
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Discussion Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Discussion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this discussion? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteDiscussion}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

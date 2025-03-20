@@ -593,25 +593,27 @@ router.get(
   async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { groupId } = req.params;
-      const parsedGroupId = parseInt(groupId);
 
       // Check if user is a member of the group
-      const isMember = await prisma.groupMember.findFirst({
+      const userMembership = await prisma.groupMember.findFirst({
         where: {
           userId: req.user?.id!,
-          groupId: parsedGroupId,
+          groupId: parseInt(groupId),
         },
       });
 
-      if (!isMember) {
-        res.status(403).json({ message: "Not a member of this group" });
+      if (!userMembership) {
+        res.status(403).json({
+          message: "You don't have permission to view discussions in this group",
+        });
         return;
       }
 
+      // Fetch discussions including comment counts
       const discussions = await prisma.discussion.findMany({
         where: {
-          groupId: parsedGroupId,
-          deletedAt: null,
+          groupId: parseInt(groupId),
+          deletedAt: null, // Only fetch non-deleted discussions
         },
         include: {
           author: {
@@ -624,9 +626,13 @@ router.get(
           },
           _count: {
             select: {
-              comments: true,
-            },
-          },
+              comments: {
+                where: {
+                  deletedAt: null, // Only count non-deleted comments
+                }
+              }
+            }
+          }
         },
         orderBy: {
           createdAt: "desc",
@@ -641,33 +647,34 @@ router.get(
   }
 );
 
-// Get a single discussion with comments
+// Get a specific discussion with comments
 router.get(
   "/:groupId/discussions/:discussionId",
   authenticateUser,
   async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { groupId, discussionId } = req.params;
-      const parsedGroupId = parseInt(groupId);
-      const parsedDiscussionId = parseInt(discussionId);
 
       // Check if user is a member of the group
-      const isMember = await prisma.groupMember.findFirst({
+      const userMembership = await prisma.groupMember.findFirst({
         where: {
           userId: req.user?.id!,
-          groupId: parsedGroupId,
+          groupId: parseInt(groupId),
         },
       });
 
-      if (!isMember) {
-        res.status(403).json({ message: "Not a member of this group" });
+      if (!userMembership) {
+        res.status(403).json({
+          message: "You don't have permission to view discussions in this group",
+        });
         return;
       }
 
+      // Fetch the discussion with comments
       const discussion = await prisma.discussion.findFirst({
         where: {
-          id: parsedDiscussionId,
-          groupId: parsedGroupId,
+          id: parseInt(discussionId),
+          groupId: parseInt(groupId),
           deletedAt: null,
         },
         include: {
@@ -683,6 +690,9 @@ router.get(
             where: {
               deletedAt: null,
             },
+            orderBy: {
+              createdAt: "asc",
+            },
             include: {
               author: {
                 select: {
@@ -693,10 +703,16 @@ router.get(
                 },
               },
             },
-            orderBy: {
-              createdAt: "asc",
-            },
           },
+          _count: {
+            select: {
+              comments: {
+                where: {
+                  deletedAt: null, // Only count non-deleted comments
+                }
+              }
+            }
+          }
         },
       });
 
