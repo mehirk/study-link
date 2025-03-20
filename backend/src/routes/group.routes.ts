@@ -498,13 +498,6 @@ router.get(
     try {
       const { query } = req.query;
 
-      // if (!query || typeof query !== "string") {
-      //   res.status(400).json({ message: "Search query is required" });
-      //   return;
-      // }
-
-      // Search for groups that match the query
-      // Return public groups and private groups the user is already a member of
       const groups = await prisma.group.findMany({
         where: {
           name: {

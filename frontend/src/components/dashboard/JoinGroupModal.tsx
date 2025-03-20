@@ -10,8 +10,8 @@ import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
 import { searchGroups } from "@lib/api/group";
 import debounce from "lodash.debounce";
-import { Lock, LockOpen } from "lucide-react";
-// Define interface for search results to match the API response type
+import { Loader2, Lock, LockOpen } from "lucide-react";
+
 interface Group {
   id: string;
   name: string;
@@ -85,9 +85,7 @@ const JoinGroupModal = ({
       }
     }, 300);
 
-    if (searchQuery) {
-      performSearch(searchQuery);
-    }
+    performSearch(searchQuery);
 
     return () => {
       performSearch.cancel();
@@ -134,23 +132,23 @@ const JoinGroupModal = ({
           {/* Search box */}
           <div className="space-y-2">
             <Label htmlFor="searchQuery">Search for a group</Label>
-            <Input
-              type="text"
-              id="searchQuery"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Start typing to search for groups..."
-              className="w-full"
-              autoFocus
-            />
-          </div>
-
-          {/* Loading indicator */}
-          {isSearching && (
-            <div className="text-sm text-muted-foreground">
-              {searchQuery ? "Searching..." : "Loading groups..."}
+            <div className="relative">
+              <Input
+                type="text"
+                id="searchQuery"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Start typing to search for groups..."
+                className="w-full"
+                autoFocus
+              />
+              {isSearching && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
           {/* Error message */}
           {searchError && (
@@ -161,55 +159,53 @@ const JoinGroupModal = ({
           <div className="space-y-2">
             <Label>{searchQuery ? "Search Results" : "Available Groups"}</Label>
             <div className="max-h-64 overflow-y-auto border rounded-md">
-              {searchResults.length > 0
-                ? searchResults.map((group) => (
-                    <div
-                      key={group.id}
-                      className={`p-2.5 cursor-pointer flex items-center justify-between rounded-md ${
-                        selectedGroup?.id === group.id
-                          ? "bg-primary/10 font-medium"
-                          : "hover:bg-muted"
-                      }`}
-                      onClick={() => handleSelectGroup(group)}
-                    >
-                      <div className="flex flex-col">
-                        <span>{group.name}</span>
-                        {group.description && (
-                          <span className="text-xs text-muted-foreground truncate max-w-[200px]">
-                            {group.description}
+              {searchResults.length > 0 ? (
+                searchResults.map((group) => (
+                  <div
+                    key={group.id}
+                    className={`p-2.5 cursor-pointer flex items-center justify-between rounded-md ${
+                      selectedGroup?.id === group.id
+                        ? "bg-primary/10 font-medium"
+                        : "hover:bg-muted"
+                    }`}
+                    onClick={() => handleSelectGroup(group)}
+                  >
+                    <div className="flex flex-col">
+                      <span>{group.name}</span>
+                      {group.description && (
+                        <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                          {group.description}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <div className="text-xs text-muted-foreground flex items-center">
+                        {group.private ? (
+                          <span className="flex items-center">
+                            <Lock className="w-3.5 h-3.5 mr-1" />
+                            Private
+                          </span>
+                        ) : (
+                          <span className="flex items-center">
+                            <LockOpen className="w-3.5 h-3.5 mr-1" />
+                            Open
                           </span>
                         )}
                       </div>
-                      <div className="flex flex-col items-end">
-                        <div className="text-xs text-muted-foreground flex items-center">
-                          {group.private ? (
-                            <span className="flex items-center">
-                              <Lock className="w-3.5 h-3.5 mr-1" />
-                              Private
-                            </span>
-                          ) : (
-                            <span className="flex items-center">
-                              <LockOpen className="w-3.5 h-3.5 mr-1" />
-                              Open
-                            </span>
-                          )}
-                        </div>
-                        {group.memberCount !== undefined && (
-                          <span className="text-xs text-muted-foreground mt-1">
-                            {group.memberCount}{" "}
-                            {group.memberCount === 1 ? "member" : "members"}
-                          </span>
-                        )}
-                      </div>
+                      {group.memberCount !== undefined && (
+                        <span className="text-xs text-muted-foreground mt-1">
+                          {group.memberCount}{" "}
+                          {group.memberCount === 1 ? "member" : "members"}
+                        </span>
+                      )}
                     </div>
-                  ))
-                : !isSearching && (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
-                      {searchQuery
-                        ? "No groups found. Try a different search term."
-                        : "No groups available."}
-                    </div>
-                  )}
+                  </div>
+                ))
+              ) : (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  No groups found. Try a different search term.
+                </div>
+              )}
             </div>
           </div>
 
