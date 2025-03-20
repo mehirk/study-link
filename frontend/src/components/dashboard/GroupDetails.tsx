@@ -33,6 +33,13 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
   const [selectedAuthorId, setSelectedAuthorId] = useState<string | null>(null);
   const [refreshDiscussions, setRefreshDiscussions] = useState(0);
 
+  // Reset selected discussion and author when changing groups
+  useEffect(() => {
+    setSelectedDiscussionId(null);
+    setSelectedAuthorId(null);
+    setActiveTab("discussions"); // Also reset to discussions tab
+  }, [groupId]);
+
   useEffect(() => {
     const fetchGroupDetails = async () => {
       try {
