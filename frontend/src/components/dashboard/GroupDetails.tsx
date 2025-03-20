@@ -4,6 +4,9 @@ import { Card, CardHeader, CardContent } from "../ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import GroupMembers from "./GroupMembers";
 import GroupSettings from "./GroupSettings";
+import GroupDiscussions from "./GroupDiscussions";
+import DiscussionView from "./DiscussionView";
+import AuthorDiscussionsView from "./AuthorDiscussions";
 import { Loader2, ShieldAlert } from "lucide-react";
 import {
   getGroupById,
@@ -11,6 +14,7 @@ import {
   Group,
   GroupMember,
 } from "../../lib/api/group";
+import { toast } from "../ui/use-toast";
 
 interface GroupDetailsProps {
   groupId: number;
@@ -25,6 +29,16 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [fetchTrigger, setFetchTrigger] = useState(0);
+  const [selectedDiscussionId, setSelectedDiscussionId] = useState<number | null>(null);
+  const [selectedAuthorId, setSelectedAuthorId] = useState<string | null>(null);
+  const [refreshDiscussions, setRefreshDiscussions] = useState(0);
+
+  // Reset selected discussion and author when changing groups
+  useEffect(() => {
+    setSelectedDiscussionId(null);
+    setSelectedAuthorId(null);
+    setActiveTab("discussions"); // Also reset to discussions tab
+  }, [groupId]);
 
   useEffect(() => {
     const fetchGroupDetails = async () => {
@@ -66,6 +80,30 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
     { id: "members", label: "Members" },
     ...(isAdmin ? [{ id: "settings", label: "Settings" }] : []),
   ];
+
+  const handleSelectDiscussion = (discussionId: number) => {
+    setSelectedDiscussionId(discussionId);
+    setSelectedAuthorId(null);
+  };
+
+  const handleBackToDiscussions = () => {
+    setSelectedDiscussionId(null);
+    setRefreshDiscussions(prev => prev + 1);
+  };
+
+  const handleViewAuthorDiscussions = (authorId: string) => {
+    setSelectedAuthorId(authorId);
+    setSelectedDiscussionId(null);
+  };
+
+  const handleBackFromAuthorView = () => {
+    setSelectedAuthorId(null);
+    setRefreshDiscussions(prev => prev + 1);
+  };
+
+  const handleCommentDeleted = () => {
+    setRefreshDiscussions(prev => prev + 1);
+  };
 
   if (loading) {
     return (
@@ -130,11 +168,34 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
 
           <TabsContent
             value="discussions"
-            className="flex-1 border-none p-6 data-[state=active]:flex items-center justify-center"
+            className="flex-1 border-none p-6 data-[state=active]:flex"
           >
-            <p className="text-muted-foreground">
-              Discussions content will go here
-            </p>
+            {selectedAuthorId ? (
+              <AuthorDiscussionsView 
+                groupId={groupId}
+                authorId={selectedAuthorId}
+                onBack={handleBackFromAuthorView}
+                onSelectDiscussion={handleSelectDiscussion}
+              />
+            ) : selectedDiscussionId ? (
+              <DiscussionView 
+                groupId={groupId}
+                discussionId={selectedDiscussionId}
+                isAdmin={isAdmin}
+                onBack={handleBackToDiscussions}
+                onCommentDeleted={handleCommentDeleted}
+              />
+            ) : (
+              <div className="w-full">
+                <GroupDiscussions 
+                  groupId={groupId}
+                  isAdmin={isAdmin}
+                  onSelectDiscussion={handleSelectDiscussion}
+                  onViewAuthorDiscussions={handleViewAuthorDiscussions}
+                  refreshTrigger={refreshDiscussions}
+                />
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent
