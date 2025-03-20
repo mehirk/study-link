@@ -1,134 +1,57 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useAuth } from "../../contexts/AuthContext";
 import { Card, CardHeader, CardContent } from "../ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import GroupMembers from "./GroupMembers";
 import GroupSettings from "./GroupSettings";
 import { Loader2, ShieldAlert } from "lucide-react";
-import { getGroupById, Group as ApiGroup, getGroupMembers } from "../../lib/api/group";
+import {
+  getGroupById,
+  getGroupMembers,
+  Group,
+  GroupMember,
+} from "../../lib/api/group";
 
 interface GroupDetailsProps {
   groupId: number;
 }
 
-interface GroupData {
-  id: number;
-  name: string;
-  description: string;
-  private?: boolean;
-  requireApproval?: boolean;
-  password?: string;
-  members?: {
-    userId: number;
-    role: "ADMIN" | "MEMBER";
-  }[];
-}
-
-// User interface to match the AuthContext
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
-
 const GroupDetails = ({ groupId }: GroupDetailsProps) => {
-  const [group, setGroup] = useState<GroupData | null>(null);
+  const [group, setGroup] = useState<Group | null>(null);
+  const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("discussions");
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
-
-  // Debug logs
-  console.log("GroupDetails rendered with groupId:", groupId);
-  console.log("Current user:", user);
-  console.log("isAdmin status:", isAdmin);
-  console.log("Active tab:", activeTab);
-
-  // Add effect to track isAdmin changes
-  useEffect(() => {
-    console.log("isAdmin changed to:", isAdmin);
-  }, [isAdmin]);
-
-  // Make sure admin status check runs when switching to settings tab
-  useEffect(() => {
-    if (activeTab === "settings" && group && user) {
-      console.log("Settings tab selected, verifying admin status");
-      // Re-check admin status from the group data when settings tab is selected
-      const members = group.members || [];
-      const isMemberAdmin = members.some(
-        member => 
-          String(member.userId) === String(user.id) && 
-          member.role === "ADMIN"
-      );
-      
-      if (isMemberAdmin && !isAdmin) {
-        console.log("Fixing admin status to true for settings tab");
-        setIsAdmin(true);
-      }
-    }
-  }, [activeTab, group, user, isAdmin]);
+  const [fetchTrigger, setFetchTrigger] = useState(0);
 
   useEffect(() => {
     const fetchGroupDetails = async () => {
       try {
-        console.log("Fetching group details for groupId:", groupId);
         setLoading(true);
         setError(null);
-        
-        // Use the API client instead of direct axios call
-        const groupData = await getGroupById(groupId);
-        const members = await getGroupMembers(groupId);
-        
-        console.log("Group data received:", groupData); // Debug
-        console.log("Members received:", members); // Debug
-        console.log("Raw members data:", JSON.stringify(members, null, 2)); // Show complete JSON structure
-        
-        // Convert API Group type to our GroupData type
-        const formattedGroup: GroupData = {
-          id: groupData.id,
-          name: groupData.name,
-          description: groupData.description || "", // Handle potential undefined
-          private: groupData.private,
-          requireApproval: groupData.requireApproval,
-          password: groupData.password,
-          members: members.map(m => ({
-            userId: Number(m.userId),
-            role: m.role
-          }))
-        };
-        
-        console.log("Formatted group:", formattedGroup);
-        setGroup(formattedGroup);
-        
-        // Check if the current user is an admin of this group
-        if (user) {
-          // Check admin status directly from the API response
-          const currentUserMembership = members.find(
-            member => String(member.userId) === String(user.id)
-          );
-          
-          console.log("Current user ID:", user.id);
-          console.log("Current user membership from API:", currentUserMembership);
-          
-          // Force the role check to be case-insensitive and ensure it's a string comparison
-          const userRole = currentUserMembership?.role;
-          const adminStatus = typeof userRole === 'string' && 
-                             userRole.toUpperCase() === "ADMIN";
-          
-          console.log("User role from API:", userRole);
-          console.log("Setting admin status to:", adminStatus);
-          
-          // Ensure we update the state correctly
-          setIsAdmin(adminStatus);
-        }
+
+        const [groupData, members] = await Promise.all([
+          getGroupById(groupId),
+          getGroupMembers(groupId),
+        ]);
+
+        setMembers(members);
+        setGroup(groupData);
+
+        const userIsAdmin = members.some(
+          (member) =>
+            String(member.userId) === String(user?.id) &&
+            member.role === "ADMIN"
+        );
+        setIsAdmin(userIsAdmin);
       } catch (error) {
         console.error("Error fetching group details:", error);
         setError("Failed to load group details. Please try again.");
-        // Don't set group to null here, keep the previous state
       } finally {
         setLoading(false);
+        setFetchTrigger(0);
       }
     };
 
@@ -137,32 +60,13 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
     } else {
       console.log("No groupId provided, skipping API call");
     }
-  }, [groupId, user]);
-
-  const handleGroupUpdated = (updatedGroup: GroupData) => {
-    // Ensure we preserve all fields from the updated group
-    setGroup({
-      ...updatedGroup,
-      // Make sure we explicitly include these fields to avoid them being lost
-      private: updatedGroup.private,
-      requireApproval: updatedGroup.requireApproval,
-      password: updatedGroup.password,
-      // If members aren't included in the updatedGroup, keep the current ones
-      members: updatedGroup.members || group?.members
-    });
-  };
-
-  const handleGroupDeleted = () => {
-    // Redirect to dashboard or do something else
-    window.location.href = "/dashboard";
-  };
+  }, [groupId, user, fetchTrigger]);
 
   // Define all tabs
   const tabs = [
     { id: "discussions", label: "Discussions" },
     { id: "files", label: "Files & Resources" },
     { id: "members", label: "Members" },
-    { id: "academic", label: "Academic/Progress" },
     { id: "settings", label: "Settings" },
   ];
 
@@ -170,9 +74,9 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
   const handleTabChange = (value: string) => {
     console.log("Tab changed to:", value);
     setActiveTab(value);
-    
+
     // If switching to settings tab, verify admin status
-    if (value === "settings" && user && group?.members) {
+    if (value === "settings" && user && members) {
       console.log("Verifying admin status for settings tab");
     }
   };
@@ -196,7 +100,9 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
   if (!group) {
     return (
       <Card className="h-full flex flex-col items-center justify-center">
-        <p className="text-muted-foreground">Group not found. Please select another group.</p>
+        <p className="text-muted-foreground">
+          Group not found. Please select another group.
+        </p>
       </Card>
     );
   }
@@ -232,7 +138,11 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
       </CardHeader>
 
       <CardContent className="flex-1 p-0 h-full ">
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="h-full flex flex-col"
+        >
           <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
             {tabs.map((tab) => (
               <TabsTrigger
@@ -244,7 +154,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
               </TabsTrigger>
             ))}
           </TabsList>
-          
+
           <TabsContent
             value="discussions"
             className="flex-1 border-none p-6 data-[state=active]:flex items-center justify-center"
@@ -253,7 +163,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
               Discussions content will go here
             </p>
           </TabsContent>
-          
+
           <TabsContent
             value="files"
             className="flex-1 border-none p-6 data-[state=active]:flex items-center justify-center"
@@ -262,35 +172,31 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
               Files & Resources content will go here
             </p>
           </TabsContent>
-          
+
           <TabsContent
             value="members"
             className="flex-1 border-none p-6 data-[state=active]:flex"
           >
-            <GroupMembers groupId={groupId} isAdmin={isAdmin} />
+            <GroupMembers
+              groupId={groupId}
+              isAdmin={isAdmin}
+              members={members}
+              setFetchTrigger={setFetchTrigger}
+            />
           </TabsContent>
-          
-          <TabsContent
-            value="academic"
-            className="flex-1 border-none p-6 data-[state=active]:flex items-center justify-center"
-          >
-            <p className="text-muted-foreground">
-              Academic/Progress content will go here
-            </p>
-          </TabsContent>
-          
+
           <TabsContent
             value="settings"
             className="flex-1 border-none p-6 data-[state=active]:flex"
           >
             {/* The settings tab will render for admins only */}
-            {(isAdmin === true) ? (
-              <GroupSettings 
-                groupId={groupId} 
-                groupData={group} 
-                isAdmin={isAdmin} 
-                onGroupUpdated={handleGroupUpdated}
-                onGroupDeleted={handleGroupDeleted}
+            {isAdmin === true ? (
+              <GroupSettings
+                groupId={groupId}
+                isAdmin={isAdmin}
+                groupData={group}
+                onGroupUpdated={setGroup}
+                setFetchTrigger={setFetchTrigger}
               />
             ) : (
               <AdminOnlyMessage />
@@ -302,4 +208,4 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
   );
 };
 
-export default GroupDetails; 
+export default GroupDetails;

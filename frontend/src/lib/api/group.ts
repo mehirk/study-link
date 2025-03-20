@@ -1,35 +1,28 @@
-import { apiClient } from '../auth-client';
+import { apiClient } from "../api-client";
 
 export interface Group {
   id: number;
   name: string;
   description?: string;
   private: boolean;
-  requireApproval: boolean;
   password?: string;
   createdAt: string;
   updatedAt: string;
+  members?: GroupMember[];
 }
 
-interface CreateGroupRequest {
+export interface CreateGroupRequest {
   name: string;
   description?: string;
-  isPrivate?: boolean;
+  private?: boolean;
   password?: string;
 }
 
-interface UpdateGroupRequest {
-  name?: string;
-  description?: string;
-  isPrivate?: boolean;
-  password?: string;
-}
-
-interface GroupMember {
+export interface GroupMember {
   id: number;
   userId: string;
   groupId: number;
-  role: 'ADMIN' | 'MEMBER';
+  role: "ADMIN" | "MEMBER";
   joinedAt: string;
   user: {
     id: string;
@@ -41,13 +34,15 @@ interface GroupMember {
 
 // Fetch all groups the user is a member of
 export const fetchUserGroups = async (): Promise<Group[]> => {
-  const response = await apiClient.get('/groups');
+  const response = await apiClient.get("/groups");
   return response.data;
 };
 
 // Create a new group
-export const createGroup = async (groupData: CreateGroupRequest): Promise<Group> => {
-  const response = await apiClient.post('/groups', groupData);
+export const createGroup = async (
+  groupData: CreateGroupRequest
+): Promise<Group> => {
+  const response = await apiClient.post("/groups", groupData);
   return response.data;
 };
 
@@ -59,13 +54,12 @@ export const getGroupById = async (groupId: number): Promise<Group> => {
 
 // Update a group
 export const updateGroup = async (
-  groupId: number, 
-  data: { 
-    name: string; 
+  groupId: number,
+  data: {
+    name: string;
     description: string;
-    isPrivate: boolean;
-    requireApproval: boolean;
     password?: string;
+    private?: boolean;
   }
 ): Promise<Group> => {
   const response = await apiClient.put(`/groups/${groupId}`, data);
@@ -78,8 +72,11 @@ export const deleteGroup = async (groupId: number): Promise<void> => {
 };
 
 // Join a group
-export const joinGroup = async (groupId: number, password?: string): Promise<void> => {
-  const queryParams = password ? `?password=${password}` : '';
+export const joinGroup = async (
+  groupId: number,
+  password?: string
+): Promise<void> => {
+  const queryParams = password ? `?password=${password}` : "";
   await apiClient.post(`/groups/join-group/${groupId}${queryParams}`);
 };
 
@@ -89,21 +86,26 @@ export const leaveGroup = async (groupId: number): Promise<void> => {
 };
 
 // Get all members of a group
-export const getGroupMembers = async (groupId: number): Promise<GroupMember[]> => {
+export const getGroupMembers = async (
+  groupId: number
+): Promise<GroupMember[]> => {
   const response = await apiClient.get(`/groups/${groupId}/members`);
   return response.data;
 };
 
 // Change a user's role in a group
 export const changeUserRole = async (
-  groupId: number, 
-  userId: string, 
-  role: 'ADMIN' | 'MEMBER'
+  groupId: number,
+  userId: string,
+  role: "ADMIN" | "MEMBER"
 ): Promise<void> => {
   await apiClient.put(`/groups/${groupId}/members/${userId}/role`, { role });
 };
 
 // Remove a member from a group
-export const removeMember = async (groupId: number, userId: string): Promise<void> => {
+export const removeMember = async (
+  groupId: number,
+  userId: string
+): Promise<void> => {
   await apiClient.delete(`/groups/${groupId}/members/${userId}`);
-}; 
+};

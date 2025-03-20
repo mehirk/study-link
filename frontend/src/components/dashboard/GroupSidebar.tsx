@@ -6,7 +6,7 @@ import { ScrollArea } from "@components/ui/scroll-area";
 import { cn } from "@lib/utils";
 import { fetchUserGroups, createGroup, joinGroup, Group } from "@lib/api/group";
 import { useToast } from "@components/ui/use-toast";
-
+import { Loader2 } from "lucide-react";
 interface GroupSidebarProps {
   onSelectGroup: (groupId: number | null) => void;
 }
@@ -78,7 +78,8 @@ const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
       console.error("Failed to join group:", error);
       toast({
         title: "Error",
-        description: "Failed to join group. Please check the group ID and password.",
+        description:
+          "Failed to join group. Please check the group ID and password.",
         variant: "destructive",
       });
     }
@@ -114,7 +115,7 @@ const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
       </div>
 
       {/* Groups heading */}
-      <div className="px-4 py-2 text-sm font-medium uppercase text-muted-foreground">
+      <div className="px-4 py-4 text-base font-extrabold text-muted-foreground">
         Groups
       </div>
 
@@ -122,13 +123,15 @@ const GroupSidebar = ({ onSelectGroup }: GroupSidebarProps) => {
       <ScrollArea className="flex-1">
         <div className="px-2">
           {loading ? (
-            <div className="flex justify-center p-4">Loading groups...</div>
+            <div className="flex justify-center p-4">
+              <Loader2 className="animate-spin" />
+            </div>
           ) : groups.length > 0 ? (
             groups.map((group) => (
               <button
                 key={group.id}
                 className={cn(
-                  "w-full px-2 py-2 text-left rounded-md transition-colors",
+                  "w-full px-2 my-1 py-2 text-left rounded-md transition-colors",
                   "hover:bg-accent hover:text-accent-foreground",
                   selectedGroupId === group.id &&
                     "bg-accent text-accent-foreground border-1 border-primary"

@@ -5,7 +5,7 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { authClient } from "@lib/auth-client";
+import { authClient } from "@lib/api-client";
 import { User } from "better-auth/types";
 
 type AuthContextType = {

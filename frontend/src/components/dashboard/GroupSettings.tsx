@@ -1,17 +1,15 @@
 import { useState } from "react";
-import { useAuth } from "../../contexts/AuthContext";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "../ui/card";
-import { 
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -23,47 +21,39 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { Switch } from "../ui/switch";
-import { Loader2, Trash2, Save, Shield, Users, Lock } from "lucide-react";
-import { updateGroup, deleteGroup } from "../../lib/api/group";
-
-interface GroupData {
-  id: number;
-  name: string;
-  description: string;
-  private: boolean;
-  requireApproval: boolean;
-  password?: string;
-}
+import { Loader2, Trash2, Save, Users, Lock } from "lucide-react";
+import { updateGroup, deleteGroup, Group } from "../../lib/api/group";
 
 interface GroupSettingsProps {
   groupId: number;
-  groupData: GroupData;
+  groupData: Group;
   isAdmin: boolean;
-  onGroupUpdated: (data: GroupData) => void;
-  onGroupDeleted: () => void;
+  onGroupUpdated: (data: Group) => void;
+  setFetchTrigger: (trigger: number) => void;
 }
 
-const GroupSettings = ({ 
-  groupId, 
-  groupData, 
-  isAdmin, 
-  onGroupUpdated, 
-  onGroupDeleted 
+const GroupSettings = ({
+  groupId,
+  groupData,
+  onGroupUpdated,
+  setFetchTrigger,
 }: GroupSettingsProps) => {
   const [name, setName] = useState(groupData.name);
   const [description, setDescription] = useState(groupData.description || "");
-  const [isPrivate, setIsPrivate] = useState(Boolean(groupData.private));
-  const [requireApproval, setRequireApproval] = useState(Boolean(groupData.requireApproval));
+  const [isPrivate, setIsPrivate] = useState(groupData.private);
   const [groupPassword, setGroupPassword] = useState(groupData.password || "");
-  
+
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  
-  const { user } = useAuth();
 
-  console.log("GroupSettings rendered with isAdmin:", isAdmin);
+  // Check if any form values have changed from their original values
+  const hasChanges =
+    name !== groupData.name ||
+    description !== (groupData.description || "") ||
+    isPrivate !== Boolean(groupData.private) ||
+    (isPrivate && groupPassword !== (groupData.password || ""));
 
   const clearMessages = () => {
     setSuccessMessage(null);
@@ -79,26 +69,16 @@ const GroupSettings = ({
     clearMessages();
     try {
       setIsSaving(true);
-      const response = await updateGroup(groupId, { 
-        name, 
+      const response = await updateGroup(groupId, {
+        name,
         description,
-        isPrivate,
-        requireApproval,
-        password: isPrivate && groupPassword ? groupPassword : undefined 
+        private: isPrivate,
+        password: isPrivate && groupPassword ? groupPassword : undefined,
       });
-      
-      // Convert to GroupData format
-      const updatedGroup: GroupData = {
-        id: response.id,
-        name: response.name,
-        description: response.description || "",
-        private: response.private,
-        requireApproval: response.requireApproval,
-        password: response.password
-      };
-      
-      onGroupUpdated(updatedGroup);
+
+      onGroupUpdated(response);
       setSuccessMessage("Group settings updated successfully");
+      setFetchTrigger(1);
     } catch (error) {
       console.error("Error updating group:", error);
       setErrorMessage("Failed to update group settings");
@@ -112,18 +92,13 @@ const GroupSettings = ({
     try {
       setIsDeleting(true);
       await deleteGroup(groupId);
-      
-      onGroupDeleted();
-      // No need to set success message as we're redirecting
+      window.location.href = "/dashboard";
     } catch (error) {
       console.error("Error deleting group:", error);
       setErrorMessage("Failed to delete group");
       setIsDeleting(false);
     }
   };
-
-  // The admin check is now done in the parent component
-  // This component assumes it will only be rendered for admin users
 
   return (
     <div className="space-y-6 w-full">
@@ -132,13 +107,13 @@ const GroupSettings = ({
           {successMessage}
         </div>
       )}
-      
+
       {errorMessage && (
         <div className="bg-red-500/20 text-red-700 p-3 rounded-md text-sm">
           {errorMessage}
         </div>
       )}
-      
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -174,21 +149,6 @@ const GroupSettings = ({
             />
           </div>
         </CardContent>
-        <CardFooter>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Save Changes
-              </>
-            )}
-          </Button>
-        </CardFooter>
       </Card>
 
       <Card>
@@ -197,12 +157,10 @@ const GroupSettings = ({
             <Lock className="h-5 w-5" />
             Privacy Settings
           </CardTitle>
-          <CardDescription>
-            Control who can join your group
-          </CardDescription>
+          <CardDescription>Control who can join your group</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-12">
             <div className="space-y-0.5">
               <label htmlFor="private-group" className="text-sm font-medium">
                 Private Group
@@ -217,7 +175,7 @@ const GroupSettings = ({
               onCheckedChange={setIsPrivate}
             />
           </div>
-          
+
           {isPrivate && (
             <div className="space-y-2">
               <label htmlFor="group-password" className="text-sm font-medium">
@@ -235,39 +193,22 @@ const GroupSettings = ({
               </p>
             </div>
           )}
-          
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label htmlFor="require-approval" className="text-sm font-medium">
-                Require Admin Approval
-              </label>
-              <p className="text-sm text-muted-foreground">
-                New members must be approved by an admin
-              </p>
-            </div>
-            <Switch
-              id="require-approval"
-              checked={requireApproval}
-              onCheckedChange={setRequireApproval}
-            />
-          </div>
         </CardContent>
-        <CardFooter>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Save Privacy Settings
-              </>
-            )}
-          </Button>
-        </CardFooter>
       </Card>
+
+      <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
+        {isSaving ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Saving...
+          </>
+        ) : (
+          <>
+            <Save className="mr-2 h-4 w-4" />
+            Save Changes
+          </>
+        )}
+      </Button>
 
       <Card className="border-destructive">
         <CardHeader>
@@ -275,9 +216,7 @@ const GroupSettings = ({
             <Trash2 className="h-5 w-5" />
             Danger Zone
           </CardTitle>
-          <CardDescription>
-            Actions here cannot be undone
-          </CardDescription>
+          <CardDescription>Actions here cannot be undone</CardDescription>
         </CardHeader>
         <CardContent>
           <AlertDialog>
@@ -320,4 +259,4 @@ const GroupSettings = ({
   );
 };
 
-export default GroupSettings; 
+export default GroupSettings;

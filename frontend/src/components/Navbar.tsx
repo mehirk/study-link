@@ -3,7 +3,7 @@ import { ModeToggle } from "./mode-toggle";
 import { useAuth } from "../contexts/AuthContext";
 import { Button } from "./ui/button";
 import { LogOut, User, BookOpen, Home } from "lucide-react";
-import { authClient } from "@lib/auth-client";
+import { authClient } from "@lib/api-client";
 
 const Navbar = () => {
   const {

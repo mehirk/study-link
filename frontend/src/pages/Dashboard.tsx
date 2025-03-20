@@ -1,25 +1,16 @@
 import GroupDetails from "../components/dashboard/GroupDetails";
 import GroupSidebar from "../components/dashboard/GroupSidebar";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const Dashboard = () => {
   const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
 
-  // Add debug logs
-  console.log("Dashboard rendered with selectedGroup:", selectedGroup);
-
-  // Log when selectedGroup changes
-  useEffect(() => {
-    console.log("selectedGroup state changed to:", selectedGroup);
-  }, [selectedGroup]);
-
   const handleGroupSelect = (groupId: number | null) => {
-    console.log("Group selected:", groupId);
     setSelectedGroup(groupId);
   };
 
   return (
-    <div className="flex min-h-screens dashboard">
+    <div className="flex min-h-screen dashboard">
       <GroupSidebar onSelectGroup={handleGroupSelect} />
 
       {/* Main Content */}
