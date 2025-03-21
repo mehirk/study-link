@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../../contexts/AuthContext";
 import { Button } from "@components/ui/button";
 import { Loader2, ArrowLeft, Trash2, Send, Edit, Check, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";

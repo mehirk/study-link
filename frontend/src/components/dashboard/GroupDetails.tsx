@@ -4,9 +4,9 @@ import { Card, CardHeader, CardContent } from "../ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import GroupMembers from "./GroupMembers";
 import GroupSettings from "./GroupSettings";
-import GroupDiscussions from "./GroupDiscussions";
-import DiscussionView from "./DiscussionView";
-import AuthorDiscussionsView from "./AuthorDiscussions";
+import GroupDiscussions from "./discussions/GroupDiscussions";
+import DiscussionView from "./discussions/DiscussionView";
+import AuthorDiscussionsView from "./discussions/AuthorDiscussions";
 import { Loader2, ShieldAlert } from "lucide-react";
 import {
   getGroupById,

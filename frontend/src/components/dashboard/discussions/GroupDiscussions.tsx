@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../../contexts/AuthContext";
 import { Button } from "@components/ui/button";
 import { PlusIcon, Loader2, MessageCircle, Trash2, Edit } from "lucide-react";
 import {
