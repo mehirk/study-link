@@ -137,27 +137,3 @@ export const updateComment = async (
   });
   return response.data;
 };
-
-// Get discussions by author
-export interface AuthorDiscussions {
-  author: {
-    id: string;
-    name: string;
-    email: string;
-    image?: string;
-  };
-  discussions: Discussion[];
-}
-
-export const getDiscussionsByAuthor = async (
-  groupId: number,
-  authorId: string
-): Promise<AuthorDiscussions> => {
-  const response = await apiClient.get(`/discussions/author`, {
-    data: {
-      groupId,
-      authorId,
-    },
-  });
-  return response.data;
-};

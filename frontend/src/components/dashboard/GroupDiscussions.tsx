@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "@components/ui/button";
 import { PlusIcon, Loader2, MessageCircle, Trash2, Edit } from "lucide-react";
 import {
@@ -21,16 +21,15 @@ import {
   updateDiscussion,
   Discussion,
 } from "@lib/api/discussion";
-import CreateDiscussionModal from "../modals/CreateDiscussionModal";
-import ViewDiscussionModal from "../modals/ViewDiscussionModal";
-import EditDiscussionModal from "../modals/EditDiscussionModal";
-import DeleteDiscussionModal from "../modals/DeleteDiscussionModal";
+import CreateDiscussionModal from "./modals/CreateDiscussionModal";
+import ViewDiscussionModal from "./modals/ViewDiscussionModal";
+import EditDiscussionModal from "./modals/EditDiscussionModal";
+import DeleteDiscussionModal from "./modals/DeleteDiscussionModal";
 
 interface GroupDiscussionsProps {
   groupId: number;
   isAdmin: boolean;
   onSelectDiscussion?: (discussionId: number) => void;
-  onViewAuthorDiscussions?: (authorId: string) => void;
   refreshTrigger?: number;
 }
 
@@ -38,7 +37,6 @@ const GroupDiscussions = ({
   groupId,
   isAdmin,
   onSelectDiscussion,
-  onViewAuthorDiscussions,
   refreshTrigger = 0,
 }: GroupDiscussionsProps) => {
   const { user } = useAuth();
@@ -111,17 +109,6 @@ const GroupDiscussions = ({
   const handleEditDiscussion = (discussion: Discussion) => {
     setDiscussionToEdit(discussion);
     setIsEditModalOpen(true);
-  };
-
-  // Add a handler for viewing author discussions
-  const handleViewAuthorDiscussions = (
-    authorId: string,
-    e: React.MouseEvent
-  ) => {
-    e.stopPropagation();
-    if (onViewAuthorDiscussions) {
-      onViewAuthorDiscussions(authorId);
-    }
   };
 
   if (loading) {
@@ -202,21 +189,7 @@ const GroupDiscussions = ({
                     </div>
                   </div>
                   <CardDescription>
-                    Posted by{" "}
-                    {onViewAuthorDiscussions ? (
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto text-muted-foreground"
-                        onClick={(e) =>
-                          handleViewAuthorDiscussions(discussion.author.id, e)
-                        }
-                      >
-                        {discussion.author.name}
-                      </Button>
-                    ) : (
-                      <span>{discussion.author.name}</span>
-                    )}{" "}
-                    ·{" "}
+                    Posted by <span>{discussion.author.name}</span> ·{" "}
                     {formatDistanceToNow(new Date(discussion.createdAt), {
                       addSuffix: true,
                     })}

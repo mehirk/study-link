@@ -4,9 +4,8 @@ import { Card, CardHeader, CardContent } from "../ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import GroupMembers from "./GroupMembers";
 import GroupSettings from "./GroupSettings";
-import GroupDiscussions from "./discussions/GroupDiscussions";
-import DiscussionView from "./discussions/DiscussionView";
-import AuthorDiscussionsView from "./discussions/AuthorDiscussions";
+import GroupDiscussions from "./GroupDiscussions";
+import DiscussionView from "./DiscussionView";
 import { Loader2, ShieldAlert } from "lucide-react";
 import {
   getGroupById,
@@ -31,13 +30,11 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
   const [selectedDiscussionId, setSelectedDiscussionId] = useState<
     number | null
   >(null);
-  const [selectedAuthorId, setSelectedAuthorId] = useState<string | null>(null);
   const [refreshDiscussions, setRefreshDiscussions] = useState(0);
 
-  // Reset selected discussion and author when changing groups
+  // Reset selected discussion when changing groups
   useEffect(() => {
     setSelectedDiscussionId(null);
-    setSelectedAuthorId(null);
     setActiveTab("discussions"); // Also reset to discussions tab
   }, [groupId]);
 
@@ -84,21 +81,10 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
 
   const handleSelectDiscussion = (discussionId: number) => {
     setSelectedDiscussionId(discussionId);
-    setSelectedAuthorId(null);
   };
 
   const handleBackToDiscussions = () => {
     setSelectedDiscussionId(null);
-    setRefreshDiscussions((prev) => prev + 1);
-  };
-
-  const handleViewAuthorDiscussions = (authorId: string) => {
-    setSelectedAuthorId(authorId);
-    setSelectedDiscussionId(null);
-  };
-
-  const handleBackFromAuthorView = () => {
-    setSelectedAuthorId(null);
     setRefreshDiscussions((prev) => prev + 1);
   };
 
@@ -171,14 +157,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
             value="discussions"
             className="flex-1 border-none p-6 data-[state=active]:flex"
           >
-            {selectedAuthorId ? (
-              <AuthorDiscussionsView
-                groupId={groupId}
-                authorId={selectedAuthorId}
-                onBack={handleBackFromAuthorView}
-                onSelectDiscussion={handleSelectDiscussion}
-              />
-            ) : selectedDiscussionId ? (
+            {selectedDiscussionId ? (
               <DiscussionView
                 groupId={groupId}
                 discussionId={selectedDiscussionId}
@@ -192,7 +171,6 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
                   groupId={groupId}
                   isAdmin={isAdmin}
                   onSelectDiscussion={handleSelectDiscussion}
-                  onViewAuthorDiscussions={handleViewAuthorDiscussions}
                   refreshTrigger={refreshDiscussions}
                 />
               </div>
