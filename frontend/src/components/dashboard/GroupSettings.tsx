@@ -104,7 +104,7 @@ const GroupSettings = ({
         </div>
       )}
 
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -133,6 +133,7 @@ const GroupSettings = ({
             <Textarea
               id="description"
               value={description}
+              className="shadow-sm"
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter group description"
               rows={4}
@@ -141,7 +142,7 @@ const GroupSettings = ({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Lock className="h-5 w-5" />
@@ -200,7 +201,7 @@ const GroupSettings = ({
         )}
       </Button>
 
-      <Card className="border-destructive">
+      <Card className="border-destructive shadow-none">
         <CardHeader>
           <CardTitle className="text-destructive flex items-center gap-2">
             <Trash2 className="h-5 w-5" />

@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { Card, CardHeader, CardContent } from "../ui/card";
+import { CardHeader, CardContent } from "../ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import GroupMembers from "./GroupMembers";
 import GroupSettings from "./GroupSettings";
-import GroupDiscussions from "./GroupDiscussions";
-import DiscussionView from "./DiscussionView";
+import DiscussionsLayout from "./DiscussionsLayout";
 import { Loader2, ShieldAlert } from "lucide-react";
 import {
   getGroupById,
@@ -27,16 +26,6 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [fetchTrigger, setFetchTrigger] = useState(0);
-  const [selectedDiscussionId, setSelectedDiscussionId] = useState<
-    number | null
-  >(null);
-  const [refreshDiscussions, setRefreshDiscussions] = useState(0);
-
-  // Reset selected discussion when changing groups
-  useEffect(() => {
-    setSelectedDiscussionId(null);
-    setActiveTab("discussions"); // Also reset to discussions tab
-  }, [groupId]);
 
   useEffect(() => {
     const fetchGroupDetails = async () => {
@@ -79,47 +68,34 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
     ...(isAdmin ? [{ id: "settings", label: "Settings" }] : []),
   ];
 
-  const handleSelectDiscussion = (discussionId: number) => {
-    setSelectedDiscussionId(discussionId);
-  };
-
-  const handleBackToDiscussions = () => {
-    setSelectedDiscussionId(null);
-    setRefreshDiscussions((prev) => prev + 1);
-  };
-
-  const handleCommentDeleted = () => {
-    setRefreshDiscussions((prev) => prev + 1);
-  };
-
   if (loading) {
     return (
-      <Card className="h-full flex flex-col items-center justify-center">
+      <div className="h-full flex flex-col items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin" />
-      </Card>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card className="h-full flex flex-col items-center justify-center">
+      <div className="h-full flex flex-col items-center justify-center">
         <p className="text-destructive">{error}</p>
-      </Card>
+      </div>
     );
   }
 
   if (!group) {
     return (
-      <Card className="h-full flex flex-col items-center justify-center">
+      <div className="h-full flex flex-col items-center justify-center">
         <p className="text-muted-foreground">
           Group not found. Please select another group.
         </p>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="h-full flex flex-col">
+    <div className="h-full flex flex-col">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -155,26 +131,9 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
 
           <TabsContent
             value="discussions"
-            className="flex-1 border-none p-6 data-[state=active]:flex"
+            className="flex-1 border-none data-[state=active]:flex"
           >
-            {selectedDiscussionId ? (
-              <DiscussionView
-                groupId={groupId}
-                discussionId={selectedDiscussionId}
-                isAdmin={isAdmin}
-                onBack={handleBackToDiscussions}
-                onCommentDeleted={handleCommentDeleted}
-              />
-            ) : (
-              <div className="w-full">
-                <GroupDiscussions
-                  groupId={groupId}
-                  isAdmin={isAdmin}
-                  onSelectDiscussion={handleSelectDiscussion}
-                  refreshTrigger={refreshDiscussions}
-                />
-              </div>
-            )}
+            <DiscussionsLayout groupId={groupId} isAdmin={isAdmin} />
           </TabsContent>
 
           <TabsContent
@@ -226,7 +185,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
           </TabsContent>
         </Tabs>
       </CardContent>
-    </Card>
+    </div>
   );
 };
 

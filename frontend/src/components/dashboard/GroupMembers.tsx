@@ -56,7 +56,7 @@ const GroupMembers = ({
 
   const handleChangeRole = async (
     userId: string,
-    newRole: "ADMIN" | "MEMBER",
+    newRole: "ADMIN" | "MEMBER"
   ) => {
     try {
       setChangingRole(userId);
@@ -76,12 +76,15 @@ const GroupMembers = ({
       </h2>
       <div className="grid grid-cols-1 gap-4">
         {members.map((member) => (
-          <Card key={member.id} className="overflow-hidden">
+          <Card key={member.id} className="overflow-hidden shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <Avatar>
-                    <AvatarImage src={member.user.image || ""} />
+                    <AvatarImage
+                      className="object-cover"
+                      src={member.user.image || ""}
+                    />
                     <AvatarFallback>
                       {member.user.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
@@ -116,7 +119,7 @@ const GroupMembers = ({
                         onClick={() =>
                           handleChangeRole(
                             member.userId,
-                            member.role === "ADMIN" ? "MEMBER" : "ADMIN",
+                            member.role === "ADMIN" ? "MEMBER" : "ADMIN"
                           )
                         }
                         disabled={!!changingRole}
