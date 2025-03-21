@@ -10,20 +10,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@components/ui/dialog";
-import { Input } from "@components/ui/input";
-import { Label } from "@components/ui/label";
-import { Textarea } from "@components/ui/textarea";
-import { useToast } from "@components/ui/use-toast";
+import { Separator } from "@components/ui/separator";
+import { ScrollArea } from "@components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
+import { useToast } from "@components/ui/use-toast";
 import {
   fetchGroupDiscussions,
   createDiscussion,
@@ -31,8 +21,10 @@ import {
   updateDiscussion,
   Discussion,
 } from "@lib/api/discussion";
-import { Separator } from "@components/ui/separator";
-import { ScrollArea } from "@components/ui/scroll-area";
+import CreateDiscussionModal from "../modals/CreateDiscussionModal";
+import ViewDiscussionModal from "../modals/ViewDiscussionModal";
+import EditDiscussionModal from "../modals/EditDiscussionModal";
+import DeleteDiscussionModal from "../modals/DeleteDiscussionModal";
 
 interface GroupDiscussionsProps {
   groupId: number;
@@ -54,21 +46,12 @@ const GroupDiscussions = ({
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [newDiscussion, setNewDiscussion] = useState({
-    title: "",
-    content: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedDiscussion, setSelectedDiscussion] =
     useState<Discussion | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [discussionToEdit, setDiscussionToEdit] = useState<Discussion | null>(
     null
   );
-  const [editFormData, setEditFormData] = useState({
-    title: "",
-    content: "",
-  });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [discussionToDelete, setDiscussionToDelete] = useState<number | null>(
     null
@@ -98,32 +81,16 @@ const GroupDiscussions = ({
     loadDiscussions();
   }, [loadDiscussions, refreshTrigger]);
 
-  const handleCreateDiscussion = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!newDiscussion.title.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please provide a title for your discussion.",
-      });
-      return;
-    }
-
+  const handleCreateDiscussion = async (title: string, content: string) => {
     try {
-      setIsSubmitting(true);
-      const createdDiscussion = await createDiscussion(groupId, {
-        title: newDiscussion.title,
-        content: newDiscussion.content || undefined,
+      await createDiscussion(groupId, {
+        title,
+        content: content || undefined,
       });
-
-      setDiscussions([createdDiscussion, ...discussions]);
-      setCreateDialogOpen(false);
-      setNewDiscussion({ title: "", content: "" });
-
+      await loadDiscussions();
       toast({
         title: "Success",
-        description: "Discussion created successfully.",
+        description: "Discussion created successfully",
       });
     } catch (error) {
       console.error("Failed to create discussion:", error);
@@ -132,8 +99,6 @@ const GroupDiscussions = ({
         title: "Error",
         description: "Failed to create discussion. Please try again.",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -143,87 +108,9 @@ const GroupDiscussions = ({
     setDeleteDialogOpen(true);
   };
 
-  const handleDeleteDiscussion = async () => {
-    if (discussionToDelete === null) return;
-
-    try {
-      await deleteDiscussion(groupId, discussionToDelete);
-      setDiscussions(discussions.filter((d) => d.id !== discussionToDelete));
-      toast({
-        title: "Success",
-        description: "Discussion deleted successfully.",
-      });
-    } catch (error) {
-      console.error("Failed to delete discussion:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to delete discussion. Please try again.",
-      });
-    } finally {
-      setDiscussionToDelete(null);
-      setDeleteDialogOpen(false);
-    }
-  };
-
   const handleEditDiscussion = (discussion: Discussion) => {
     setDiscussionToEdit(discussion);
-    setEditFormData({
-      title: discussion.title,
-      content: discussion.content || "",
-    });
     setIsEditModalOpen(true);
-  };
-
-  const handleUpdateDiscussion = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!discussionToEdit) return;
-
-    if (!editFormData.title.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please provide a title for your discussion.",
-      });
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      const updatedDiscussion = await updateDiscussion(
-        groupId,
-        discussionToEdit.id,
-        {
-          title: editFormData.title,
-          content: editFormData.content || undefined,
-        }
-      );
-
-      // Update the discussion in the list
-      setDiscussions(
-        discussions.map((d) =>
-          d.id === updatedDiscussion.id ? updatedDiscussion : d
-        )
-      );
-
-      setIsEditModalOpen(false);
-      setDiscussionToEdit(null);
-
-      toast({
-        title: "Success",
-        description: "Discussion updated successfully.",
-      });
-    } catch (error) {
-      console.error("Failed to update discussion:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update discussion. Please try again.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   // Add a handler for viewing author discussions
@@ -249,70 +136,10 @@ const GroupDiscussions = ({
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Discussions</h2>
-        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusIcon className="h-4 w-4 mr-2" />
-              New Discussion
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <form onSubmit={handleCreateDiscussion}>
-              <DialogHeader>
-                <DialogTitle>Create a new discussion</DialogTitle>
-                <DialogDescription>
-                  Start a new topic for your group to discuss.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="title" className="text-right">
-                    Title
-                  </Label>
-                  <Input
-                    id="title"
-                    placeholder="Enter discussion title"
-                    value={newDiscussion.title}
-                    onChange={(e) =>
-                      setNewDiscussion({
-                        ...newDiscussion,
-                        title: e.target.value,
-                      })
-                    }
-                    className="col-span-3"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="content" className="text-right">
-                    Content
-                  </Label>
-                  <Textarea
-                    id="content"
-                    placeholder="Enter discussion content"
-                    value={newDiscussion.content}
-                    onChange={(e) =>
-                      setNewDiscussion({
-                        ...newDiscussion,
-                        content: e.target.value,
-                      })
-                    }
-                    className="col-span-3"
-                    rows={5}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Create Discussion
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setCreateDialogOpen(true)}>
+          <PlusIcon className="h-4 w-4 mr-2" />
+          New Discussion
+        </Button>
       </div>
 
       <Separator />
@@ -431,121 +258,76 @@ const GroupDiscussions = ({
         </ScrollArea>
       )}
 
-      {!onSelectDiscussion && selectedDiscussion && (
-        <Dialog
-          open={!!selectedDiscussion}
-          onOpenChange={(open) => !open && setSelectedDiscussion(null)}
-        >
-          <DialogContent className="max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>{selectedDiscussion.title}</DialogTitle>
-              <DialogDescription>
-                Posted by {selectedDiscussion.author.name} ·{" "}
-                {formatDistanceToNow(new Date(selectedDiscussion.createdAt), {
-                  addSuffix: true,
-                })}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-              <p className="whitespace-pre-wrap">
-                {selectedDiscussion.content || "No content provided."}
-              </p>
-            </div>
-            <DialogFooter>
-              <Button
-                onClick={() => {
-                  // Here you would redirect to a full discussion view page
-                  window.location.href = `/dashboard/groups/${groupId}/discussions/${selectedDiscussion.id}`;
-                }}
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
-                View Full Discussion
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      {/* Modals */}
+      <CreateDiscussionModal
+        isOpen={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onCreateDiscussion={handleCreateDiscussion}
+        trigger={null}
+      />
 
-      {/* Edit Discussion Dialog */}
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent>
-          <form onSubmit={handleUpdateDiscussion}>
-            <DialogHeader>
-              <DialogTitle>Edit Discussion</DialogTitle>
-              <DialogDescription>
-                Update your discussion details.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-title" className="text-right">
-                  Title
-                </Label>
-                <Input
-                  id="edit-title"
-                  placeholder="Enter discussion title"
-                  value={editFormData.title}
-                  onChange={(e) =>
-                    setEditFormData({ ...editFormData, title: e.target.value })
-                  }
-                  className="col-span-3"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-content" className="text-right">
-                  Content
-                </Label>
-                <Textarea
-                  id="edit-content"
-                  placeholder="Enter discussion content"
-                  value={editFormData.content}
-                  onChange={(e) =>
-                    setEditFormData({
-                      ...editFormData,
-                      content: e.target.value,
-                    })
-                  }
-                  className="col-span-3"
-                  rows={5}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Update Discussion
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <ViewDiscussionModal
+        discussion={selectedDiscussion}
+        isOpen={!!selectedDiscussion && !onSelectDiscussion}
+        onOpenChange={(open) => !open && setSelectedDiscussion(null)}
+        groupId={groupId}
+        onViewFullDiscussion={() => {
+          if (selectedDiscussion && onSelectDiscussion) {
+            onSelectDiscussion(selectedDiscussion.id);
+          }
+        }}
+      />
 
-      {/* Delete Discussion Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Discussion</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this discussion? This action
-              cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteDiscussion}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <EditDiscussionModal
+        discussion={discussionToEdit}
+        isOpen={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        onUpdateDiscussion={async (id, title, content) => {
+          try {
+            await updateDiscussion(groupId, id, {
+              title,
+              content: content || undefined,
+            });
+            await loadDiscussions();
+            toast({
+              title: "Success",
+              description: "Discussion updated successfully",
+            });
+          } catch (error) {
+            console.error("Failed to update discussion:", error);
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "Failed to update discussion. Please try again.",
+            });
+          }
+        }}
+      />
+
+      <DeleteDiscussionModal
+        isOpen={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirmDelete={async () => {
+          if (!discussionToDelete) return;
+
+          try {
+            await deleteDiscussion(groupId, discussionToDelete);
+            await loadDiscussions();
+            setDeleteDialogOpen(false);
+            toast({
+              title: "Success",
+              description: "Discussion deleted successfully",
+            });
+          } catch (error) {
+            console.error("Failed to delete discussion:", error);
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "Failed to delete discussion. Please try again.",
+            });
+          }
+        }}
+      />
     </div>
   );
 };

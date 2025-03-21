@@ -9,14 +9,6 @@ import { Input } from "@components/ui/input";
 import { useToast } from "@components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@components/ui/dialog";
-import {
   getDiscussion,
   addComment,
   deleteComment,
@@ -27,6 +19,7 @@ import {
 } from "@lib/api/discussion";
 import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { ScrollArea } from "@components/ui/scroll-area";
+import DeleteCommentModal from "../modals/DeleteCommentModal";
 
 interface DiscussionViewProps {
   groupId: number;
@@ -545,32 +538,11 @@ const DiscussionView = ({
         </form>
       </div>
 
-      {/* Delete Comment Dialog */}
-      <Dialog
-        open={deleteCommentDialogOpen}
+      <DeleteCommentModal
+        isOpen={deleteCommentDialogOpen}
         onOpenChange={setDeleteCommentDialogOpen}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Comment</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this comment? This action cannot
-              be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteCommentDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteComment}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onConfirmDelete={handleDeleteComment}
+      />
     </div>
   );
 };
