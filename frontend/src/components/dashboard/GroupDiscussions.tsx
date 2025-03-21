@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { Button } from "../ui/button";
+import { Button } from "@components/ui/button";
 import { PlusIcon, Loader2, MessageCircle, Trash2, Edit } from "lucide-react";
 import {
   Card,
@@ -9,7 +9,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../ui/card";
+} from "@components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -18,11 +18,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
-import { useToast } from "../ui/use-toast";
+} from "@components/ui/dialog";
+import { Input } from "@components/ui/input";
+import { Label } from "@components/ui/label";
+import { Textarea } from "@components/ui/textarea";
+import { useToast } from "@components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import {
   fetchGroupDiscussions,
@@ -30,9 +30,9 @@ import {
   deleteDiscussion,
   updateDiscussion,
   Discussion,
-} from "../../lib/api/group";
-import { Separator } from "../ui/separator";
-import { ScrollArea } from "../ui/scroll-area";
+} from "@lib/api/discussion";
+import { Separator } from "@components/ui/separator";
+import { ScrollArea } from "@components/ui/scroll-area";
 
 interface GroupDiscussionsProps {
   groupId: number;
@@ -42,12 +42,12 @@ interface GroupDiscussionsProps {
   refreshTrigger?: number;
 }
 
-const GroupDiscussions = ({ 
-  groupId, 
+const GroupDiscussions = ({
+  groupId,
   isAdmin,
   onSelectDiscussion,
   onViewAuthorDiscussions,
-  refreshTrigger = 0
+  refreshTrigger = 0,
 }: GroupDiscussionsProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -59,19 +59,24 @@ const GroupDiscussions = ({
     content: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedDiscussion, setSelectedDiscussion] = useState<Discussion | null>(null);
+  const [selectedDiscussion, setSelectedDiscussion] =
+    useState<Discussion | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [discussionToEdit, setDiscussionToEdit] = useState<Discussion | null>(null);
+  const [discussionToEdit, setDiscussionToEdit] = useState<Discussion | null>(
+    null
+  );
   const [editFormData, setEditFormData] = useState({
     title: "",
-    content: ""
+    content: "",
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [discussionToDelete, setDiscussionToDelete] = useState<number | null>(null);
+  const [discussionToDelete, setDiscussionToDelete] = useState<number | null>(
+    null
+  );
 
   const loadDiscussions = useCallback(async () => {
     if (!groupId) return;
-    
+
     try {
       setLoading(true);
       const data = await fetchGroupDiscussions(groupId);
@@ -95,7 +100,7 @@ const GroupDiscussions = ({
 
   const handleCreateDiscussion = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newDiscussion.title.trim()) {
       toast({
         variant: "destructive",
@@ -104,18 +109,18 @@ const GroupDiscussions = ({
       });
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
       const createdDiscussion = await createDiscussion(groupId, {
         title: newDiscussion.title,
         content: newDiscussion.content || undefined,
       });
-      
+
       setDiscussions([createdDiscussion, ...discussions]);
       setCreateDialogOpen(false);
       setNewDiscussion({ title: "", content: "" });
-      
+
       toast({
         title: "Success",
         description: "Discussion created successfully.",
@@ -140,7 +145,7 @@ const GroupDiscussions = ({
 
   const handleDeleteDiscussion = async () => {
     if (discussionToDelete === null) return;
-    
+
     try {
       await deleteDiscussion(groupId, discussionToDelete);
       setDiscussions(discussions.filter((d) => d.id !== discussionToDelete));
@@ -172,9 +177,9 @@ const GroupDiscussions = ({
 
   const handleUpdateDiscussion = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!discussionToEdit) return;
-    
+
     if (!editFormData.title.trim()) {
       toast({
         variant: "destructive",
@@ -183,7 +188,7 @@ const GroupDiscussions = ({
       });
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
       const updatedDiscussion = await updateDiscussion(
@@ -194,15 +199,17 @@ const GroupDiscussions = ({
           content: editFormData.content || undefined,
         }
       );
-      
+
       // Update the discussion in the list
       setDiscussions(
-        discussions.map((d) => (d.id === updatedDiscussion.id ? updatedDiscussion : d))
+        discussions.map((d) =>
+          d.id === updatedDiscussion.id ? updatedDiscussion : d
+        )
       );
-      
+
       setIsEditModalOpen(false);
       setDiscussionToEdit(null);
-      
+
       toast({
         title: "Success",
         description: "Discussion updated successfully.",
@@ -220,7 +227,10 @@ const GroupDiscussions = ({
   };
 
   // Add a handler for viewing author discussions
-  const handleViewAuthorDiscussions = (authorId: string, e: React.MouseEvent) => {
+  const handleViewAuthorDiscussions = (
+    authorId: string,
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation();
     if (onViewAuthorDiscussions) {
       onViewAuthorDiscussions(authorId);
@@ -264,7 +274,10 @@ const GroupDiscussions = ({
                     placeholder="Enter discussion title"
                     value={newDiscussion.title}
                     onChange={(e) =>
-                      setNewDiscussion({ ...newDiscussion, title: e.target.value })
+                      setNewDiscussion({
+                        ...newDiscussion,
+                        title: e.target.value,
+                      })
                     }
                     className="col-span-3"
                     required
@@ -279,7 +292,10 @@ const GroupDiscussions = ({
                     placeholder="Enter discussion content"
                     value={newDiscussion.content}
                     onChange={(e) =>
-                      setNewDiscussion({ ...newDiscussion, content: e.target.value })
+                      setNewDiscussion({
+                        ...newDiscussion,
+                        content: e.target.value,
+                      })
                     }
                     className="col-span-3"
                     rows={5}
@@ -288,7 +304,9 @@ const GroupDiscussions = ({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isSubmitting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   Create Discussion
                 </Button>
               </DialogFooter>
@@ -311,7 +329,10 @@ const GroupDiscussions = ({
         <ScrollArea className="h-[calc(100vh-300px)]">
           <div className="space-y-4 pr-4">
             {discussions.map((discussion) => (
-              <Card key={discussion.id} className="hover:bg-muted/50 transition-colors">
+              <Card
+                key={discussion.id}
+                className="hover:bg-muted/50 transition-colors"
+              >
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-xl">
@@ -359,7 +380,9 @@ const GroupDiscussions = ({
                       <Button
                         variant="link"
                         className="p-0 h-auto text-muted-foreground"
-                        onClick={(e) => handleViewAuthorDiscussions(discussion.author.id, e)}
+                        onClick={(e) =>
+                          handleViewAuthorDiscussions(discussion.author.id, e)
+                        }
                       >
                         {discussion.author.name}
                       </Button>
@@ -396,7 +419,9 @@ const GroupDiscussions = ({
                     <MessageCircle className="h-4 w-4" />
                     <span>
                       {discussion._count?.comments || 0}{" "}
-                      {discussion._count?.comments === 1 ? "comment" : "comments"}
+                      {discussion._count?.comments === 1
+                        ? "comment"
+                        : "comments"}
                     </span>
                   </Button>
                 </CardFooter>
@@ -476,7 +501,10 @@ const GroupDiscussions = ({
                   placeholder="Enter discussion content"
                   value={editFormData.content}
                   onChange={(e) =>
-                    setEditFormData({ ...editFormData, content: e.target.value })
+                    setEditFormData({
+                      ...editFormData,
+                      content: e.target.value,
+                    })
                   }
                   className="col-span-3"
                   rows={5}
@@ -485,7 +513,9 @@ const GroupDiscussions = ({
             </div>
             <DialogFooter>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Update Discussion
               </Button>
             </DialogFooter>
@@ -499,20 +529,18 @@ const GroupDiscussions = ({
           <DialogHeader>
             <DialogTitle>Delete Discussion</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this discussion? This action cannot be undone.
+              Are you sure you want to delete this discussion? This action
+              cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >
               Cancel
             </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleDeleteDiscussion}
-            >
+            <Button variant="destructive" onClick={handleDeleteDiscussion}>
               Delete
             </Button>
           </DialogFooter>
@@ -522,4 +550,4 @@ const GroupDiscussions = ({
   );
 };
 
-export default GroupDiscussions; 
+export default GroupDiscussions;

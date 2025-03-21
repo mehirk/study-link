@@ -17,6 +17,7 @@ export interface Discussion {
   _count: {
     comments: number;
   };
+  comments?: Comment[];
 }
 
 export interface Comment {
@@ -46,7 +47,7 @@ export const fetchGroupDiscussions = async (
 export const getDiscussion = async (
   groupId: number,
   discussionId: number
-): Promise<Discussion & { comments: Comment[] }> => {
+): Promise<Discussion> => {
   const response = await apiClient.get(
     `/discussions/${groupId}/${discussionId}`
   );

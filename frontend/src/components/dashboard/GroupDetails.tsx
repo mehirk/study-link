@@ -14,7 +14,6 @@ import {
   Group,
   GroupMember,
 } from "../../lib/api/group";
-import { toast } from "../ui/use-toast";
 
 interface GroupDetailsProps {
   groupId: number;
@@ -29,7 +28,9 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [fetchTrigger, setFetchTrigger] = useState(0);
-  const [selectedDiscussionId, setSelectedDiscussionId] = useState<number | null>(null);
+  const [selectedDiscussionId, setSelectedDiscussionId] = useState<
+    number | null
+  >(null);
   const [selectedAuthorId, setSelectedAuthorId] = useState<string | null>(null);
   const [refreshDiscussions, setRefreshDiscussions] = useState(0);
 
@@ -57,7 +58,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
         const userIsAdmin = members.some(
           (member) =>
             String(member.userId) === String(user?.id) &&
-            member.role === "ADMIN",
+            member.role === "ADMIN"
         );
         setIsAdmin(userIsAdmin);
       } catch (error) {
@@ -88,7 +89,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
 
   const handleBackToDiscussions = () => {
     setSelectedDiscussionId(null);
-    setRefreshDiscussions(prev => prev + 1);
+    setRefreshDiscussions((prev) => prev + 1);
   };
 
   const handleViewAuthorDiscussions = (authorId: string) => {
@@ -98,11 +99,11 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
 
   const handleBackFromAuthorView = () => {
     setSelectedAuthorId(null);
-    setRefreshDiscussions(prev => prev + 1);
+    setRefreshDiscussions((prev) => prev + 1);
   };
 
   const handleCommentDeleted = () => {
-    setRefreshDiscussions(prev => prev + 1);
+    setRefreshDiscussions((prev) => prev + 1);
   };
 
   if (loading) {
@@ -171,14 +172,14 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
             className="flex-1 border-none p-6 data-[state=active]:flex"
           >
             {selectedAuthorId ? (
-              <AuthorDiscussionsView 
+              <AuthorDiscussionsView
                 groupId={groupId}
                 authorId={selectedAuthorId}
                 onBack={handleBackFromAuthorView}
                 onSelectDiscussion={handleSelectDiscussion}
               />
             ) : selectedDiscussionId ? (
-              <DiscussionView 
+              <DiscussionView
                 groupId={groupId}
                 discussionId={selectedDiscussionId}
                 isAdmin={isAdmin}
@@ -187,7 +188,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
               />
             ) : (
               <div className="w-full">
-                <GroupDiscussions 
+                <GroupDiscussions
                   groupId={groupId}
                   isAdmin={isAdmin}
                   onSelectDiscussion={handleSelectDiscussion}

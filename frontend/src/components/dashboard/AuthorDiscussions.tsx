@@ -1,12 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
-import { Button } from "../ui/button";
-import { Card, CardHeader, CardContent, CardDescription, CardFooter } from "../ui/card";
+import { Button } from "@components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardDescription,
+  CardFooter,
+} from "@components/ui/card";
 import { Loader2, ArrowLeft, MessageCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { useToast } from "../ui/use-toast";
-import { ScrollArea } from "../ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { getDiscussionsByAuthor, AuthorDiscussions } from "../../lib/api/group";
+import { useToast } from "@components/ui/use-toast";
+import { ScrollArea } from "@components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
+import { getDiscussionsByAuthor, AuthorDiscussions } from "@lib/api/discussion";
 
 interface AuthorDiscussionsProps {
   groupId: number;
@@ -106,15 +112,16 @@ const AuthorDiscussionsView = ({
         <ScrollArea className="h-[calc(100vh-250px)]">
           <div className="space-y-4 pr-4">
             {discussions.map((discussion) => (
-              <Card 
-                key={discussion.id} 
+              <Card
+                key={discussion.id}
                 className="hover:bg-muted/50 transition-colors cursor-pointer"
                 onClick={() => onSelectDiscussion(discussion.id)}
               >
                 <CardHeader className="pb-2">
                   <h3 className="text-xl font-semibold">{discussion.title}</h3>
                   <CardDescription>
-                    Posted {formatDistanceToNow(new Date(discussion.createdAt), {
+                    Posted{" "}
+                    {formatDistanceToNow(new Date(discussion.createdAt), {
                       addSuffix: true,
                     })}
                     {discussion.updatedAt !== discussion.createdAt && (
@@ -132,7 +139,9 @@ const AuthorDiscussionsView = ({
                     <MessageCircle className="h-4 w-4" />
                     <span>
                       {discussion._count?.comments || 0}{" "}
-                      {discussion._count?.comments === 1 ? "comment" : "comments"}
+                      {discussion._count?.comments === 1
+                        ? "comment"
+                        : "comments"}
                     </span>
                   </Button>
                 </CardFooter>
@@ -145,4 +154,4 @@ const AuthorDiscussionsView = ({
   );
 };
 
-export default AuthorDiscussionsView; 
+export default AuthorDiscussionsView;

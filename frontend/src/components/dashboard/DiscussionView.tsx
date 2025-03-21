@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { Button } from "../ui/button";
+import { Button } from "@components/ui/button";
 import { Loader2, ArrowLeft, Trash2, Send, Edit, Check, X } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Separator } from "../ui/separator";
-import { Textarea } from "../ui/textarea";
-import { Input } from "../ui/input";
-import { useToast } from "../ui/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
+import { Separator } from "@components/ui/separator";
+import { Textarea } from "@components/ui/textarea";
+import { Input } from "@components/ui/input";
+import { useToast } from "@components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import {
   Dialog,
@@ -15,7 +15,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
+} from "@components/ui/dialog";
 import {
   getDiscussion,
   addComment,
@@ -24,9 +24,9 @@ import {
   updateComment,
   Discussion,
   Comment,
-} from "../../lib/api/group";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { ScrollArea } from "../ui/scroll-area";
+} from "@lib/api/discussion";
+import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
+import { ScrollArea } from "@components/ui/scroll-area";
 
 interface DiscussionViewProps {
   groupId: number;
@@ -112,14 +112,14 @@ const DiscussionView = ({
       // Update the local state with the new comment
       if (discussion) {
         const updatedComments = [...(discussion.comments || []), comment];
-        
+
         setDiscussion({
           ...discussion,
           comments: updatedComments,
           _count: {
             ...discussion._count,
-            comments: updatedComments.length
-          }
+            comments: updatedComments.length,
+          },
         });
       }
 
@@ -149,19 +149,21 @@ const DiscussionView = ({
     if (!commentToDelete) return;
 
     try {
-      const result = await deleteComment(groupId, discussionId, commentToDelete);
-      
+      await deleteComment(groupId, discussionId, commentToDelete);
+
       // Update the local state by removing the deleted comment
       if (discussion?.comments) {
-        const updatedComments = discussion.comments.filter((c) => c.id !== commentToDelete);
-        
+        const updatedComments = discussion.comments.filter(
+          (c) => c.id !== commentToDelete
+        );
+
         setDiscussion({
           ...discussion,
           comments: updatedComments,
           _count: {
             ...discussion._count,
-            comments: result.commentCount
-          }
+            comments: updatedComments.length,
+          },
         });
       }
 
@@ -171,7 +173,7 @@ const DiscussionView = ({
       });
 
       if (onCommentDeleted) {
-        onCommentDeleted(discussionId, result.commentCount);
+        onCommentDeleted(discussionId, discussion?.comments?.length || 0);
       }
     } catch (error) {
       console.error("Failed to delete comment:", error);
@@ -320,8 +322,13 @@ const DiscussionView = ({
         <CardHeader>
           <div className="flex items-start gap-4">
             <Avatar>
-              <AvatarImage src={discussion.author.image || ""} alt={discussion.author.name} />
-              <AvatarFallback>{getInitials(discussion.author.name)}</AvatarFallback>
+              <AvatarImage
+                src={discussion.author.image || ""}
+                alt={discussion.author.name}
+              />
+              <AvatarFallback>
+                {getInitials(discussion.author.name)}
+              </AvatarFallback>
             </Avatar>
             <div className="flex-1">
               {isEditing ? (
@@ -374,7 +381,9 @@ const DiscussionView = ({
               ) : (
                 <>
                   <div className="flex justify-between">
-                    <CardTitle className="text-xl">{discussion.title}</CardTitle>
+                    <CardTitle className="text-xl">
+                      {discussion.title}
+                    </CardTitle>
                     {canEditDiscussion && (
                       <Button
                         variant="ghost"
@@ -424,7 +433,9 @@ const DiscussionView = ({
                     src={comment.author.image || ""}
                     alt={comment.author.name}
                   />
-                  <AvatarFallback>{getInitials(comment.author.name)}</AvatarFallback>
+                  <AvatarFallback>
+                    {getInitials(comment.author.name)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
                   <div className="flex justify-between items-start">
@@ -479,7 +490,9 @@ const DiscussionView = ({
                               variant="ghost"
                               size="icon"
                               className="h-6 w-6"
-                              onClick={() => openDeleteCommentDialog(comment.id)}
+                              onClick={() =>
+                                openDeleteCommentDialog(comment.id)
+                              }
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
@@ -533,25 +546,26 @@ const DiscussionView = ({
       </div>
 
       {/* Delete Comment Dialog */}
-      <Dialog open={deleteCommentDialogOpen} onOpenChange={setDeleteCommentDialogOpen}>
+      <Dialog
+        open={deleteCommentDialogOpen}
+        onOpenChange={setDeleteCommentDialogOpen}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Comment</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this comment? This action cannot be undone.
+              Are you sure you want to delete this comment? This action cannot
+              be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setDeleteCommentDialogOpen(false)}
             >
               Cancel
             </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleDeleteComment}
-            >
+            <Button variant="destructive" onClick={handleDeleteComment}>
               Delete
             </Button>
           </DialogFooter>
@@ -561,4 +575,4 @@ const DiscussionView = ({
   );
 };
 
-export default DiscussionView; 
+export default DiscussionView;
