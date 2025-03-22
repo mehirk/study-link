@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "@components/ui/button";
-import { Loader2, Send, Edit, Trash2, Check, X } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
+import { Loader2, Send, Edit, Trash2, Check } from "lucide-react";
 import { Textarea } from "@components/ui/textarea";
 import { useToast } from "@components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -18,7 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { ScrollArea } from "@components/ui/scroll-area";
 import DeleteCommentModal from "./modals/DeleteCommentModal";
 import { Input } from "@components/ui/input";
-import { Separator } from "@components/ui/separator";
+import { Skeleton } from "@components/ui/skeleton";
 
 interface ChatDiscussionViewProps {
   groupId: number;
@@ -42,11 +41,6 @@ const ChatDiscussionView = ({
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editingDiscussionInfo, setEditingDiscussionInfo] = useState(false);
-  const [editedDiscussionInfo, setEditedDiscussionInfo] = useState({
-    title: "",
-    content: "",
-  });
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editedCommentContent, setEditedCommentContent] = useState("");
   const [deleteCommentDialogOpen, setDeleteCommentDialogOpen] = useState(false);
@@ -59,10 +53,6 @@ const ChatDiscussionView = ({
       setLoading(true);
       const data = await getDiscussion(groupId, discussionId);
       setDiscussion(data);
-      setEditedDiscussionInfo({
-        title: data.title,
-        content: data.content || "",
-      });
     } catch (error) {
       console.error("Failed to load discussion:", error);
       toast({
@@ -94,11 +84,6 @@ const ChatDiscussionView = ({
     e.preventDefault();
 
     if (!newComment.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please provide a comment.",
-      });
       return;
     }
 
@@ -251,8 +236,64 @@ const ChatDiscussionView = ({
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="flex flex-col h-full min-w-[40vw]">
+        <div className="px-4 py-3 border-b">
+          <Skeleton className="h-7 w-24" />
+        </div>
+
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <ScrollArea className="flex-1 px-4 pt-4">
+            <div className="space-y-6">
+              {[1, 2, 3, 4].map((index) => (
+                <div
+                  key={index}
+                  className={`flex ${
+                    index % 2 === 0 ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  <div
+                    className={`flex gap-3 max-w-[80%] ${
+                      index % 2 === 0 ? "flex-row-reverse" : "flex-row"
+                    }`}
+                  >
+                    <Skeleton className="h-10 w-10 rounded-full flex-shrink-0" />
+                    <div>
+                      {index % 2 !== 0 && (
+                        <Skeleton className="h-4 w-24 mb-1" />
+                      )}
+                      <Skeleton
+                        className={`h-16 w-60 rounded-lg ${
+                          index % 2 === 0 ? "bg-primary/30" : ""
+                        }`}
+                      />
+                      <div className="flex items-center justify-between mt-1 px-1">
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+
+          <div className="p-4 mt-auto">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Type your message..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                className="flex-1 rounded-full h-11"
+              />
+              <Button
+                type="submit"
+                className="self-end rounded-full h-11"
+                disabled={isSubmitting || !newComment.trim()}
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -265,115 +306,16 @@ const ChatDiscussionView = ({
     );
   }
 
-  const canEditDiscussion = isAdmin || discussion.authorId === user?.id;
-
   return (
-    <div className="flex flex-col h-full">
-      {/* Discussion Info Card */}
-      <Card className="mb-4">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3">
-              <Avatar>
-                <AvatarImage
-                  src={discussion.author.image || ""}
-                  alt={discussion.author.name}
-                />
-                <AvatarFallback>
-                  {getInitials(discussion.author.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                {editingDiscussionInfo ? (
-                  <Input
-                    value={editedDiscussionInfo.title}
-                    onChange={(e) =>
-                      setEditedDiscussionInfo({
-                        ...editedDiscussionInfo,
-                        title: e.target.value,
-                      })
-                    }
-                    className="mb-2"
-                  />
-                ) : (
-                  <CardTitle>{discussion.title}</CardTitle>
-                )}
-                <div className="text-sm text-muted-foreground mt-1">
-                  Started by {discussion.author.name} ·{" "}
-                  {formatDistanceToNow(new Date(discussion.createdAt), {
-                    addSuffix: true,
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {canEditDiscussion && (
-              <>
-                {editingDiscussionInfo ? (
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setEditingDiscussionInfo(false)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      onClick={() => {
-                        // Handle saving edited info
-                        setEditingDiscussionInfo(false);
-                      }}
-                    >
-                      <Check className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setEditingDiscussionInfo(true)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                )}
-              </>
-            )}
-          </div>
-        </CardHeader>
-        {!editingDiscussionInfo ? (
-          discussion.content && (
-            <CardContent>
-              <p className="text-sm">{discussion.content}</p>
-            </CardContent>
-          )
-        ) : (
-          <CardContent>
-            <Textarea
-              value={editedDiscussionInfo.content}
-              onChange={(e) =>
-                setEditedDiscussionInfo({
-                  ...editedDiscussionInfo,
-                  content: e.target.value,
-                })
-              }
-              placeholder="Discussion description"
-              rows={3}
-            />
-          </CardContent>
-        )}
-      </Card>
-
-      <Separator className="my-2" />
+    <div className="flex flex-col h-full min-w-[40vw]">
+      <div className="px-4 py-3 border-b">
+        <h2 className="text-xl font-semibold">Group Chat</h2>
+      </div>
 
       {/* Comments Section */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="text-sm font-medium mb-2">
-          {discussion.comments?.length || 0} Comments
-        </div>
-
-        <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
-          <div className="space-y-4">
+        <ScrollArea className="flex-1 px-4 pt-4" ref={scrollAreaRef}>
+          <div className="space-y-6">
             {discussion.comments && discussion.comments.length > 0 ? (
               discussion.comments.map((comment) => {
                 const isCurrentUser = comment.authorId === user?.id;
@@ -386,11 +328,11 @@ const ChatDiscussionView = ({
                     }`}
                   >
                     <div
-                      className={`flex gap-2 max-w-[80%] ${
+                      className={`flex gap-3 max-w-[80%] ${
                         isCurrentUser ? "flex-row-reverse" : "flex-row"
                       }`}
                     >
-                      <Avatar className="h-8 w-8 flex-shrink-0">
+                      <Avatar className="h-10 w-10 flex-shrink-0">
                         <AvatarImage
                           src={comment.author.image || ""}
                           alt={comment.author.name}
@@ -400,89 +342,92 @@ const ChatDiscussionView = ({
                         </AvatarFallback>
                       </Avatar>
 
-                      <div
-                        className={`rounded-lg p-3 ${
-                          isCurrentUser
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
-                        }`}
-                      >
-                        {editingCommentId === comment.id ? (
-                          <div className="space-y-2">
-                            <Textarea
-                              value={editedCommentContent}
-                              onChange={(e) =>
-                                setEditedCommentContent(e.target.value)
-                              }
-                              rows={3}
-                              className="min-w-[200px] bg-background"
-                            />
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={cancelEditComment}
-                              >
-                                Cancel
-                              </Button>
-                              <Button
-                                size="sm"
-                                onClick={() => handleUpdateComment(comment.id)}
-                                disabled={isSubmitting}
-                              >
-                                {isSubmitting ? (
-                                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                                ) : (
-                                  <Check className="h-3 w-3 mr-1" />
-                                )}
-                                Save
-                              </Button>
-                            </div>
+                      <div>
+                        {!isCurrentUser && (
+                          <div className="text-sm font-medium mb-1">
+                            {comment.author.name}
                           </div>
-                        ) : (
-                          <>
-                            <div className="text-sm">{comment.content}</div>
-                            <div className="text-xs mt-1 flex justify-between items-center">
-                              <span
-                                className={
-                                  isCurrentUser
-                                    ? "text-primary-foreground/70"
-                                    : "text-muted-foreground"
+                        )}
+                        <div
+                          className={`rounded-lg p-3 ${
+                            isCurrentUser
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted"
+                          }`}
+                        >
+                          {editingCommentId === comment.id ? (
+                            <div className="space-y-2">
+                              <Textarea
+                                value={editedCommentContent}
+                                onChange={(e) =>
+                                  setEditedCommentContent(e.target.value)
+                                }
+                                rows={3}
+                                className="min-w-[200px] bg-background"
+                              />
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={cancelEditComment}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={() =>
+                                    handleUpdateComment(comment.id)
+                                  }
+                                  disabled={isSubmitting}
+                                >
+                                  {isSubmitting ? (
+                                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                  ) : (
+                                    <Check className="h-3 w-3 mr-1" />
+                                  )}
+                                  Save
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="text-sm whitespace-pre-wrap break-words">
+                                {comment.content}
+                              </div>
+                            </>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between mt-1 px-1">
+                          <span className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(comment.createdAt), {
+                              addSuffix: true,
+                            })}
+                          </span>
+
+                          {(isAdmin || comment.authorId === user?.id) && (
+                            <div className="flex gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => handleEditComment(comment)}
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() =>
+                                  openDeleteCommentDialog(comment.id)
                                 }
                               >
-                                {formatDistanceToNow(
-                                  new Date(comment.createdAt),
-                                  {
-                                    addSuffix: true,
-                                  }
-                                )}
-                              </span>
-
-                              {(isAdmin || comment.authorId === user?.id) && (
-                                <div className="flex gap-1">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-6 w-6"
-                                    onClick={() => handleEditComment(comment)}
-                                  >
-                                    <Edit className="h-3 w-3" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-6 w-6"
-                                    onClick={() =>
-                                      openDeleteCommentDialog(comment.id)
-                                    }
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              )}
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
                             </div>
-                          </>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -490,31 +435,30 @@ const ChatDiscussionView = ({
               })
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                No comments yet. Start the conversation!
+                No messages yet. Start the conversation!
               </div>
             )}
           </div>
         </ScrollArea>
 
-        <div className="mt-4">
+        <div className="p-4 mt-auto">
           <form onSubmit={handleAddComment} className="flex gap-2">
-            <Textarea
+            <Input
               placeholder="Type your message..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              className="flex-1"
-              rows={2}
+              className="flex-1 rounded-full h-11"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (newComment.trim()) {
+                    handleAddComment(e);
+                  }
+                }
+              }}
             />
-            <Button
-              type="submit"
-              className="self-end"
-              disabled={isSubmitting || !newComment.trim()}
-            >
-              {isSubmitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
+            <Button type="submit" className="self-end rounded-full h-11">
+              <Send className="h-4 w-4" />
             </Button>
           </form>
         </div>

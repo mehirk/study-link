@@ -96,11 +96,11 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
 
   return (
     <div className="h-full flex flex-col">
-      <CardHeader>
+      <CardHeader className="p-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold">{group.name}</h1>
-            <p className="text-muted-foreground">{group.description}</p>
+            <p className="text-muted-foreground text-sm">{group.description}</p>
           </div>
           {isAdmin && (
             <div className="flex items-center text-xs font-medium text-primary">

@@ -7,6 +7,7 @@ import {
 } from "@lib/api/discussion";
 import DiscussionsSidebar from "./DiscussionsSidebar";
 import ChatDiscussionView from "./ChatDiscussionView";
+import DiscussionInfoPanel from "./DiscussionInfoPanel";
 import CreateDiscussionModal from "./modals/CreateDiscussionModal";
 
 interface DiscussionsLayoutProps {
@@ -98,18 +99,29 @@ const DiscussionsLayout = ({ groupId, isAdmin }: DiscussionsLayoutProps) => {
         onNewDiscussion={() => setCreateDialogOpen(true)}
       />
 
-      <div className="flex-1 p-4">
+      <div className="flex">
         {selectedDiscussionId ? (
-          <ChatDiscussionView
-            groupId={groupId}
-            discussionId={selectedDiscussionId}
-            isAdmin={isAdmin}
-            onCommentDeleted={handleCommentDeleted}
-            onUpdateDiscussion={handleUpdateDiscussion}
-          />
+          <>
+            <div className="flex-1">
+              <ChatDiscussionView
+                groupId={groupId}
+                discussionId={selectedDiscussionId}
+                isAdmin={isAdmin}
+                onCommentDeleted={handleCommentDeleted}
+                onUpdateDiscussion={handleUpdateDiscussion}
+              />
+            </div>
+            <div className="w-72 border-l">
+              <DiscussionInfoPanel
+                discussionId={selectedDiscussionId}
+                groupId={groupId}
+                isAdmin={isAdmin}
+              />
+            </div>
+          </>
         ) : (
-          <div className="h-full flex items-center justify-center text-muted-foreground">
-            Select a discussion or create a new one to start chatting.
+          <div className="h-full ml-96 w-full flex items-center justify-center text-muted-foreground">
+            Nothing Yet 😔
           </div>
         )}
       </div>
