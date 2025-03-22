@@ -111,11 +111,9 @@ export const updateDiscussion = async (
   data: { title: string; content?: string }
 ): Promise<Discussion> => {
   const response = await apiClient.put(`/discussions`, {
-    data: {
-      groupId,
-      discussionId,
-      ...data,
-    },
+    groupId,
+    discussionId,
+    ...data,
   });
   return response.data;
 };

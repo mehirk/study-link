@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "@components/ui/button";
 import { Loader2, Send, Edit, Trash2, Check, X } from "lucide-react";
 import { useToast } from "@components/ui/use-toast";
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import {
-  getDiscussion,
   addComment,
   deleteComment,
   updateComment,
@@ -22,6 +21,8 @@ interface ChatDiscussionViewProps {
   groupId: number;
   discussionId: number;
   isAdmin: boolean;
+  discussion?: Discussion | null;
+  discussionLoading?: boolean;
   onCommentDeleted?: (discussionId: number, commentCount: number) => void;
   onUpdateDiscussion?: (discussion: Discussion) => void;
 }
@@ -378,6 +379,8 @@ const MessageInput = ({
 const ChatDiscussionView = ({
   groupId,
   discussionId,
+  discussion,
+  discussionLoading = false,
   onCommentDeleted,
   onUpdateDiscussion,
 }: ChatDiscussionViewProps) => {
@@ -387,132 +390,37 @@ const ChatDiscussionView = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Consolidated state
-  const [discussion, setDiscussion] = useState<Discussion | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [commentState, setCommentState] = useState({
-    newComment: "",
-    editingCommentId: null as number | null,
-    editedCommentContent: "",
-    isSubmitting: false,
-  });
-  const [deleteState, setDeleteState] = useState({
-    isDialogOpen: false,
-    commentToDelete: null as number | null,
-  });
+  const [editingComment, setEditingComment] = useState<number | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [newComment, setNewComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
 
-  // Load discussion data
-  const loadDiscussion = useCallback(async () => {
-    if (!groupId || !discussionId) return;
-
-    try {
-      setLoading(true);
-      const data = await getDiscussion(groupId, discussionId);
-      setDiscussion(data);
-    } catch (error) {
-      console.error("Failed to load discussion:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load discussion. Please try again.",
-      });
-    } finally {
+  // Set comments from the discussion prop
+  useEffect(() => {
+    if (discussion && discussion.comments) {
+      setComments(discussion.comments);
       setLoading(false);
+    } else {
+      // If no comments in discussion, set empty array
+      setComments([]);
+      setLoading(discussionLoading);
     }
-  }, [groupId, discussionId, toast]);
+  }, [discussion, discussionLoading]);
 
+  // Scroll to bottom when comments change
   useEffect(() => {
-    loadDiscussion();
-  }, [loadDiscussion]);
-
-  // Simplified scroll to bottom logic
-  const scrollToBottom = useCallback(() => {
-    if (scrollAreaRef.current) {
-      const scrollViewport = scrollAreaRef.current.querySelector(
-        "[data-radix-scroll-area-viewport]"
-      );
-      if (scrollViewport) {
-        // Use smooth scrolling behavior
-        scrollViewport.scrollTo({
-          top: scrollViewport.scrollHeight,
-          behavior: "smooth",
-        });
-      }
-    }
-
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, []);
-
-  // Scroll on load and new messages
-  useEffect(() => {
-    if (!loading && discussion?.comments?.length) {
-      // Use a small timeout to ensure DOM is updated
-      setTimeout(scrollToBottom, 100);
-    }
-  }, [loading, discussion?.comments?.length, scrollToBottom]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [comments]);
 
   // CRUD operations
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { newComment } = commentState;
 
-    if (!newComment.trim()) return;
-
-    try {
-      setCommentState((prev) => ({ ...prev, isSubmitting: true }));
-      const comment = await addComment(groupId, discussionId, {
-        content: newComment,
-      });
-
-      if (discussion) {
-        const updatedComments = [...(discussion.comments || []), comment];
-        const updatedDiscussion = {
-          ...discussion,
-          comments: updatedComments,
-          _count: {
-            ...discussion._count,
-            comments: updatedComments.length,
-          },
-        };
-
-        setDiscussion(updatedDiscussion);
-        if (onUpdateDiscussion) {
-          onUpdateDiscussion(updatedDiscussion);
-        }
-      }
-
-      setCommentState((prev) => ({
-        ...prev,
-        newComment: "",
-        isSubmitting: false,
-      }));
-    } catch (error) {
-      console.error("Failed to add comment:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to add comment. Please try again.",
-      });
-      setCommentState((prev) => ({ ...prev, isSubmitting: false }));
-    }
-  };
-
-  const handleEditComment = (comment: Comment) => {
-    // Only allow author to edit their own comments
-    if (comment.authorId === user?.id) {
-      setCommentState((prev) => ({
-        ...prev,
-        editingCommentId: comment.id,
-        editedCommentContent: comment.content,
-      }));
-    }
-  };
-
-  const handleUpdateComment = async (commentId: number) => {
-    const { editedCommentContent } = commentState;
-
-    if (!editedCommentContent.trim()) {
+    if (!newComment.trim()) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -522,30 +430,69 @@ const ChatDiscussionView = ({
     }
 
     try {
-      setCommentState((prev) => ({ ...prev, isSubmitting: true }));
-      const updated = await updateComment(groupId, discussionId, commentId, {
-        content: editedCommentContent,
+      setIsSubmitting(true);
+      const comment = await addComment(groupId, discussionId, {
+        content: newComment,
       });
 
-      if (discussion?.comments) {
-        const updatedDiscussion = {
-          ...discussion,
-          comments: discussion.comments.map((c) =>
-            c.id === commentId ? updated : c
-          ),
-        };
+      // Update the local comments array
+      setComments((prevComments) => [...prevComments, comment]);
 
-        setDiscussion(updatedDiscussion);
-        if (onUpdateDiscussion) {
-          onUpdateDiscussion(updatedDiscussion);
-        }
+      // Update comment count in parent component
+      if (onUpdateDiscussion && discussion) {
+        onUpdateDiscussion({
+          ...discussion,
+          _count: {
+            ...discussion._count,
+            comments: (discussion._count?.comments || 0) + 1,
+          },
+        });
       }
 
-      setCommentState((prev) => ({
-        ...prev,
-        editingCommentId: null,
-        isSubmitting: false,
-      }));
+      setNewComment("");
+      setIsSubmitting(false);
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add comment. Please try again.",
+      });
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEditComment = (comment: Comment) => {
+    // Only allow author to edit their own comments
+    if (comment.authorId === user?.id) {
+      setEditingComment(comment.id);
+      setEditContent(comment.content);
+    }
+  };
+
+  const handleUpdateComment = async (commentId: number) => {
+    if (!editContent.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Comment content is required.",
+      });
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const updated = await updateComment(groupId, discussionId, commentId, {
+        content: editContent,
+      });
+
+      // Update the local comments array
+      setComments((prevComments) =>
+        prevComments.map((c) => (c.id === commentId ? updated : c))
+      );
+
+      setEditingComment(null);
+      setIsSubmitting(false);
     } catch (error) {
       console.error("Failed to update comment:", error);
       toast({
@@ -553,53 +500,52 @@ const ChatDiscussionView = ({
         title: "Error",
         description: "Failed to update comment. Please try again.",
       });
-      setCommentState((prev) => ({ ...prev, isSubmitting: false }));
+      setIsSubmitting(false);
     }
   };
 
   const openDeleteCommentDialog = (commentId: number) => {
-    // Find the comment
-    const comment = discussion?.comments?.find((c) => c.id === commentId);
+    // Only allow author to delete their own comments
+    const comment = comments.find((c) => c.id === commentId);
 
     // Only allow author to delete their own comments
     if (comment && comment.authorId === user?.id) {
-      setDeleteState({
-        isDialogOpen: true,
-        commentToDelete: commentId,
-      });
+      setDeleteDialogOpen(true);
+      setCommentToDelete(commentId);
     }
   };
 
   const handleDeleteComment = async () => {
-    const { commentToDelete } = deleteState;
     if (!commentToDelete) return;
 
     try {
       await deleteComment(groupId, discussionId, commentToDelete);
 
-      if (discussion?.comments) {
-        const updatedComments = discussion.comments.filter(
-          (c) => c.id !== commentToDelete
-        );
+      // Update local comments array
+      setComments((prevComments) =>
+        prevComments.filter((c) => c.id !== commentToDelete)
+      );
 
-        const updatedDiscussion = {
+      // Update comment count in parent component
+      if (onUpdateDiscussion && discussion) {
+        onUpdateDiscussion({
           ...discussion,
-          comments: updatedComments,
           _count: {
             ...discussion._count,
-            comments: updatedComments.length,
+            comments: Math.max(0, (discussion._count?.comments || 1) - 1),
           },
-        };
-
-        setDiscussion(updatedDiscussion);
-        if (onUpdateDiscussion) {
-          onUpdateDiscussion(updatedDiscussion);
-        }
-
-        if (onCommentDeleted) {
-          onCommentDeleted(discussionId, updatedComments.length);
-        }
+        });
       }
+
+      // Notify parent component
+      if (onCommentDeleted) {
+        onCommentDeleted(discussionId, comments.length - 1);
+      }
+
+      toast({
+        title: "Success",
+        description: "Comment deleted successfully",
+      });
     } catch (error) {
       console.error("Failed to delete comment:", error);
       toast({
@@ -608,10 +554,8 @@ const ChatDiscussionView = ({
         description: "Failed to delete comment. Please try again.",
       });
     } finally {
-      setDeleteState({
-        isDialogOpen: false,
-        commentToDelete: null,
-      });
+      setDeleteDialogOpen(false);
+      setCommentToDelete(null);
     }
   };
 
@@ -635,7 +579,7 @@ const ChatDiscussionView = ({
 
       <div className="flex-1 overflow-hidden flex flex-col">
         <ScrollArea
-          className="flex-1 px-4 pt-4 h-[calc(100%-80px)]"
+          className="flex-1 px-3 h-[calc(100%-80px)]"
           ref={scrollAreaRef}
           style={{ overflowY: "auto" }}
         >
@@ -677,7 +621,7 @@ const ChatDiscussionView = ({
                     }
 
                     // Add the comment
-                    if (commentState.editingCommentId === comment.id) {
+                    if (editingComment === comment.id) {
                       if (isCurrentUser) {
                         elements.push(
                           <div
@@ -718,23 +662,15 @@ const ChatDiscussionView = ({
                                   }`}
                                 >
                                   <EditCommentForm
-                                    content={commentState.editedCommentContent}
+                                    content={editContent}
                                     onChange={(content) =>
-                                      setCommentState((prev) => ({
-                                        ...prev,
-                                        editedCommentContent: content,
-                                      }))
+                                      setEditContent(content)
                                     }
                                     onSave={() =>
                                       handleUpdateComment(comment.id)
                                     }
-                                    onCancel={() =>
-                                      setCommentState((prev) => ({
-                                        ...prev,
-                                        editingCommentId: null,
-                                      }))
-                                    }
-                                    isSubmitting={commentState.isSubmitting}
+                                    onCancel={() => setEditingComment(null)}
+                                    isSubmitting={isSubmitting}
                                   />
                                 </div>
                               </div>
@@ -785,21 +721,17 @@ const ChatDiscussionView = ({
 
         <div className="p-4 mt-auto">
           <MessageInput
-            value={commentState.newComment}
-            onChange={(value) =>
-              setCommentState((prev) => ({ ...prev, newComment: value }))
-            }
+            value={newComment}
+            onChange={(value) => setNewComment(value)}
             onSubmit={handleAddComment}
-            isSubmitting={commentState.isSubmitting}
+            isSubmitting={isSubmitting}
           />
         </div>
       </div>
 
       <DeleteCommentModal
-        isOpen={deleteState.isDialogOpen}
-        onOpenChange={(isOpen) =>
-          setDeleteState((prev) => ({ ...prev, isDialogOpen: isOpen }))
-        }
+        isOpen={deleteDialogOpen}
+        onOpenChange={(isOpen) => setDeleteDialogOpen(isOpen)}
         onConfirmDelete={handleDeleteComment}
       />
     </div>

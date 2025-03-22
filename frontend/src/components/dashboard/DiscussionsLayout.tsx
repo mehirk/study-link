@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@components/ui/use-toast";
 import {
   fetchGroupDiscussions,
   createDiscussion,
+  getDiscussion,
   Discussion,
 } from "@lib/api/discussion";
 import DiscussionsSidebar from "./DiscussionsSidebar";
@@ -22,16 +23,29 @@ const DiscussionsLayout = ({ groupId, isAdmin }: DiscussionsLayoutProps) => {
   const [selectedDiscussionId, setSelectedDiscussionId] = useState<
     number | null
   >(null);
+  const [selectedDiscussion, setSelectedDiscussion] =
+    useState<Discussion | null>(null);
+  const [discussionLoading, setDiscussionLoading] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  // Track previous groupId to detect changes
+  const prevGroupIdRef = useRef<number | null>(null);
 
   const loadDiscussions = useCallback(async () => {
     if (!groupId) return;
 
     try {
       setLoading(true);
+      setSelectedDiscussionId(null);
+      setSelectedDiscussion(null);
+      setDiscussions([]);
       const data = await fetchGroupDiscussions(groupId);
+
       setDiscussions(data);
+      // Only set the selected discussion if there are discussions available
+      if (data.length > 0) {
+        setSelectedDiscussionId(data[0].id);
+      }
     } catch (error) {
       console.error("Failed to load discussions:", error);
       toast({
@@ -44,9 +58,45 @@ const DiscussionsLayout = ({ groupId, isAdmin }: DiscussionsLayoutProps) => {
     }
   }, [groupId, toast]);
 
+  // Load the specific discussion when selectedDiscussionId changes
+  const loadSelectedDiscussion = useCallback(async () => {
+    if (!groupId || !selectedDiscussionId) {
+      setSelectedDiscussion(null);
+      return;
+    }
+
+    try {
+      setDiscussionLoading(true);
+      const data = await getDiscussion(groupId, selectedDiscussionId);
+      setSelectedDiscussion(data);
+    } catch (error) {
+      console.error("Failed to load discussion:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load discussion details. Please try again.",
+      });
+    } finally {
+      setDiscussionLoading(false);
+    }
+  }, [groupId, selectedDiscussionId, toast]);
+
   useEffect(() => {
-    loadDiscussions();
-  }, [loadDiscussions, refreshTrigger]);
+    // Check if groupId has changed
+    if (prevGroupIdRef.current !== groupId) {
+      prevGroupIdRef.current = groupId;
+      // Reset discussions when group changes
+      loadDiscussions();
+    } else {
+      // If same group but refreshTrigger changed
+      loadDiscussions();
+    }
+  }, [loadDiscussions, groupId, refreshTrigger]);
+
+  // Effect to load selected discussion when selectedDiscussionId changes
+  useEffect(() => {
+    loadSelectedDiscussion();
+  }, [loadSelectedDiscussion]);
 
   const handleSelectDiscussion = (discussionId: number) => {
     setSelectedDiscussionId(discussionId);
@@ -87,6 +137,14 @@ const DiscussionsLayout = ({ groupId, isAdmin }: DiscussionsLayoutProps) => {
           : disc
       )
     );
+
+    // Also update the selected discussion if it's the one that changed
+    if (selectedDiscussion && selectedDiscussion.id === updatedDiscussion.id) {
+      setSelectedDiscussion({
+        ...selectedDiscussion,
+        ...updatedDiscussion,
+      });
+    }
   };
 
   return (
@@ -109,6 +167,8 @@ const DiscussionsLayout = ({ groupId, isAdmin }: DiscussionsLayoutProps) => {
                 isAdmin={isAdmin}
                 onCommentDeleted={handleCommentDeleted}
                 onUpdateDiscussion={handleUpdateDiscussion}
+                discussion={selectedDiscussion}
+                discussionLoading={discussionLoading}
               />
             </div>
             <div className="w-72 border-l">
@@ -116,6 +176,9 @@ const DiscussionsLayout = ({ groupId, isAdmin }: DiscussionsLayoutProps) => {
                 discussionId={selectedDiscussionId}
                 groupId={groupId}
                 isAdmin={isAdmin}
+                discussion={selectedDiscussion}
+                discussionLoading={discussionLoading}
+                onUpdateDiscussion={handleUpdateDiscussion}
               />
             </div>
           </>

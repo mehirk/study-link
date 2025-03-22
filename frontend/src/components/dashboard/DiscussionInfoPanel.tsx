@@ -8,26 +8,27 @@ import { Loader2, Edit, Check, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@components/ui/use-toast";
-import {
-  getDiscussion,
-  Discussion,
-  updateDiscussion,
-} from "@lib/api/discussion";
+import { Discussion, updateDiscussion } from "@lib/api/discussion";
 
 interface DiscussionInfoPanelProps {
   discussionId: number;
   groupId: number;
   isAdmin: boolean;
+  discussion?: Discussion | null;
+  discussionLoading?: boolean;
+  onUpdateDiscussion?: (discussion: Discussion) => void;
 }
 
 const DiscussionInfoPanel = ({
   discussionId,
   groupId,
   isAdmin,
+  discussion,
+  discussionLoading = false,
+  onUpdateDiscussion,
 }: DiscussionInfoPanelProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [discussion, setDiscussion] = useState<Discussion | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingInfo, setEditingInfo] = useState(false);
   const [editedInfo, setEditedInfo] = useState({
@@ -35,32 +36,18 @@ const DiscussionInfoPanel = ({
     content: "",
   });
 
+  // Set the edited info when the discussion changes
   useEffect(() => {
-    const loadDiscussion = async () => {
-      if (!groupId || !discussionId) return;
-
-      try {
-        setLoading(true);
-        const data = await getDiscussion(groupId, discussionId);
-        setDiscussion(data);
-        setEditedInfo({
-          title: data.title,
-          content: data.content || "",
-        });
-      } catch (error) {
-        console.error("Failed to load discussion:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load discussion info. Please try again.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadDiscussion();
-  }, [groupId, discussionId, toast]);
+    if (discussion) {
+      setEditedInfo({
+        title: discussion.title,
+        content: discussion.content || "",
+      });
+      setLoading(false);
+    } else {
+      setLoading(discussionLoading);
+    }
+  }, [discussion, discussionLoading]);
 
   const handleUpdateInfo = async () => {
     if (!editedInfo.title.trim()) {
@@ -79,7 +66,11 @@ const DiscussionInfoPanel = ({
         content: editedInfo.content || undefined,
       });
 
-      setDiscussion(updated);
+      // Update via parent component
+      if (onUpdateDiscussion) {
+        onUpdateDiscussion(updated);
+      }
+
       setEditingInfo(false);
       toast({
         title: "Success",
