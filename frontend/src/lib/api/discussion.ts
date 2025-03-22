@@ -128,12 +128,10 @@ export const updateComment = async (
   data: { content: string }
 ): Promise<Comment> => {
   const response = await apiClient.put(`/discussions/comments`, {
-    data: {
-      groupId,
-      discussionId,
-      commentId,
-      ...data,
-    },
+    groupId,
+    discussionId,
+    commentId,
+    ...data,
   });
   return response.data;
 };
