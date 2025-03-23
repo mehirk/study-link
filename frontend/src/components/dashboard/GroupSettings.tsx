@@ -9,20 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../ui/alert-dialog";
 import { Switch } from "../ui/switch";
 import { Loader2, Trash2, Save, Users, Lock } from "lucide-react";
 import { updateGroup, deleteGroup, Group } from "../../lib/api/group";
+import DeleteGroupModal from "./modals/DeleteGroupModal";
 
 interface GroupSettingsProps {
   groupId: number;
@@ -114,7 +104,7 @@ const GroupSettings = ({
         </div>
       )}
 
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -143,6 +133,7 @@ const GroupSettings = ({
             <Textarea
               id="description"
               value={description}
+              className="shadow-sm"
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter group description"
               rows={4}
@@ -151,7 +142,7 @@ const GroupSettings = ({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Lock className="h-5 w-5" />
@@ -210,7 +201,7 @@ const GroupSettings = ({
         )}
       </Button>
 
-      <Card className="border-destructive">
+      <Card className="border-destructive shadow-none">
         <CardHeader>
           <CardTitle className="text-destructive flex items-center gap-2">
             <Trash2 className="h-5 w-5" />
@@ -219,40 +210,7 @@ const GroupSettings = ({
           <CardDescription>Actions here cannot be undone</CardDescription>
         </CardHeader>
         <CardContent>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Group
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the
-                  group and remove all members and data associated with it.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    "Delete"
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <DeleteGroupModal onDelete={handleDelete} isDeleting={isDeleting} />
         </CardContent>
       </Card>
     </div>

@@ -6,7 +6,7 @@ const Profile = () => {
   const { user, sessionToken } = useAuth();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-65px)] p-4">
+    <div className="flex flex-col items-center justify-center p-4 py-12">
       <div className="max-w-md w-full space-y-8 p-6 bg-card rounded-xl shadow-sm">
         <div className="text-center">
           <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
@@ -59,8 +59,7 @@ const Profile = () => {
               userId: user.id,
               token: sessionToken,
             }}
-            onClientUploadComplete={(res) => {
-              console.log("uploaded", res);
+            onClientUploadComplete={() => {
               window.location.reload();
             }}
             onUploadError={(error: Error) => {

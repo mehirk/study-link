@@ -7,7 +7,7 @@ import userProfileRoutes from "./routes/userProfile.routes";
 import groupRoutes from "./routes/group.routes";
 import { uploadRouter } from "./utils/uploadthing";
 import { createRouteHandler } from "uploadthing/express";
-
+import discussionRoutes from "./routes/discussion.routes";
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 
@@ -36,9 +36,10 @@ app.use(express.json());
 
 app.use("/profile", userProfileRoutes);
 app.use("/groups", groupRoutes);
+app.use("/discussions", discussionRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Backend is Running 🚀");
 });
 
 app.listen(PORT, () => {

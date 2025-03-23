@@ -1,4 +1,4 @@
-import { apiClient } from "../api-client";
+import { apiClient } from "@lib/api-client";
 
 export interface Group {
   id: number;
@@ -31,7 +31,6 @@ export interface GroupMember {
     image?: string;
   };
 }
-
 // Fetch all groups the user is a member of
 export const fetchUserGroups = async (): Promise<Group[]> => {
   const response = await apiClient.get("/groups");
@@ -40,7 +39,7 @@ export const fetchUserGroups = async (): Promise<Group[]> => {
 
 // Create a new group
 export const createGroup = async (
-  groupData: CreateGroupRequest,
+  groupData: CreateGroupRequest
 ): Promise<Group> => {
   const response = await apiClient.post("/groups", groupData);
   return response.data;
@@ -60,7 +59,7 @@ export const updateGroup = async (
     description: string;
     password?: string;
     private?: boolean;
-  },
+  }
 ): Promise<Group> => {
   const response = await apiClient.put(`/groups/${groupId}`, data);
   return response.data;
@@ -74,7 +73,7 @@ export const deleteGroup = async (groupId: number): Promise<void> => {
 // Join a group
 export const joinGroup = async (
   groupId: number,
-  password?: string,
+  password?: string
 ): Promise<void> => {
   const queryParams = password ? `?password=${password}` : "";
   await apiClient.post(`/groups/join-group/${groupId}${queryParams}`);
@@ -87,7 +86,7 @@ export const leaveGroup = async (groupId: number): Promise<void> => {
 
 // Get all members of a group
 export const getGroupMembers = async (
-  groupId: number,
+  groupId: number
 ): Promise<GroupMember[]> => {
   const response = await apiClient.get(`/groups/${groupId}/members`);
   return response.data;
@@ -97,7 +96,7 @@ export const getGroupMembers = async (
 export const changeUserRole = async (
   groupId: number,
   userId: string,
-  role: "ADMIN" | "MEMBER",
+  role: "ADMIN" | "MEMBER"
 ): Promise<void> => {
   await apiClient.put(`/groups/${groupId}/members/${userId}/role`, { role });
 };
@@ -105,7 +104,7 @@ export const changeUserRole = async (
 // Remove a member from a group
 export const removeMember = async (
   groupId: number,
-  userId: string,
+  userId: string
 ): Promise<void> => {
   await apiClient.delete(`/groups/${groupId}/members/${userId}`);
 };

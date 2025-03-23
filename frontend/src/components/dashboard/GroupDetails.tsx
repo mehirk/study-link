@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { Card, CardHeader, CardContent } from "../ui/card";
+import { CardHeader, CardContent } from "../ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import GroupMembers from "./GroupMembers";
 import GroupSettings from "./GroupSettings";
+import DiscussionsLayout from "./DiscussionsLayout";
 import { Loader2, ShieldAlert } from "lucide-react";
 import {
   getGroupById,
@@ -43,7 +44,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
         const userIsAdmin = members.some(
           (member) =>
             String(member.userId) === String(user?.id) &&
-            member.role === "ADMIN",
+            member.role === "ADMIN"
         );
         setIsAdmin(userIsAdmin);
       } catch (error) {
@@ -69,37 +70,37 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
 
   if (loading) {
     return (
-      <Card className="h-full flex flex-col items-center justify-center">
+      <div className="h-full flex flex-col items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin" />
-      </Card>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card className="h-full flex flex-col items-center justify-center">
+      <div className="h-full flex flex-col items-center justify-center">
         <p className="text-destructive">{error}</p>
-      </Card>
+      </div>
     );
   }
 
   if (!group) {
     return (
-      <Card className="h-full flex flex-col items-center justify-center">
+      <div className="h-full flex flex-col items-center justify-center">
         <p className="text-muted-foreground">
           Group not found. Please select another group.
         </p>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader>
+    <div className="h-full flex flex-col">
+      <CardHeader className="p-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold">{group.name}</h1>
-            <p className="text-muted-foreground">{group.description}</p>
+            <p className="text-muted-foreground text-sm">{group.description}</p>
           </div>
           {isAdmin && (
             <div className="flex items-center text-xs font-medium text-primary">
@@ -130,11 +131,9 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
 
           <TabsContent
             value="discussions"
-            className="flex-1 border-none p-6 data-[state=active]:flex items-center justify-center"
+            className="flex-1 border-none data-[state=active]:flex"
           >
-            <p className="text-muted-foreground">
-              Discussions content will go here
-            </p>
+            <DiscussionsLayout groupId={groupId} isAdmin={isAdmin} />
           </TabsContent>
 
           <TabsContent
@@ -186,7 +185,7 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
           </TabsContent>
         </Tabs>
       </CardContent>
-    </Card>
+    </div>
   );
 };
 

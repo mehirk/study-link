@@ -1,6 +1,6 @@
 import { useState } from "react";
-import CreateGroupModal from "./CreateGroupModal";
-import JoinGroupModal from "./JoinGroupModal";
+import CreateGroupModal from "./modals/CreateGroupModal";
+import JoinGroupModal from "./modals/JoinGroupModal";
 import { Button } from "@components/ui/button";
 import { ScrollArea } from "@components/ui/scroll-area";
 import { cn } from "@lib/utils";
@@ -69,7 +69,7 @@ const GroupSidebar = ({
   };
 
   return (
-    <div className="w-64 border-r h-auto flex flex-col">
+    <div className="min-w-64 w-64 border-r h-auto flex flex-col">
       <div className="p-4 border-b flex items-center justify-center">
         <a
           href="/dashboard"
@@ -113,7 +113,7 @@ const GroupSidebar = ({
                   "w-full px-2 my-1 py-2 text-left rounded-md transition-colors",
                   "hover:bg-accent hover:text-accent-foreground",
                   selectedGroupId === group.id &&
-                    "bg-accent text-accent-foreground border-1 border-primary",
+                    "bg-accent text-accent-foreground border-1 border-primary"
                 )}
                 onClick={() => handleGroupClick(group.id)}
               >

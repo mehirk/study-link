@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const Home = () => {
   return (
-    <div className="min-h-[calc(100vh-65px)]">
+    <div>
       <section className="py-20 px-4 md:px-6 bg-black text-white">
         <div className="container mx-auto max-w-4xl text-center">
           <div className="space-y-8">

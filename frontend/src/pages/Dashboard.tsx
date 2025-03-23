@@ -54,7 +54,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen dashboard">
+    <div className="flex min-h-[calc(100vh-122px)] dashboard">
       <GroupSidebar
         selectedGroupId={selectedGroup}
         onSelectGroup={setSelectedGroup}
@@ -63,7 +63,7 @@ const Dashboard = () => {
         refreshGroups={refreshGroups}
       />
 
-      <div className="flex-1 p-4">
+      <div className="flex-1">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <Loader2 className="w-8 h-8 animate-spin" />

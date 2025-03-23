@@ -12,7 +12,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = "md" }) => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
+    <div className="flex items-center justify-center py-12">
       <div
         className={`animate-spin rounded-full ${sizeClasses[size]} border-b-2 border-primary`}
       ></div>
