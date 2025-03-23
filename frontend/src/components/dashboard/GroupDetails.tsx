@@ -5,13 +5,30 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import GroupMembers from "./GroupMembers";
 import GroupSettings from "./GroupSettings";
 import DiscussionsLayout from "./DiscussionsLayout";
-import { Loader2, ShieldAlert } from "lucide-react";
+import { Loader2, ShieldAlert, Download, Trash2 } from "lucide-react";
 import {
   getGroupById,
   getGroupMembers,
   Group,
   GroupMember,
-} from "../../lib/api/group";
+} from "@lib/api/group";
+import {
+  getGroupFiles,
+  File as FileType,
+  formatFileSize,
+  deleteFile,
+} from "@lib/api/files";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table";
+import { Button } from "../ui/button";
+import { toast } from "../ui/use-toast";
 
 interface GroupDetailsProps {
   groupId: number;
@@ -26,6 +43,8 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [fetchTrigger, setFetchTrigger] = useState(0);
+  const [files, setFiles] = useState<FileType[]>([]);
+  const [loadingFiles, setLoadingFiles] = useState(false);
 
   useEffect(() => {
     const fetchGroupDetails = async () => {
@@ -60,6 +79,51 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
       fetchGroupDetails();
     }
   }, [groupId, user, fetchTrigger]);
+
+  useEffect(() => {
+    const fetchFiles = async () => {
+      if (activeTab === "files" && groupId) {
+        try {
+          setLoadingFiles(true);
+          const filesData = await getGroupFiles(groupId);
+          setFiles(filesData);
+        } catch (error) {
+          console.error("Error fetching files:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load files. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setLoadingFiles(false);
+        }
+      }
+    };
+
+    fetchFiles();
+  }, [activeTab, groupId, fetchTrigger]);
+
+  const handleFileDownload = (file: FileType) => {
+    window.open(file.url, "_blank");
+  };
+
+  const handleFileDelete = async (fileId: number) => {
+    try {
+      await deleteFile(fileId);
+      setFiles(files.filter((file) => file.id !== fileId));
+      toast({
+        title: "Success",
+        description: "File deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete file. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const tabs = [
     { id: "discussions", label: "Discussions" },
@@ -138,11 +202,88 @@ const GroupDetails = ({ groupId }: GroupDetailsProps) => {
 
           <TabsContent
             value="files"
-            className="flex-1 border-none p-6 data-[state=active]:flex items-center justify-center"
+            className="flex-1 border-none p-6 data-[state=active]:flex flex-col"
           >
-            <p className="text-muted-foreground">
-              Files & Resources content will go here
-            </p>
+            {loadingFiles ? (
+              <div className="flex items-center justify-center h-full">
+                <Loader2 className="w-6 h-6 animate-spin" />
+              </div>
+            ) : files.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-muted-foreground">
+                  No files have been uploaded to this group yet.
+                </p>
+              </div>
+            ) : (
+              <Table>
+                <TableCaption>Files uploaded to this group</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Filename</TableHead>
+                    <TableHead>Size</TableHead>
+                    <TableHead>Discussion</TableHead>
+                    <TableHead>Uploaded By</TableHead>
+                    <TableHead>Uploaded On</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {files.map((file) => (
+                    <TableRow key={file.id}>
+                      <TableCell className="font-medium">
+                        {file.fileName}
+                      </TableCell>
+                      <TableCell>{formatFileSize(file.size)}</TableCell>
+                      <TableCell>
+                        {file.discussion ? file.discussion.title : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          {file.uploadedBy.image ? (
+                            <img
+                              src={file.uploadedBy.image}
+                              alt={file.uploadedBy.name}
+                              className="h-6 w-6 rounded-full mr-2"
+                            />
+                          ) : (
+                            <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-2">
+                              {file.uploadedBy.name.charAt(0)}
+                            </div>
+                          )}
+                          <span>{file.uploadedBy.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(file.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleFileDownload(file)}
+                            title="Download"
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          {(isAdmin || file.uploadedById === user?.id) && (
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleFileDelete(file.id)}
+                              title="Delete"
+                              className="text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </TabsContent>
 
           <TabsContent
