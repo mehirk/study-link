@@ -9,6 +9,7 @@ services:
       - backend/.env
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
       - "traefik.http.routers.study-link-backend.rule=Host(`study-link.dryft.ca`)"
       - "traefik.http.routers.study-link-backend.entrypoints=websecure"
       - "traefik.http.routers.study-link-backend.tls=true"
