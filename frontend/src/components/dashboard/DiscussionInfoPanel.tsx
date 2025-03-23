@@ -4,11 +4,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { Button } from "@components/ui/button";
 import { Textarea } from "@components/ui/textarea";
 import { Input } from "@components/ui/input";
-import { Loader2, Edit, Check, X } from "lucide-react";
+import { Loader2, Edit, Check, X, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@components/ui/use-toast";
-import { Discussion, updateDiscussion } from "@lib/api/discussion";
+import {
+  Discussion,
+  updateDiscussion,
+  deleteDiscussion,
+} from "@lib/api/discussion";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@components/ui/alert-dialog";
 
 interface DiscussionInfoPanelProps {
   discussionId: number;
@@ -31,6 +45,8 @@ const DiscussionInfoPanel = ({
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [editingInfo, setEditingInfo] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const [editedInfo, setEditedInfo] = useState({
     title: "",
     content: "",
@@ -60,7 +76,7 @@ const DiscussionInfoPanel = ({
     }
 
     try {
-      setLoading(true);
+      setActionLoading(true);
       const updated = await updateDiscussion(groupId, discussionId, {
         title: editedInfo.title,
         content: editedInfo.content || undefined,
@@ -84,7 +100,32 @@ const DiscussionInfoPanel = ({
         description: "Failed to update discussion. Please try again.",
       });
     } finally {
-      setLoading(false);
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteDiscussion = async () => {
+    try {
+      setActionLoading(true);
+      await deleteDiscussion(groupId, discussionId);
+
+      toast({
+        title: "Success",
+        description: "Discussion deleted successfully",
+      });
+
+      // Redirect to group discussions page or handle as needed
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to delete discussion:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete discussion. Please try again.",
+      });
+    } finally {
+      setActionLoading(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -105,92 +146,60 @@ const DiscussionInfoPanel = ({
   }
 
   if (!discussion) {
-    return (
-      <div className="text-center py-8">
-        <h3 className="text-lg font-medium">Discussion not found</h3>
-      </div>
-    );
+    return null;
   }
 
   const canEditDiscussion = isAdmin || discussion.authorId === user?.id;
 
   return (
-    <div className="h-full p-4">
+    <div className="h-full min-w-full p-4">
       <h2 className="text-xl font-semibold mb-4">Discussion Info</h2>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3">
-              <Avatar>
+      <Card className="shadow-none border-none">
+        <CardHeader className="pb-2 space-y-4">
+          <div className="flex flex-col space-y-4">
+            {editingInfo ? (
+              <Input
+                value={editedInfo.title}
+                onChange={(e) =>
+                  setEditedInfo({
+                    ...editedInfo,
+                    title: e.target.value,
+                  })
+                }
+                className="font-semibold text-lg"
+                placeholder="Discussion title"
+              />
+            ) : (
+              <CardTitle className="text-xl leading-tight break-words">
+                {discussion.title}
+              </CardTitle>
+            )}
+
+            <div className="flex items-center space-x-3">
+              <Avatar className="h-10 w-10 border-2 border-background">
                 <AvatarImage
                   src={discussion.author.image || ""}
                   alt={discussion.author.name}
                 />
-                <AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary">
                   {getInitials(discussion.author.name)}
                 </AvatarFallback>
               </Avatar>
               <div>
-                {editingInfo ? (
-                  <Input
-                    value={editedInfo.title}
-                    onChange={(e) =>
-                      setEditedInfo({
-                        ...editedInfo,
-                        title: e.target.value,
-                      })
-                    }
-                    className="mb-2"
-                  />
-                ) : (
-                  <CardTitle>{discussion.title}</CardTitle>
-                )}
-                <div className="text-sm text-muted-foreground mt-1">
-                  Started by {discussion.author.name} ·{" "}
+                <div className="font-medium">{discussion.author.name}</div>
+                <div className="text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(discussion.createdAt), {
                     addSuffix: true,
                   })}
                 </div>
               </div>
             </div>
-
-            {canEditDiscussion && (
-              <>
-                {editingInfo ? (
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setEditingInfo(false)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" onClick={handleUpdateInfo}>
-                      <Check className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setEditingInfo(true)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                )}
-              </>
-            )}
           </div>
         </CardHeader>
-        {!editingInfo ? (
-          discussion.content && (
-            <CardContent>
-              <p className="text-sm">{discussion.content}</p>
-            </CardContent>
-          )
-        ) : (
-          <CardContent>
+
+        <CardContent className="pt-4">
+          {editingInfo ? (
             <Textarea
               value={editedInfo.content}
               onChange={(e) =>
@@ -199,20 +208,105 @@ const DiscussionInfoPanel = ({
                   content: e.target.value,
                 })
               }
-              placeholder="Discussion description"
-              rows={3}
+              placeholder="Add a description for your discussion..."
+              rows={5}
+              className="resize-none"
             />
-          </CardContent>
-        )}
+          ) : (
+            <div className="prose prose-sm max-w-none">
+              {discussion.content ? (
+                <p className="leading-relaxed text-sm">{discussion.content}</p>
+              ) : (
+                <p className="text-muted-foreground text-sm italic">
+                  No description provided
+                </p>
+              )}
+            </div>
+          )}
+        </CardContent>
+        <div className="flex justify-end">
+          {canEditDiscussion && (
+            <div className="flex space-x-1 pb-2 pr-2">
+              {editingInfo ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setEditingInfo(false)}
+                    disabled={actionLoading}
+                    className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleUpdateInfo}
+                    disabled={actionLoading}
+                    className="h-6 w-6 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  >
+                    {actionLoading ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Check className="h-3 w-3" />
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setEditingInfo(true)}
+                    className="h-6 w-6 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setDeleteDialogOpen(true)}
+                    className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </Card>
 
-      {/* Additional info can be added here */}
-      <div className="mt-4">
-        <div className="text-sm text-muted-foreground mb-2">
-          <span className="font-medium">Participants:</span>{" "}
-          {discussion._count?.comments || 0} people have commented
-        </div>
-      </div>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the discussion "{discussion.title}"
+              and all associated comments. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionLoading}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteDiscussion}
+              disabled={actionLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {actionLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

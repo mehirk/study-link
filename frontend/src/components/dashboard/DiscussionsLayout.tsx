@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@components/ui/use-toast";
 import {
   fetchGroupDiscussions,
@@ -25,78 +25,65 @@ const DiscussionsLayout = ({ groupId, isAdmin }: DiscussionsLayoutProps) => {
   >(null);
   const [selectedDiscussion, setSelectedDiscussion] =
     useState<Discussion | null>(null);
-  const [discussionLoading, setDiscussionLoading] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-  // Track previous groupId to detect changes
-  const prevGroupIdRef = useRef<number | null>(null);
 
-  const loadDiscussions = useCallback(async () => {
-    if (!groupId) return;
+  // Fetch discussions for the current group
+  useEffect(() => {
+    async function fetchDiscussions() {
+      if (!groupId) return;
 
-    try {
-      setLoading(true);
-      setSelectedDiscussionId(null);
-      setSelectedDiscussion(null);
-      setDiscussions([]);
-      const data = await fetchGroupDiscussions(groupId);
+      try {
+        setLoading(true);
+        setSelectedDiscussionId(null);
+        setSelectedDiscussion(null);
+        const data = await fetchGroupDiscussions(groupId);
+        setDiscussions(data);
 
-      setDiscussions(data);
-      // Only set the selected discussion if there are discussions available
-      if (data.length > 0) {
-        setSelectedDiscussionId(data[0].id);
+        if (data.length > 0) {
+          setSelectedDiscussionId(data[0].id);
+        }
+      } catch (error) {
+        console.error("Failed to load discussions:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load discussions. Please try again.",
+        });
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to load discussions:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load discussions. Please try again.",
-      });
-    } finally {
-      setLoading(false);
     }
+
+    fetchDiscussions();
   }, [groupId, toast]);
 
-  // Load the specific discussion when selectedDiscussionId changes
-  const loadSelectedDiscussion = useCallback(async () => {
-    if (!groupId || !selectedDiscussionId) {
-      setSelectedDiscussion(null);
-      return;
-    }
-
-    try {
-      setDiscussionLoading(true);
-      const data = await getDiscussion(groupId, selectedDiscussionId);
-      setSelectedDiscussion(data);
-    } catch (error) {
-      console.error("Failed to load discussion:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load discussion details. Please try again.",
-      });
-    } finally {
-      setDiscussionLoading(false);
-    }
-  }, [groupId, selectedDiscussionId, toast]);
-
+  // Fetch selected discussion details
   useEffect(() => {
-    // Check if groupId has changed
-    if (prevGroupIdRef.current !== groupId) {
-      prevGroupIdRef.current = groupId;
-      // Reset discussions when group changes
-      loadDiscussions();
-    } else {
-      // If same group but refreshTrigger changed
-      loadDiscussions();
-    }
-  }, [loadDiscussions, groupId, refreshTrigger]);
+    async function fetchDiscussionDetails() {
+      if (!groupId || !selectedDiscussionId) {
+        setSelectedDiscussion(null);
+        return;
+      }
 
-  // Effect to load selected discussion when selectedDiscussionId changes
-  useEffect(() => {
-    loadSelectedDiscussion();
-  }, [loadSelectedDiscussion]);
+      try {
+        setLoading(true);
+        const data = await getDiscussion(groupId, selectedDiscussionId);
+        setSelectedDiscussion(data);
+      } catch (error) {
+        console.error("Failed to load discussion:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load discussion details. Please try again.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDiscussionDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDiscussionId, toast]);
 
   const handleSelectDiscussion = (discussionId: number) => {
     setSelectedDiscussionId(discussionId);
@@ -104,13 +91,20 @@ const DiscussionsLayout = ({ groupId, isAdmin }: DiscussionsLayoutProps) => {
 
   const handleCreateDiscussion = async (title: string, content: string) => {
     try {
-      const newDiscussion = await createDiscussion(groupId, {
+      await createDiscussion(groupId, {
         title,
         content: content || undefined,
       });
-      await loadDiscussions();
-      // Auto-select the newly created discussion
-      setSelectedDiscussionId(newDiscussion.id);
+
+      // Refresh discussions list
+      const data = await fetchGroupDiscussions(groupId);
+      setDiscussions(data);
+
+      // Auto-select the newly created discussion (should be first in list)
+      if (data.length > 0) {
+        setSelectedDiscussionId(data[0].id);
+      }
+
       toast({
         title: "Success",
         description: "Discussion created successfully",
@@ -125,11 +119,27 @@ const DiscussionsLayout = ({ groupId, isAdmin }: DiscussionsLayoutProps) => {
     }
   };
 
+  const refreshDiscussions = async () => {
+    try {
+      // Refresh selected discussion if it exists
+      if (selectedDiscussionId) {
+        const updatedDiscussion = await getDiscussion(
+          groupId,
+          selectedDiscussionId
+        );
+        setSelectedDiscussion(updatedDiscussion);
+      }
+    } catch (error) {
+      console.error("Failed to refresh discussions:", error);
+    }
+  };
+
   const handleCommentDeleted = () => {
-    setRefreshTrigger((prev) => prev + 1);
+    refreshDiscussions();
   };
 
   const handleUpdateDiscussion = (updatedDiscussion: Discussion) => {
+    // Update in the discussions list
     setDiscussions((prevDiscussions) =>
       prevDiscussions.map((disc) =>
         disc.id === updatedDiscussion.id
@@ -138,7 +148,7 @@ const DiscussionsLayout = ({ groupId, isAdmin }: DiscussionsLayoutProps) => {
       )
     );
 
-    // Also update the selected discussion if it's the one that changed
+    // Update selected discussion if it's the one that changed
     if (selectedDiscussion && selectedDiscussion.id === updatedDiscussion.id) {
       setSelectedDiscussion({
         ...selectedDiscussion,
@@ -148,17 +158,16 @@ const DiscussionsLayout = ({ groupId, isAdmin }: DiscussionsLayoutProps) => {
   };
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full w-full">
       <DiscussionsSidebar
         discussions={discussions}
         selectedDiscussionId={selectedDiscussionId}
         onSelectDiscussion={handleSelectDiscussion}
-        loading={loading}
         onNewDiscussion={() => setCreateDialogOpen(true)}
       />
 
-      <div className="flex">
-        {selectedDiscussionId ? (
+      <div className="flex w-full">
+        {selectedDiscussionId && (
           <>
             <div className="flex-1">
               <ChatDiscussionView
@@ -168,24 +177,20 @@ const DiscussionsLayout = ({ groupId, isAdmin }: DiscussionsLayoutProps) => {
                 onCommentDeleted={handleCommentDeleted}
                 onUpdateDiscussion={handleUpdateDiscussion}
                 discussion={selectedDiscussion}
-                discussionLoading={discussionLoading}
+                discussionLoading={loading}
               />
             </div>
-            <div className="w-72 border-l">
+            <div className="min-w-80 shrink-0 border-l">
               <DiscussionInfoPanel
                 discussionId={selectedDiscussionId}
                 groupId={groupId}
                 isAdmin={isAdmin}
                 discussion={selectedDiscussion}
-                discussionLoading={discussionLoading}
+                discussionLoading={loading}
                 onUpdateDiscussion={handleUpdateDiscussion}
               />
             </div>
           </>
-        ) : (
-          <div className="h-full ml-96 w-full flex items-center justify-center text-muted-foreground">
-            Nothing Yet 😔
-          </div>
         )}
       </div>
 

@@ -51,7 +51,7 @@ const getDateDisplay = (date: Date): string => {
 const ChatSkeleton = () => (
   <div className="flex flex-col h-full min-w-[40vw]">
     <div className="px-4 py-3 border-b">
-      <Skeleton className="h-7 w-24" />
+      <h2 className="text-xl font-semibold">Group Chat</h2>
     </div>
 
     <div className="flex-1 overflow-hidden flex flex-col">
@@ -172,10 +172,12 @@ const ChatSkeleton = () => (
       </ScrollArea>
 
       <div className="p-4 mt-auto">
-        <div className="flex gap-2">
-          <Skeleton className="h-11 flex-1 rounded-full" />
-          <Skeleton className="h-11 w-11 rounded-full" />
-        </div>
+        <MessageInput
+          value=""
+          onChange={() => {}}
+          onSubmit={(e) => e.preventDefault()}
+          isSubmitting={false}
+        />
       </div>
     </div>
   </div>
@@ -564,11 +566,7 @@ const ChatDiscussionView = ({
   }
 
   if (!discussion) {
-    return (
-      <div className="text-center py-8">
-        <h3 className="text-lg font-medium">Discussion not found</h3>
-      </div>
-    );
+    return null;
   }
 
   return (
@@ -583,7 +581,7 @@ const ChatDiscussionView = ({
           ref={scrollAreaRef}
           style={{ overflowY: "auto" }}
         >
-          <div className="space-y-2 pb-4">
+          <div className="space-y-2">
             {discussion.comments && discussion.comments.length > 0 ? (
               <>
                 {discussion.comments.reduce<React.ReactNode[]>(

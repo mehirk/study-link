@@ -9,8 +9,6 @@ router.get(
   "/",
   authenticateUser,
   async (req: AuthenticatedRequest, res: Response) => {
-    console.log("req", req.headers);
-
     try {
       const userId = req.user?.id;
 

@@ -2,14 +2,13 @@ import { Button } from "@components/ui/button";
 import { ScrollArea } from "@components/ui/scroll-area";
 import { cn } from "@lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import { MessageCircle, Loader2 } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { Discussion } from "@lib/api/discussion";
 
 interface DiscussionsSidebarProps {
   discussions: Discussion[];
   selectedDiscussionId: number | null;
   onSelectDiscussion: (discussionId: number) => void;
-  loading: boolean;
   onNewDiscussion: () => void;
 }
 
@@ -17,11 +16,10 @@ const DiscussionsSidebar = ({
   discussions,
   selectedDiscussionId,
   onSelectDiscussion,
-  loading,
   onNewDiscussion,
 }: DiscussionsSidebarProps) => {
   return (
-    <div className="w-64 border-r h-full flex flex-col">
+    <div className="min-w-72 w-72 border-r h-full flex flex-col">
       <div className="p-4 border-b flex justify-between items-center">
         <h3 className="font-semibold">My Discussions</h3>
         <Button size="sm" className="rounded-2xl" onClick={onNewDiscussion}>
@@ -32,11 +30,7 @@ const DiscussionsSidebar = ({
       {/* Discussions list */}
       <ScrollArea className="flex-1">
         <div className="px-2">
-          {loading ? (
-            <div className="flex justify-center p-4">
-              <Loader2 className="animate-spin" />
-            </div>
-          ) : discussions.length > 0 ? (
+          {discussions.length > 0 ? (
             discussions.map((discussion) => (
               <button
                 key={discussion.id}

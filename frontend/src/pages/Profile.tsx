@@ -59,8 +59,7 @@ const Profile = () => {
               userId: user.id,
               token: sessionToken,
             }}
-            onClientUploadComplete={(res) => {
-              console.log("uploaded", res);
+            onClientUploadComplete={() => {
               window.location.reload();
             }}
             onUploadError={(error: Error) => {

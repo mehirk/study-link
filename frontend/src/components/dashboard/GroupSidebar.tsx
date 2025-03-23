@@ -69,7 +69,7 @@ const GroupSidebar = ({
   };
 
   return (
-    <div className="min-w-60 w-64 border-r h-auto flex flex-col">
+    <div className="min-w-64 w-64 border-r h-auto flex flex-col">
       <div className="p-4 border-b flex items-center justify-center">
         <a
           href="/dashboard"
