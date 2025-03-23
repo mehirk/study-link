@@ -25,6 +25,14 @@ export const auth = betterAuth({
     // requireEmailVerification: true,
   },
 
+  advanced: {
+    defaultCookieAttributes: {
+      secure: true,
+      sameSite: "none",
+      httpOnly: true,
+    },
+  },
+
   trustedOrigins: process.env.FRONTEND_URL
     ? [
         process.env.FRONTEND_URL,
