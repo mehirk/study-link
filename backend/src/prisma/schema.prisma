@@ -104,6 +104,7 @@ model File {
   groupId      Int
   discussion   Discussion @relation(fields: [discussionId], references: [id])
   discussionId Int
+  size         Int
   uploadedBy   User       @relation(fields: [uploadedById], references: [id])
   uploadedById String
   createdAt    DateTime   @default(now())

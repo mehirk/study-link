@@ -63,6 +63,7 @@ export const uploadRouter = {
           discussionId: parseInt(metadata.discussionId),
           url: file.ufsUrl,
           fileName: file.name,
+          size: file.size,
           groupId: parseInt(metadata.groupId),
           uploadedById: metadata.userId,
         },

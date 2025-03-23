@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { Button } from "@components/ui/button";
 import { Textarea } from "@components/ui/textarea";
 import { Input } from "@components/ui/input";
-import { Loader2, Edit, Check, X, Trash2 } from "lucide-react";
+import { Loader2, Edit, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@components/ui/use-toast";
@@ -153,10 +153,31 @@ const DiscussionInfoPanel = ({
 
   return (
     <div className="h-full min-w-full p-4">
-      <h2 className="text-xl font-semibold mb-4">Discussion Info</h2>
+      <h2 className="text-2xl font-semibold mb-4">Discussion Info</h2>
 
       <Card className="shadow-none border-none">
-        <CardHeader className="pb-2 space-y-4">
+        <CardHeader className="pb-2 space-y-4 relative">
+          {canEditDiscussion && !editingInfo && (
+            <div className="absolute top-4 right-4 flex space-x-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setEditingInfo(true)}
+                className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setDeleteDialogOpen(true)}
+                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
           <div className="flex flex-col space-y-4">
             {editingInfo ? (
               <Input
@@ -167,17 +188,17 @@ const DiscussionInfoPanel = ({
                     title: e.target.value,
                   })
                 }
-                className="font-semibold text-lg"
+                className="font-semibold text-xl"
                 placeholder="Discussion title"
               />
             ) : (
-              <CardTitle className="text-xl leading-tight break-words">
+              <CardTitle className="text-2xl leading-tight break-words pr-16">
                 {discussion.title}
               </CardTitle>
             )}
 
-            <div className="flex items-center space-x-3">
-              <Avatar className="h-10 w-10 border-2 border-background">
+            <div className="flex items-center space-x-3 border-l-4 pl-3 border-primary/30 py-1">
+              <Avatar className="h-12 w-12 border-2 border-background">
                 <AvatarImage
                   src={discussion.author.image || ""}
                   alt={discussion.author.name}
@@ -187,8 +208,10 @@ const DiscussionInfoPanel = ({
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-medium">{discussion.author.name}</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="font-medium text-base">
+                  {discussion.author.name}
+                </div>
+                <div className="text-sm text-muted-foreground">
                   {formatDistanceToNow(new Date(discussion.createdAt), {
                     addSuffix: true,
                   })}
@@ -224,57 +247,38 @@ const DiscussionInfoPanel = ({
             </div>
           )}
         </CardContent>
-        <div className="flex justify-end">
-          {canEditDiscussion && (
-            <div className="flex space-x-1 pb-2 pr-2">
-              {editingInfo ? (
+
+        {editingInfo && (
+          <div className="flex justify-end pb-4 pr-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditingInfo(false)}
+              disabled={actionLoading}
+              className="mr-2"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleUpdateInfo}
+              disabled={actionLoading}
+            >
+              {actionLoading ? (
                 <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setEditingInfo(false)}
-                    disabled={actionLoading}
-                    className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleUpdateInfo}
-                    disabled={actionLoading}
-                    className="h-6 w-6 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                  >
-                    {actionLoading ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                    ) : (
-                      <Check className="h-3 w-3" />
-                    )}
-                  </Button>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
                 </>
               ) : (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setEditingInfo(true)}
-                    className="h-6 w-6 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                  >
-                    <Edit className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setDeleteDialogOpen(true)}
-                    className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </>
+                "Save Changes"
               )}
-            </div>
-          )}
+            </Button>
+          </div>
+        )}
 
+        <div className="px-4 pb-4 mt-2 border-t pt-4">
+          <p className="text-sm font-medium mb-2">Attachments</p>
           <UploadDropzone
             input={{
               discussionId: discussionId.toString(),
@@ -284,7 +288,12 @@ const DiscussionInfoPanel = ({
             endpoint="discussionFiles"
             onClientUploadComplete={(res) => {
               console.log(res);
+              toast({
+                title: "Files uploaded",
+                description: "Your files have been uploaded successfully",
+              });
             }}
+            className="border-dashed border-2 ut-label:text-sm ut-allowed-content:text-xs"
           />
         </div>
       </Card>

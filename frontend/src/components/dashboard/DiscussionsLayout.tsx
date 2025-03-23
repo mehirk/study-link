@@ -180,7 +180,7 @@ const DiscussionsLayout = ({ groupId, isAdmin }: DiscussionsLayoutProps) => {
                 discussionLoading={loading}
               />
             </div>
-            <div className="min-w-80 shrink-0 border-l">
+            <div className="min-w-80 max-w-80 shrink-0 border-l">
               <DiscussionInfoPanel
                 discussionId={selectedDiscussionId}
                 groupId={groupId}
