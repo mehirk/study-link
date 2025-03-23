@@ -77,6 +77,7 @@ model Discussion {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+  files     File[]
 
   @@map("discussion")
 }
@@ -96,14 +97,16 @@ model Comment {
 }
 
 model File {
-  id           Int       @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   fileName     String
   url          String
-  group        Group     @relation(fields: [groupId], references: [id])
+  group        Group      @relation(fields: [groupId], references: [id])
   groupId      Int
-  uploadedBy   User      @relation(fields: [uploadedById], references: [id])
+  discussion   Discussion @relation(fields: [discussionId], references: [id])
+  discussionId Int
+  uploadedBy   User       @relation(fields: [uploadedById], references: [id])
   uploadedById String
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime   @default(now())
   deletedAt    DateTime?
 
   @@map("file")

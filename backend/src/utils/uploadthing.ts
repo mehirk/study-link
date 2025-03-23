@@ -28,6 +28,46 @@ export const uploadRouter = {
         },
       });
     }),
+
+  discussionFiles: f({
+    image: { maxFileSize: "8MB", maxFileCount: 1 },
+    video: { maxFileSize: "256MB", maxFileCount: 1 },
+    pdf: { maxFileSize: "8MB", maxFileCount: 1 },
+    audio: { maxFileSize: "8MB", maxFileCount: 1 },
+  })
+    .input(
+      z.object({
+        discussionId: z.string(),
+        token: z.string(),
+        groupId: z.string(),
+      })
+    )
+    .middleware(async ({ input }) => {
+      const session = await prisma.session.findUnique({
+        where: { token: input.token },
+      });
+
+      if (!session) {
+        throw new UploadThingError("Unauthorized");
+      }
+
+      return {
+        discussionId: input.discussionId,
+        userId: session.userId,
+        groupId: input.groupId,
+      };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      await prisma.file.create({
+        data: {
+          discussionId: parseInt(metadata.discussionId),
+          url: file.ufsUrl,
+          fileName: file.name,
+          groupId: parseInt(metadata.groupId),
+          uploadedById: metadata.userId,
+        },
+      });
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof uploadRouter;

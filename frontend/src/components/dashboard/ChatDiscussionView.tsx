@@ -429,10 +429,8 @@ const ChatDiscussionView = ({
       const comment = await addComment(groupId, discussionId, {
         content: newComment,
       });
-      console.log("comment", JSON.stringify(comment, null, 2));
       // Update the local comments array
-      setComments((prevComments) => [...prevComments, comment]);
-      console.log("comments", JSON.stringify(comments, null, 2));
+      setComments((prevComments) => [...prevComments, comment]); // Todo fix this bug
 
       // Update comment count in parent component
       if (onUpdateDiscussion && discussion) {

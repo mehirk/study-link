@@ -23,6 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@components/ui/alert-dialog";
+import { UploadDropzone } from "@lib/uploadthing-client";
 
 interface DiscussionInfoPanelProps {
   discussionId: number;
@@ -41,7 +42,7 @@ const DiscussionInfoPanel = ({
   discussionLoading = false,
   onUpdateDiscussion,
 }: DiscussionInfoPanelProps) => {
-  const { user } = useAuth();
+  const { user, sessionToken } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [editingInfo, setEditingInfo] = useState(false);
@@ -51,7 +52,6 @@ const DiscussionInfoPanel = ({
     title: "",
     content: "",
   });
-
   // Set the edited info when the discussion changes
   useEffect(() => {
     if (discussion) {
@@ -274,6 +274,18 @@ const DiscussionInfoPanel = ({
               )}
             </div>
           )}
+
+          <UploadDropzone
+            input={{
+              discussionId: discussionId.toString(),
+              token: sessionToken!,
+              groupId: groupId.toString(),
+            }}
+            endpoint="discussionFiles"
+            onClientUploadComplete={(res) => {
+              console.log(res);
+            }}
+          />
         </div>
       </Card>
 
