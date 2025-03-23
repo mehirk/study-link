@@ -422,23 +422,17 @@ const ChatDiscussionView = ({
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newComment.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Comment content is required.",
-      });
-      return;
-    }
+    if (!newComment.trim()) return;
 
     try {
       setIsSubmitting(true);
       const comment = await addComment(groupId, discussionId, {
         content: newComment,
       });
-
+      console.log("comment", JSON.stringify(comment, null, 2));
       // Update the local comments array
       setComments((prevComments) => [...prevComments, comment]);
+      console.log("comments", JSON.stringify(comments, null, 2));
 
       // Update comment count in parent component
       if (onUpdateDiscussion && discussion) {
@@ -474,11 +468,6 @@ const ChatDiscussionView = ({
 
   const handleUpdateComment = async (commentId: number) => {
     if (!editContent.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Comment content is required.",
-      });
       return;
     }
 
@@ -543,11 +532,6 @@ const ChatDiscussionView = ({
       if (onCommentDeleted) {
         onCommentDeleted(discussionId, comments.length - 1);
       }
-
-      toast({
-        title: "Success",
-        description: "Comment deleted successfully",
-      });
     } catch (error) {
       console.error("Failed to delete comment:", error);
       toast({
@@ -570,7 +554,7 @@ const ChatDiscussionView = ({
   }
 
   return (
-    <div className="flex flex-col max-h-[76vh] h-full min-w-[40vw]">
+    <div className="flex flex-col h-full min-w-[40vw]">
       <div className="px-4 py-3 border-b">
         <h2 className="text-xl font-semibold">Group Chat</h2>
       </div>
