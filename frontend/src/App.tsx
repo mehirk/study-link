@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "@components/Layout";
-import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
@@ -21,16 +20,6 @@ const App = () => {
               index
               element={
                 <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
-                  <Home />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Auth route, redirect to dashboard if already logged in */}
-            <Route
-              path="auth"
-              element={
-                <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
                   <Auth />
                 </ProtectedRoute>
               }
@@ -40,7 +29,7 @@ const App = () => {
             <Route
               path="profile"
               element={
-                <ProtectedRoute requireAuth={true} redirectTo="/auth">
+                <ProtectedRoute requireAuth={true} redirectTo="/">
                   <Profile />
                 </ProtectedRoute>
               }
@@ -50,7 +39,7 @@ const App = () => {
             <Route
               path="dashboard"
               element={
-                <ProtectedRoute requireAuth={true} redirectTo="/auth">
+                <ProtectedRoute requireAuth={true} redirectTo="/">
                   <Dashboard />
                 </ProtectedRoute>
               }
