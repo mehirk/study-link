@@ -1,4 +1,4 @@
-import { AuthTabs } from "@components/auth-tabs";
+import { AuthTabs } from "@components/auth/auth-tabs";
 
 const Auth = () => {
   return (

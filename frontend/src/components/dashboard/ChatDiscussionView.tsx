@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../hooks/auth";
 import { Button } from "@components/ui/button";
 import { Loader2, Send, Edit, Trash2, Check, X } from "lucide-react";
 import { useToast } from "@components/ui/use-toast";

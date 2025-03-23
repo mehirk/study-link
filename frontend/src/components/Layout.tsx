@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { ThemeProvider } from "./theme-provider";
+import { ThemeProvider } from "../hooks/theme";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 

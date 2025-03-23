@@ -2,11 +2,11 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { SignInForm } from "./sign-in";
-import { SignupForm } from "./sign-up";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../../hooks/auth";
 import { useState } from "react";
 import { authClient } from "@lib/api-client";
-import { Card } from "./ui/card";
+import { Card } from "../ui/card";
+import { SignupForm } from "./sign-up";
 
 export function AuthTabs() {
   const { setUser, setIsAuthenticated, refreshSession } = useAuth();
