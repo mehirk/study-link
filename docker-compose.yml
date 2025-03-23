@@ -1,0 +1,25 @@
+services:
+  app:
+    container_name: study-link-backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    
+    env_file:
+      - backend/.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.study-link-backend.rule=Host(`study-link.dryft.ca`)"
+      - "traefik.http.routers.study-link-backend.entrypoints=websecure"
+      - "traefik.http.routers.study-link-backend.tls=true"
+      - "traefik.http.routers.study-link-backend.tls.certresolver=myresolver"
+    networks:
+      - traefik
+      - db-dev
+    restart: always
+
+networks:
+  traefik:
+    external: true
+  db-dev:
+    external: true  
