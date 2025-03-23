@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../../hooks/auth";
 import { Button } from "@components/ui/button";
 import { Loader2, Send, Edit, Trash2, Check, X } from "lucide-react";
@@ -10,12 +10,13 @@ import {
   updateComment,
   Discussion,
   Comment,
+  getDiscussion,
 } from "@lib/api/discussion";
 import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { ScrollArea } from "@components/ui/scroll-area";
 import DeleteCommentModal from "./modals/DeleteCommentModal";
 import { Input } from "@components/ui/input";
-import { Skeleton } from "@components/ui/skeleton";
+import { ChatSkeleton } from "@components/ui/chat-skeleton";
 
 interface ChatDiscussionViewProps {
   groupId: number;
@@ -46,142 +47,6 @@ const getDateDisplay = (date: Date): string => {
     return format(date, "MMMM d, yyyy");
   }
 };
-
-// Loading skeleton component
-const ChatSkeleton = () => (
-  <div className="flex flex-col h-full min-w-[40vw]">
-    <div className="px-4 py-3 border-b">
-      <h2 className="text-xl font-semibold">Group Chat</h2>
-    </div>
-
-    <div className="flex-1 overflow-hidden flex flex-col">
-      <ScrollArea className="flex-1 px-4 pt-4">
-        <div className="space-y-6">
-          {/* Date separator skeleton */}
-          <div className="flex items-center justify-center my-4">
-            <Skeleton className="h-5 w-20 rounded-full" />
-          </div>
-
-          {[1, 2, 3, 4].map((index) => (
-            <div
-              key={index}
-              className={`flex ${
-                index % 2 === 0 ? "justify-end" : "justify-start"
-              } ${
-                index > 0 && index % 2 === (index - 1) % 2 ? "mt-1" : "mt-6"
-              }`}
-            >
-              <div
-                className={`flex gap-3 max-w-[80%] ${
-                  index % 2 === 0 ? "flex-row-reverse" : "flex-row"
-                }`}
-              >
-                {/* Only show avatar for first message in a group */}
-                {index === 0 || index % 2 !== (index - 1) % 2 ? (
-                  <Skeleton className="h-9 w-9 rounded-full flex-shrink-0" />
-                ) : (
-                  <div className="w-9 flex-shrink-0" />
-                )}
-
-                <div>
-                  {/* Only show name for others' messages at start of group */}
-                  {index % 2 !== 0 &&
-                    (index === 0 || index % 2 !== (index - 1) % 2) && (
-                      <Skeleton className="h-3 w-24 mb-1" />
-                    )}
-
-                  <div className="flex flex-col">
-                    <div
-                      className={`flex items-center gap-2 ${
-                        index % 2 === 0 ? "flex-row-reverse" : "flex-row"
-                      }`}
-                    >
-                      <Skeleton
-                        className={`h-12 w-48 rounded-3xl ${
-                          index % 2 === 0 ? "bg-primary/30" : ""
-                        }`}
-                      />
-                      {/* Timestamp skeleton */}
-                      <Skeleton className="h-3 w-12" />
-                    </div>
-
-                    {/* Action buttons for own messages */}
-                    {index % 2 === 0 && (
-                      <div className="flex justify-end gap-1 mt-1 px-1">
-                        <Skeleton className="h-6 w-6 rounded-md" />
-                        <Skeleton className="h-6 w-6 rounded-md" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Another date separator */}
-          <div className="flex items-center justify-center my-4">
-            <Skeleton className="h-5 w-20 rounded-full" />
-          </div>
-
-          {/* A few more message skeletons */}
-          {[1, 2].map((index) => (
-            <div
-              key={`more-${index}`}
-              className={`flex ${
-                index % 2 === 0 ? "justify-start" : "justify-end"
-              } mt-1`}
-            >
-              <div
-                className={`flex gap-3 max-w-[80%] ${
-                  index % 2 === 1 ? "flex-row-reverse" : "flex-row"
-                }`}
-              >
-                {index === 1 ? (
-                  <div className="w-9 flex-shrink-0" />
-                ) : (
-                  <Skeleton className="h-9 w-9 rounded-full flex-shrink-0" />
-                )}
-
-                <div>
-                  <div className="flex flex-col">
-                    <div
-                      className={`flex items-center gap-2 ${
-                        index % 2 === 1 ? "flex-row-reverse" : "flex-row"
-                      }`}
-                    >
-                      <Skeleton
-                        className={`h-12 w-56 rounded-3xl ${
-                          index % 2 === 1 ? "bg-primary/30" : ""
-                        }`}
-                      />
-                      <Skeleton className="h-3 w-12" />
-                    </div>
-
-                    {index % 2 === 1 && (
-                      <div className="flex justify-end gap-1 mt-1 px-1">
-                        <Skeleton className="h-6 w-6 rounded-md" />
-                        <Skeleton className="h-6 w-6 rounded-md" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </ScrollArea>
-
-      <div className="p-4 mt-auto">
-        <MessageInput
-          value=""
-          onChange={() => {}}
-          onSubmit={(e) => e.preventDefault()}
-          isSubmitting={false}
-        />
-      </div>
-    </div>
-  </div>
-);
 
 // Comment component
 interface CommentItemProps {
@@ -400,11 +265,20 @@ const ChatDiscussionView = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
+  const [lastCommentId, setLastCommentId] = useState<number | null>(null);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Set comments from the discussion prop
   useEffect(() => {
     if (discussion && discussion.comments) {
       setComments(discussion.comments);
+
+      // Update lastCommentId for comparison during polling
+      if (discussion.comments.length > 0) {
+        const lastComment = discussion.comments[discussion.comments.length - 1];
+        setLastCommentId(lastComment.id);
+      }
+
       setLoading(false);
     } else {
       // If no comments in discussion, set empty array
@@ -412,6 +286,46 @@ const ChatDiscussionView = ({
       setLoading(discussionLoading);
     }
   }, [discussion, discussionLoading]);
+
+  // Polling function to fetch latest discussion data
+  const pollForNewComments = useCallback(async () => {
+    if (!groupId || !discussionId) return;
+
+    try {
+      const latestDiscussion = await getDiscussion(groupId, discussionId);
+
+      // Check if there are new comments
+      if (latestDiscussion.comments?.length) {
+        const newLastComment =
+          latestDiscussion.comments[latestDiscussion.comments.length - 1];
+
+        // Only update if there are new comments
+        if (!lastCommentId || newLastComment.id > lastCommentId) {
+          setComments(latestDiscussion.comments);
+          setLastCommentId(newLastComment.id);
+
+          // Update parent component if callback exists
+          if (onUpdateDiscussion) {
+            onUpdateDiscussion(latestDiscussion);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Failed to poll for new comments:", error);
+    }
+  }, [groupId, discussionId, lastCommentId, onUpdateDiscussion]);
+
+  // Set up polling interval
+  useEffect(() => {
+    // Start polling when component mounts
+    pollIntervalRef.current = setInterval(pollForNewComments, 2000);
+
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+    };
+  }, [pollForNewComments]);
 
   // Scroll to bottom when comments change
   useEffect(() => {
@@ -545,14 +459,6 @@ const ChatDiscussionView = ({
     }
   };
 
-  if (loading) {
-    return <ChatSkeleton />;
-  }
-
-  if (!discussion) {
-    return null;
-  }
-
   return (
     <div className="flex flex-col h-[calc(100vh-227px)] min-w-[40vw]">
       <div className="px-4 py-3 border-b flex-shrink-0">
@@ -561,102 +467,121 @@ const ChatDiscussionView = ({
 
       <div className="flex-1 flex flex-col min-h-0">
         <ScrollArea className="flex-1 px-3 overflow-y-auto" ref={scrollAreaRef}>
-          <div className="space-y-2">
-            {discussion.comments && discussion.comments.length > 0 ? (
-              <>
-                {discussion.comments.reduce<React.ReactNode[]>(
-                  (elements, comment, index) => {
-                    const currentDate = new Date(comment.createdAt);
-                    const isCurrentUser = comment.authorId === user?.id;
+          {loading ? (
+            <ChatSkeleton />
+          ) : (
+            <div className="space-y-2">
+              {discussion?.comments && discussion.comments.length > 0 ? (
+                <>
+                  {discussion.comments.reduce<React.ReactNode[]>(
+                    (elements, comment, index) => {
+                      const currentDate = new Date(comment.createdAt);
+                      const isCurrentUser = comment.authorId === user?.id;
 
-                    // Check if this comment is from the same author as the previous one
-                    const prevComment =
-                      index > 0 && discussion.comments
-                        ? discussion.comments[index - 1]
-                        : null;
-                    const isSameAuthorAsPrevious =
-                      prevComment && prevComment.authorId === comment.authorId;
+                      // Check if this comment is from the same author as the previous one
+                      const prevComment =
+                        index > 0 && discussion.comments
+                          ? discussion.comments[index - 1]
+                          : null;
+                      const isSameAuthorAsPrevious =
+                        prevComment &&
+                        prevComment.authorId === comment.authorId;
 
-                    // Only show avatar for the first message in a sequence from the same author
-                    const showAvatar = !isSameAuthorAsPrevious;
-                    const isFirstInGroup = !isSameAuthorAsPrevious;
+                      // Only show avatar for the first message in a sequence from the same author
+                      const showAvatar = !isSameAuthorAsPrevious;
+                      const isFirstInGroup = !isSameAuthorAsPrevious;
 
-                    // Add date separator if this is the first message or date changed since previous message
-                    if (
-                      index === 0 ||
-                      (prevComment &&
-                        !isSameDay(
-                          currentDate,
-                          new Date(prevComment.createdAt)
-                        ))
-                    ) {
-                      elements.push(
-                        <DateSeparator
-                          key={`date-${comment.id}`}
-                          date={getDateDisplay(currentDate)}
-                        />
-                      );
-                    }
-
-                    // Add the comment
-                    if (editingComment === comment.id) {
-                      if (isCurrentUser) {
+                      // Add date separator if this is the first message or date changed since previous message
+                      if (
+                        index === 0 ||
+                        (prevComment &&
+                          !isSameDay(
+                            currentDate,
+                            new Date(prevComment.createdAt)
+                          ))
+                      ) {
                         elements.push(
-                          <div
-                            key={comment.id}
-                            className={`flex ${
-                              isCurrentUser ? "justify-end" : "justify-start"
-                            } ${!isFirstInGroup ? "mt-1" : "mt-6"}`}
-                          >
+                          <DateSeparator
+                            key={`date-${comment.id}`}
+                            date={getDateDisplay(currentDate)}
+                          />
+                        );
+                      }
+
+                      // Add the comment
+                      if (editingComment === comment.id) {
+                        if (isCurrentUser) {
+                          elements.push(
                             <div
-                              className={`flex gap-3 max-w-[80%] ${
-                                isCurrentUser ? "flex-row-reverse" : "flex-row"
-                              }`}
+                              key={comment.id}
+                              className={`flex ${
+                                isCurrentUser ? "justify-end" : "justify-start"
+                              } ${!isFirstInGroup ? "mt-1" : "mt-6"}`}
                             >
-                              {showAvatar ? (
-                                <Avatar className="h-10 w-10 flex-shrink-0">
-                                  <AvatarImage
-                                    src={comment.author.image || ""}
-                                    alt={comment.author.name}
-                                  />
-                                  <AvatarFallback>
-                                    {getInitials(comment.author.name)}
-                                  </AvatarFallback>
-                                </Avatar>
-                              ) : (
-                                <div className="w-10 flex-shrink-0" />
-                              )}
-                              <div>
-                                {!isCurrentUser && isFirstInGroup && (
-                                  <div className="text-sm font-medium mb-1">
-                                    {comment.author.name}
-                                  </div>
+                              <div
+                                className={`flex gap-3 max-w-[80%] ${
+                                  isCurrentUser
+                                    ? "flex-row-reverse"
+                                    : "flex-row"
+                                }`}
+                              >
+                                {showAvatar ? (
+                                  <Avatar className="h-10 w-10 flex-shrink-0">
+                                    <AvatarImage
+                                      src={comment.author.image || ""}
+                                      alt={comment.author.name}
+                                    />
+                                    <AvatarFallback>
+                                      {getInitials(comment.author.name)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                ) : (
+                                  <div className="w-10 flex-shrink-0" />
                                 )}
-                                <div
-                                  className={`rounded-lg p-3 ${
-                                    isCurrentUser
-                                      ? "bg-background border border-primary/30"
-                                      : "bg-background border border-muted/50"
-                                  }`}
-                                >
-                                  <EditCommentForm
-                                    content={editContent}
-                                    onChange={(content) =>
-                                      setEditContent(content)
-                                    }
-                                    onSave={() =>
-                                      handleUpdateComment(comment.id)
-                                    }
-                                    onCancel={() => setEditingComment(null)}
-                                    isSubmitting={isSubmitting}
-                                  />
+                                <div>
+                                  {!isCurrentUser && isFirstInGroup && (
+                                    <div className="text-sm font-medium mb-1">
+                                      {comment.author.name}
+                                    </div>
+                                  )}
+                                  <div
+                                    className={`rounded-lg p-3 ${
+                                      isCurrentUser
+                                        ? "bg-background border border-primary/30"
+                                        : "bg-background border border-muted/50"
+                                    }`}
+                                  >
+                                    <EditCommentForm
+                                      content={editContent}
+                                      onChange={(content) =>
+                                        setEditContent(content)
+                                      }
+                                      onSave={() =>
+                                        handleUpdateComment(comment.id)
+                                      }
+                                      onCancel={() => setEditingComment(null)}
+                                      isSubmitting={isSubmitting}
+                                    />
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        );
+                          );
+                        } else {
+                          // If not the author, just show the regular comment without edit form
+                          elements.push(
+                            <CommentItem
+                              key={comment.id}
+                              comment={comment}
+                              isCurrentUser={isCurrentUser}
+                              onEdit={handleEditComment}
+                              onDelete={openDeleteCommentDialog}
+                              showAvatar={showAvatar}
+                              isFirstInGroup={isFirstInGroup}
+                            />
+                          );
+                        }
                       } else {
-                        // If not the author, just show the regular comment without edit form
                         elements.push(
                           <CommentItem
                             key={comment.id}
@@ -669,32 +594,20 @@ const ChatDiscussionView = ({
                           />
                         );
                       }
-                    } else {
-                      elements.push(
-                        <CommentItem
-                          key={comment.id}
-                          comment={comment}
-                          isCurrentUser={isCurrentUser}
-                          onEdit={handleEditComment}
-                          onDelete={openDeleteCommentDialog}
-                          showAvatar={showAvatar}
-                          isFirstInGroup={isFirstInGroup}
-                        />
-                      );
-                    }
 
-                    return elements;
-                  },
-                  []
-                )}
-              </>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                No messages yet. Start the conversation!
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+                      return elements;
+                    },
+                    []
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No messages yet. Start the conversation!
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
         </ScrollArea>
 
         <div className="p-3 border-t sticky bottom-0 bg-background flex-shrink-0">
