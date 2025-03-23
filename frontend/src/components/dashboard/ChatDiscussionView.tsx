@@ -429,13 +429,15 @@ const ChatDiscussionView = ({
       const comment = await addComment(groupId, discussionId, {
         content: newComment,
       });
-      // Update the local comments array
-      setComments((prevComments) => [...prevComments, comment]); // Todo fix this bug
 
-      // Update comment count in parent component
+      // Update local comments state
+      setComments((prevComments) => [...prevComments, comment]);
+
+      // Update both count AND comments array in parent component
       if (onUpdateDiscussion && discussion) {
         onUpdateDiscussion({
           ...discussion,
+          comments: [...(discussion.comments || []), comment],
           _count: {
             ...discussion._count,
             comments: (discussion._count?.comments || 0) + 1,
@@ -552,17 +554,13 @@ const ChatDiscussionView = ({
   }
 
   return (
-    <div className="flex flex-col max-h-[76vh] h-full min-w-[40vw]">
-      <div className="px-4 py-3 border-b">
+    <div className="flex flex-col h-[calc(100vh-227px)] min-w-[40vw]">
+      <div className="px-4 py-3 border-b flex-shrink-0">
         <h2 className="text-xl font-semibold">Group Chat</h2>
       </div>
 
-      <div className="flex-1 overflow-hidden flex flex-col">
-        <ScrollArea
-          className="flex-1 px-3 h-[calc(100%-80px)]"
-          ref={scrollAreaRef}
-          style={{ overflowY: "auto" }}
-        >
+      <div className="flex-1 flex flex-col min-h-0">
+        <ScrollArea className="flex-1 px-3 overflow-y-auto" ref={scrollAreaRef}>
           <div className="space-y-2">
             {discussion.comments && discussion.comments.length > 0 ? (
               <>
@@ -699,7 +697,7 @@ const ChatDiscussionView = ({
           </div>
         </ScrollArea>
 
-        <div className="p-4 mt-auto">
+        <div className="p-3 border-t sticky bottom-0 bg-background flex-shrink-0">
           <MessageInput
             value={newComment}
             onChange={(value) => setNewComment(value)}
