@@ -265,11 +265,6 @@ router.delete(
         where: { groupId: parseInt(id) },
       });
 
-      // Delete all group resources
-      await prisma.resource.deleteMany({
-        where: { groupId: parseInt(id) },
-      });
-
       // Delete all group files
       await prisma.file.deleteMany({
         where: { groupId: parseInt(id) },
@@ -290,16 +285,6 @@ router.delete(
         where: { groupId: parseInt(id) },
       });
 
-      // Delete all group invitations and join requests
-      await prisma.invitation.deleteMany({
-        where: { groupId: parseInt(id) },
-      });
-
-      await prisma.joinRequest.deleteMany({
-        where: { groupId: parseInt(id) },
-      });
-
-      // Finally delete the group
       await prisma.group.delete({
         where: { id: parseInt(id) },
       });

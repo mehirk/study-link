@@ -1,10 +1,7 @@
 services:
   app:
     container_name: study-link-backend
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    
+    image: ghcr.io/shahbaz-athwal/study-link-api:latest
     env_file:
       - backend/.env
     labels:
