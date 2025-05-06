@@ -9,6 +9,7 @@ import { uploadRouter } from "./utils/uploadthing";
 import { createRouteHandler } from "uploadthing/express";
 import discussionRoutes from "./routes/discussion.routes";
 import filesRoutes from "./routes/files.routes";
+import loggerMiddleware from "./middlewares/logger";
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 
@@ -25,6 +26,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(loggerMiddleware);
 
 app.all("/api/auth/*", toNodeHandler(auth));
 

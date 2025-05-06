@@ -32,6 +32,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "resend": "^4.1.2",
-    "uploadthing": "^7.5.2"
+    "uploadthing": "^7.5.2",
+    "winston": "^3.17.0"
   }
 }
