@@ -460,7 +460,7 @@ const ChatDiscussionView = ({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-227px)] min-w-[40vw]">
+    <div className="flex flex-col h-[calc(100vh-180px)] min-w-[40vw]">
       <div className="px-4 py-3 border-b flex-shrink-0">
         <h2 className="text-xl font-semibold">Group Chat</h2>
       </div>

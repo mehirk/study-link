@@ -9,6 +9,9 @@ import { uploadRouter } from "./utils/uploadthing";
 import { createRouteHandler } from "uploadthing/express";
 import discussionRoutes from "./routes/discussion.routes";
 import filesRoutes from "./routes/files.routes";
+import client from "prom-client";
+import metricsMiddleware from "./middlewares/metrics";
+
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 
@@ -25,6 +28,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(metricsMiddleware);
 
 app.all("/api/auth/*", toNodeHandler(auth));
 
@@ -44,6 +49,12 @@ app.use("/files", filesRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend is Running 🚀");
+});
+
+app.get("/metrics", async (req, res) => {
+  const metrics = await client.register.metrics();
+  res.set("Content-Type", client.register.contentType);
+  res.end(metrics);
 });
 
 app.listen(PORT, () => {
