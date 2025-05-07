@@ -3,7 +3,7 @@ services:
     container_name: study-link-api
     image: ghcr.io/shahbaz-athwal/study-link-api:latest
     env_file:
-      - backend/.env
+      - .env
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
@@ -15,10 +15,13 @@ services:
     networks:
       - traefik
       - db-dev
+      - monitoring
     restart: always
 
 networks:
   traefik:
     external: true
   db-dev:
-    external: true  
+    external: true
+  monitoring:
+    external: true
