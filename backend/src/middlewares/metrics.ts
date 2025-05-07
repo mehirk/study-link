@@ -22,7 +22,7 @@ const activeRequestsGauge = new client.Gauge({
   help: "Gauge of active HTTP requests",
 });
 
-export const requestCounter = new client.Counter({
+const requestCounter = new client.Counter({
   name: "http_requests_total",
   help: "Total number of HTTP requests",
   labelNames: ["method", "route", "statusCode"],
