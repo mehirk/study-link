@@ -32,22 +32,24 @@ const metricsMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const startTime = Date.now();
   res.on("finish", () => {
     const responseTime = Date.now() - startTime;
-    logger.info(`${req.method} ${req.url} ${res.statusCode} ${responseTime}ms`);
+    logger.info(
+      `${req.method} ${req.originalUrl} ${res.statusCode} ${responseTime}ms`
+    );
 
-    if (req.url !== "/metrics") {
+    if (req.originalUrl !== "/metrics") {
       activeRequestsGauge.inc();
 
       requestDuration.observe(
         {
           method: req.method,
-          route: req.url,
+          route: req.originalUrl,
           statusCode: res.statusCode,
         },
         responseTime
       );
       requestCounter.inc({
         method: req.method,
-        route: req.url,
+        route: req.originalUrl,
         statusCode: res.statusCode,
       });
       activeRequestsGauge.dec();
