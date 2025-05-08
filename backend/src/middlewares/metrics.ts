@@ -39,19 +39,29 @@ const metricsMiddleware = (req: Request, res: Response, next: NextFunction) => {
     if (req.originalUrl !== "/metrics") {
       activeRequestsGauge.inc();
 
+      // Get the base path without query parameters
+      const basePath = req.originalUrl.split("?")[0];
+
+      // For specific routes, only use the first path segment
+      const firstSegment = basePath.split("/")[1];
+      const route = ["discussions", "groups", "files"].includes(firstSegment)
+        ? `/${firstSegment}`
+        : basePath;
+
       requestDuration.observe(
         {
           method: req.method,
-          route: req.originalUrl,
+          route,
           statusCode: res.statusCode,
         },
         responseTime
       );
       requestCounter.inc({
         method: req.method,
-        route: req.originalUrl,
+        route,
         statusCode: res.statusCode,
       });
+
       activeRequestsGauge.dec();
     }
   });
