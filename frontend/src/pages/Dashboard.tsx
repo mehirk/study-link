@@ -54,7 +54,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-122px)] dashboard">
+    <div className="flex min-h-[calc(100vh-55px)] dashboard">
       <GroupSidebar
         selectedGroupId={selectedGroup}
         onSelectGroup={setSelectedGroup}

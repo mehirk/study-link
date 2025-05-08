@@ -24,7 +24,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="flex justify-between items-center w-full px-6 py-4 border-b">
+    <nav className="flex justify-between items-center w-full px-6 py-2 border-b">
       <Link to="/" className="text-xl font-bold">
         Study Link
       </Link>
