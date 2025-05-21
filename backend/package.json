@@ -9,7 +9,8 @@
     "db:generate": "prisma generate --schema=./src/prisma/schema.prisma",
     "db:migrate": "prisma migrate dev --schema=./src/prisma/schema.prisma",
     "db:studio": "prisma studio --schema=./src/prisma/schema.prisma",
-    "db:push": "prisma db push --schema=./src/prisma/schema.prisma"
+    "db:push": "prisma db push --schema=./src/prisma/schema.prisma",
+    "zero:generate": "prisma generate --schema=./src/prisma/zero.prisma"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
