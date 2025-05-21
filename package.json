@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "concurrently \"npm run dev --workspace=frontend\" \"npm run dev --workspace=backend\"",
-    "frontend:build": "npm run build --workspace=frontend"
+    "frontend:build": "npm run build --workspace=frontend",
+    "frontend:install": "npm install --workspace=frontend"
   },
   "engines": {
     "node": ">=20.5.0"
