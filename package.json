@@ -3,16 +3,12 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "concurrently \"npm run dev --workspace=frontend\" \"npm run dev --workspace=backend\""
+    "dev": "pnpm run --parallel dev",
+    "frontend:build": "pnpm --filter frontend build",
+    "frontend:install": "pnpm install --filter frontend"
   },
   "engines": {
-    "node": ">=20.5.0"
+    "node": "20.x"
   },
-  "workspaces": [
-    "backend",
-    "frontend"
-  ],
-  "devDependencies": {
-    "concurrently": "^8.2.2"
-  }
+  "packageManager": "pnpm@9.14.2"
 }
