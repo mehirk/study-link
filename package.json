@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "pnpm run --parallel dev",
     "frontend:build": "pnpm --filter frontend build",
-    "frontend:install": "pnpm install --filter frontend"
+    "frontend:install": "pnpm install --filter frontend",
+    "db:generate": "pnpm --filter backend db:generate"
   },
   "engines": {
     "node": "20.x"
