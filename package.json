@@ -8,7 +8,7 @@
     "frontend:install": "npm install --workspace=frontend"
   },
   "engines": {
-    "node": ">=20.5.0"
+    "node": "20.x"
   },
   "workspaces": [
     "backend",
