@@ -1,2 +1,3 @@
 download-supabase-mcp.ps1
 docker-compose-local.yml
+node_modules
