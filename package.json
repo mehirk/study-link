@@ -8,7 +8,8 @@
     "frontend:install": "pnpm install --filter frontend --filter zero-syncer",
     "db:generate": "pnpm --filter backend db:generate",
     "db:studio": "pnpm --filter backend db:studio",
-    "zero:generate": "pnpm --filter backend zero:generate"
+    "zero:generate": "pnpm --filter backend zero:generate",
+    "zero:cache": "pnpm --filter zero-syncer start"
   },
   "engines": {
     "node": "20.x"
