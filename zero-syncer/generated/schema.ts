@@ -28,13 +28,9 @@ export const commentTable = table("comment")
 
 // Define schema
 
-export const schema = createSchema(
-  {
-    tables: [
-      commentTable,
-    ],
-  }
-);
+export const schema = createSchema({
+  tables: [commentTable],
+});
 
 // Define types
 export type Schema = typeof schema;
