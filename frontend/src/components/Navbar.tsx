@@ -4,8 +4,6 @@ import { useAuth } from "../hooks/auth";
 import { Button } from "./ui/button";
 import { LogOut, User, BookOpen, Home } from "lucide-react";
 import { authClient } from "@lib/api-client";
-import { useQuery, useZero } from "@rocicorp/zero/react";
-import { Schema } from "@lib/zero/schema";
 
 const Navbar = () => {
   const {
@@ -24,14 +22,6 @@ const Navbar = () => {
     setIsAuthenticated(false);
     navigate("/");
   };
-  const z = useZero<Schema>();
-
-  const commentQuery = z.query.comment.where("discussionId", "=", 10);
-
-  const [comments, commentsDetail] = useQuery(commentQuery);
-
-  console.log("comments", comments);
-  console.log("commentsDetail", commentsDetail);
 
   return (
     <nav className="flex justify-between items-center w-full px-6 py-2 border-b">
