@@ -7,11 +7,12 @@ import { useState } from "react";
 import { authClient } from "@lib/api-client";
 import { Card } from "@components/ui/card";
 import { SignupForm } from "./sign-up";
+import { useToast } from "@components/ui/use-toast";
 
 export function AuthTabs() {
   const { setUser, setIsAuthenticated, refreshSession } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleSignIn = async (credentials: {
     email: string;
@@ -19,24 +20,37 @@ export function AuthTabs() {
   }) => {
     try {
       setIsLoading(true);
-      setError(null);
 
       const { data, error } = await authClient.signIn.email({
         ...credentials,
       });
 
       if (error) {
-        setError(error.message || "Sign in failed");
+        toast({
+          title: "Sign in failed",
+          description:
+            error.message || "Invalid credentials. Please try again.",
+          variant: "destructive",
+        });
         return;
       }
 
       setUser(data.user);
       setIsAuthenticated(true);
       refreshSession();
+
+      toast({
+        title: "Success",
+        description: "You have been signed in successfully!",
+      });
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred during sign in";
-      setError(errorMessage);
+      toast({
+        title: "Sign in failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
       console.error("Sign in error:", err);
     } finally {
       setIsLoading(false);
@@ -50,24 +64,37 @@ export function AuthTabs() {
   }) => {
     try {
       setIsLoading(true);
-      setError(null);
 
       const { data, error } = await authClient.signUp.email({
         ...credentials,
       });
 
       if (error) {
-        setError(error.message || "Sign up failed");
+        toast({
+          title: "Sign up failed",
+          description:
+            error.message || "Unable to create account. Please try again.",
+          variant: "destructive",
+        });
         return;
       }
 
       setUser(data.user);
       setIsAuthenticated(true);
       refreshSession();
+
+      toast({
+        title: "Account created",
+        description: "Your account has been created successfully!",
+      });
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred during sign up";
-      setError(errorMessage);
+      toast({
+        title: "Sign up failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
       console.error("Sign up error:", err);
     } finally {
       setIsLoading(false);
@@ -81,11 +108,6 @@ export function AuthTabs() {
         <TabsTrigger value="signup">Sign Up</TabsTrigger>
       </TabsList>
       <Card className="my-2">
-        {error && (
-          <div className="m-2 p-3 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-200 rounded">
-            {error}
-          </div>
-        )}
         <TabsContent value="signin">
           <SignInForm onSubmit={handleSignIn} isLoading={isLoading} />
         </TabsContent>

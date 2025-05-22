@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@components/ui/card";
+import { useToast } from "@components/ui/use-toast";
 
 export function SignupForm({
   onSubmit,
@@ -23,15 +24,45 @@ export function SignupForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setValidationError(null);
+    // Form validation
+    if (!name.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter your name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!email.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!password) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter a password",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (password !== confirmPassword) {
-      setValidationError("Passwords do not match");
+      toast({
+        title: "Validation Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -48,12 +79,6 @@ export function SignupForm({
       </CardHeader>
 
       <CardContent>
-        {validationError && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {validationError}
-          </div>
-        )}
-
         <form className="my-4" onSubmit={handleSubmit}>
           <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
             <LabelInputContainer className="w-full">

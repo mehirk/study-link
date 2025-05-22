@@ -10,7 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@components/ui/card";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, KeyRound } from "lucide-react";
+import { useToast } from "@components/ui/use-toast";
 
 export function SignInForm({
   onSubmit,
@@ -21,11 +22,41 @@ export function SignInForm({
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Basic validation
+    if (!email.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!password) {
+      toast({
+        title: "Error",
+        description: "Please enter your password",
+        variant: "destructive",
+      });
+      return;
+    }
+
     onSubmit({ email, password });
   };
+
+  const loginWithTestCredentials = () => {
+    const testEmail = "test@example.com";
+    const testPassword = "password";
+    setEmail(testEmail);
+    setPassword(testPassword);
+    onSubmit({ email: testEmail, password: testPassword });
+  };
+
   return (
     <Card className="max-w-md w-full mx-auto rounded-none md:rounded-2xl p-0 shadow-input">
       <CardHeader className="pb-0">
@@ -61,6 +92,28 @@ export function SignInForm({
           <Button className="w-full" disabled={isLoading} type="submit">
             {isLoading ? "Signing in..." : "Sign in"}{" "}
             {!isLoading && <ArrowRight />}
+          </Button>
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={loginWithTestCredentials}
+            disabled={isLoading}
+          >
+            <KeyRound className="mr-2 h-4 w-4" />
+            Login with Test Credentials
           </Button>
         </form>
       </CardContent>
