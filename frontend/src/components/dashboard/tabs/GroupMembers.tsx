@@ -1,72 +1,105 @@
-import { useState } from "react";
-import { useAuth } from "../../hooks/auth";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Button } from "../ui/button";
-import { Card, CardContent } from "../ui/card";
-import { Badge } from "../ui/badge";
+import { useAuth } from "../../../hooks/auth";
+import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
+import { Button } from "../../ui/button";
+import { Card, CardContent } from "../../ui/card";
+import { Badge } from "../../ui/badge";
 import { Loader2, UserX, ShieldAlert } from "lucide-react";
 import {
   changeUserRole,
   removeMember,
   leaveGroup,
   GroupMember,
-} from "../../lib/api/group";
+} from "../../../lib/api/group";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "../../ui/use-toast";
+import { getInitials } from "@components/chat/utils";
 
 interface GroupMembersProps {
   groupId: number;
   isAdmin: boolean;
   members: GroupMember[];
-  setFetchTrigger: (trigger: number) => void;
 }
 
-const GroupMembers = ({
-  groupId,
-  isAdmin,
-  members,
-  setFetchTrigger,
-}: GroupMembersProps) => {
-  const [removingUser, setRemovingUser] = useState<string | null>(null);
-  const [changingRole, setChangingRole] = useState<string | null>(null);
+const GroupMembers = ({ groupId, isAdmin, members }: GroupMembersProps) => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const handleRemoveMember = async (userId: string) => {
-    try {
-      setRemovingUser(userId);
-      await removeMember(groupId, userId);
-    } catch (error) {
+  // Remove member mutation
+  const removeMemberMutation = useMutation({
+    mutationFn: ({ groupId, userId }: { groupId: number; userId: string }) =>
+      removeMember(groupId, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groupMembers", groupId] });
+      toast({
+        title: "Success",
+        description: "Member removed successfully",
+      });
+    },
+    onError: (error) => {
       console.error("Error removing member:", error);
-    } finally {
-      setRemovingUser(null);
-      setFetchTrigger(1);
-    }
-  };
+      toast({
+        title: "Error",
+        description: "Failed to remove member. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
-  const handleLeaveGroup = async () => {
-    if (!user) return;
-    try {
-      setRemovingUser(user.id);
-      await leaveGroup(groupId);
+  // Leave group mutation
+  const leaveGroupMutation = useMutation({
+    mutationFn: (groupId: number) => leaveGroup(groupId),
+    onSuccess: () => {
       window.location.reload();
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error leaving group:", error);
-    } finally {
-      setRemovingUser(null);
-    }
+      toast({
+        title: "Error",
+        description: "Failed to leave group. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Change role mutation
+  const changeRoleMutation = useMutation({
+    mutationFn: ({
+      groupId,
+      userId,
+      role,
+    }: {
+      groupId: number;
+      userId: string;
+      role: "ADMIN" | "MEMBER";
+    }) => changeUserRole(groupId, userId, role),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groupMembers", groupId] });
+      toast({
+        title: "Success",
+        description: "Role updated successfully",
+      });
+    },
+    onError: (error) => {
+      console.error("Error changing role:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update role. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleRemoveMember = (userId: string) => {
+    removeMemberMutation.mutate({ groupId, userId });
   };
 
-  const handleChangeRole = async (
-    userId: string,
-    newRole: "ADMIN" | "MEMBER"
-  ) => {
-    try {
-      setChangingRole(userId);
-      await changeUserRole(groupId, userId, newRole);
-    } catch (error) {
-      console.error("Error changing role:", error);
-    } finally {
-      setChangingRole(null);
-      setFetchTrigger(1);
-    }
+  const handleLeaveGroup = () => {
+    if (!user) return;
+    leaveGroupMutation.mutate(groupId);
+  };
+
+  const handleChangeRole = (userId: string, newRole: "ADMIN" | "MEMBER") => {
+    changeRoleMutation.mutate({ groupId, userId, role: newRole });
   };
 
   return (
@@ -86,7 +119,7 @@ const GroupMembers = ({
                       src={member.user.image || ""}
                     />
                     <AvatarFallback>
-                      {member.user.name.charAt(0).toUpperCase()}
+                      {getInitials(member.user.name)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
@@ -122,9 +155,11 @@ const GroupMembers = ({
                             member.role === "ADMIN" ? "MEMBER" : "ADMIN"
                           )
                         }
-                        disabled={!!changingRole}
+                        disabled={changeRoleMutation.isPending}
                       >
-                        {changingRole === member.userId ? (
+                        {changeRoleMutation.isPending &&
+                        changeRoleMutation.variables?.userId ===
+                          member.userId ? (
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         ) : (
                           <ShieldAlert className="w-4 h-4 mr-2" />
@@ -135,9 +170,11 @@ const GroupMembers = ({
                         variant="destructive"
                         size="sm"
                         onClick={() => handleRemoveMember(member.userId)}
-                        disabled={!!removingUser}
+                        disabled={removeMemberMutation.isPending}
                       >
-                        {removingUser === member.userId ? (
+                        {removeMemberMutation.isPending &&
+                        removeMemberMutation.variables?.userId ===
+                          member.userId ? (
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         ) : (
                           <UserX className="w-4 h-4 mr-2" />
@@ -154,9 +191,9 @@ const GroupMembers = ({
                         variant="destructive"
                         size="sm"
                         onClick={handleLeaveGroup}
-                        disabled={!!removingUser}
+                        disabled={leaveGroupMutation.isPending}
                       >
-                        {removingUser === user.id ? (
+                        {leaveGroupMutation.isPending ? (
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         ) : (
                           <UserX className="w-4 h-4 mr-2" />

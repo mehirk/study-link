@@ -1,42 +1,35 @@
 import { useState } from "react";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { Textarea } from "../ui/textarea";
+import { Input } from "@components/ui/input";
+import { Button } from "@components/ui/button";
+import { Textarea } from "@components/ui/textarea";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
-import { Switch } from "../ui/switch";
+} from "@components/ui/card";
+import { Switch } from "@components/ui/switch";
 import { Loader2, Trash2, Save, Users, Lock } from "lucide-react";
-import { updateGroup, deleteGroup, Group } from "../../lib/api/group";
-import DeleteGroupModal from "./modals/DeleteGroupModal";
+import { updateGroup, deleteGroup, Group } from "@lib/api/group";
+import DeleteGroupModal from "@components/dashboard/modals/DeleteGroupModal";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface GroupSettingsProps {
   groupId: number;
   groupData: Group;
   isAdmin: boolean;
-  onGroupUpdated: (data: Group) => void;
-  setFetchTrigger: (trigger: number) => void;
 }
 
-const GroupSettings = ({
-  groupId,
-  groupData,
-  onGroupUpdated,
-  setFetchTrigger,
-}: GroupSettingsProps) => {
+const GroupSettings = ({ groupId, groupData }: GroupSettingsProps) => {
   const [name, setName] = useState(groupData.name);
   const [description, setDescription] = useState(groupData.description || "");
   const [isPrivate, setIsPrivate] = useState(groupData.private);
   const [groupPassword, setGroupPassword] = useState(groupData.password || "");
-
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const queryClient = useQueryClient();
 
   // Check if any form values have changed from their original values
   const hasChanges =
@@ -50,44 +43,54 @@ const GroupSettings = ({
     setErrorMessage(null);
   };
 
-  const handleSave = async () => {
+  // Update group mutation
+  const updateGroupMutation = useMutation({
+    mutationFn: (data: {
+      name: string;
+      description: string;
+      private: boolean;
+      password?: string;
+    }) => updateGroup(groupId, data),
+    onSuccess: (response) => {
+      queryClient.setQueryData(["group", groupId], response);
+      setSuccessMessage("Group settings updated successfully");
+    },
+    onError: (error) => {
+      console.error("Error updating group:", error);
+      setErrorMessage("Failed to update group settings");
+    },
+  });
+
+  // Delete group mutation
+  const deleteGroupMutation = useMutation({
+    mutationFn: () => deleteGroup(groupId),
+    onSuccess: () => {
+      window.location.href = "/dashboard";
+    },
+    onError: (error) => {
+      console.error("Error deleting group:", error);
+      setErrorMessage("Failed to delete group");
+    },
+  });
+
+  const handleSave = () => {
     if (!name.trim()) {
       setErrorMessage("Group name cannot be empty");
       return;
     }
 
     clearMessages();
-    try {
-      setIsSaving(true);
-      const response = await updateGroup(groupId, {
-        name,
-        description,
-        private: isPrivate,
-        password: isPrivate && groupPassword ? groupPassword : undefined,
-      });
-
-      onGroupUpdated(response);
-      setSuccessMessage("Group settings updated successfully");
-      setFetchTrigger(1);
-    } catch (error) {
-      console.error("Error updating group:", error);
-      setErrorMessage("Failed to update group settings");
-    } finally {
-      setIsSaving(false);
-    }
+    updateGroupMutation.mutate({
+      name,
+      description,
+      private: isPrivate,
+      password: isPrivate && groupPassword ? groupPassword : undefined,
+    });
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     clearMessages();
-    try {
-      setIsDeleting(true);
-      await deleteGroup(groupId);
-      window.location.href = "/dashboard";
-    } catch (error) {
-      console.error("Error deleting group:", error);
-      setErrorMessage("Failed to delete group");
-      setIsDeleting(false);
-    }
+    deleteGroupMutation.mutate();
   };
 
   return (
@@ -187,8 +190,11 @@ const GroupSettings = ({
         </CardContent>
       </Card>
 
-      <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
-        {isSaving ? (
+      <Button
+        onClick={handleSave}
+        disabled={updateGroupMutation.isPending || !hasChanges}
+      >
+        {updateGroupMutation.isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Saving...
@@ -210,7 +216,10 @@ const GroupSettings = ({
           <CardDescription>Actions here cannot be undone</CardDescription>
         </CardHeader>
         <CardContent>
-          <DeleteGroupModal onDelete={handleDelete} isDeleting={isDeleting} />
+          <DeleteGroupModal
+            onDelete={handleDelete}
+            isDeleting={deleteGroupMutation.isPending}
+          />
         </CardContent>
       </Card>
     </div>

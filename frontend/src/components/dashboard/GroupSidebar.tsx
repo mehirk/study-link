@@ -27,10 +27,6 @@ const GroupSidebar = ({
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleGroupClick = (groupId: number) => {
-    onSelectGroup(groupId);
-  };
-
   const handleCreateGroup = async (name: string, description: string) => {
     try {
       const newGroup = await createGroup({ name, description });
@@ -113,9 +109,9 @@ const GroupSidebar = ({
                   "w-full px-2 my-1 py-2 text-left rounded-md transition-colors",
                   "hover:bg-accent hover:text-accent-foreground",
                   selectedGroupId === group.id &&
-                    "bg-accent text-accent-foreground border-1 border-primary"
+                    "bg-zinc-200 text-accent-foreground"
                 )}
-                onClick={() => handleGroupClick(group.id)}
+                onClick={() => onSelectGroup(group.id)}
               >
                 {group.name}
               </button>

@@ -67,7 +67,10 @@ const Dashboard = () => {
             <Loader2 className="w-8 h-8 animate-spin" />
           </div>
         ) : selectedGroup ? (
-          <GroupDetails groupId={selectedGroup} />
+          <GroupDetails
+            groupId={selectedGroup}
+            group={groups.find((group) => group.id === selectedGroup)}
+          />
         ) : (
           <div className="flex items-center justify-center h-full border border-gray-800 rounded-lg dashboard-card">
             <p className="text-lg text-gray-400">
