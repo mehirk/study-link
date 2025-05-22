@@ -1,43 +1,43 @@
 import GroupDetails from "../components/dashboard/GroupDetails";
 import GroupSidebar from "../components/dashboard/GroupSidebar";
-import { useState, useEffect } from "react";
-import { fetchUserGroups, Group } from "@lib/api/group";
+import { useState } from "react";
+import { fetchUserGroups } from "@lib/api/group";
 import { useToast } from "@components/ui/use-toast";
 import { Loader2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const Dashboard = () => {
   const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const loadGroups = async () => {
-      try {
-        setLoading(true);
-        const userGroups = await fetchUserGroups();
-        setGroups(userGroups);
-        setSelectedGroup(userGroups[0]?.id || null);
-      } catch (error) {
-        console.error("Failed to load groups:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load your groups. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  const {
+    data: groups = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["groups"],
+    queryFn: fetchUserGroups,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-    loadGroups();
-  }, [toast]);
+  if (groups.length > 0 && !selectedGroup) {
+    setSelectedGroup(groups[0]?.id || null);
+  }
+
+  if (error) {
+    console.error("Failed to load groups:", error);
+    toast({
+      title: "Error",
+      description: "Failed to load your groups. Please try again.",
+      variant: "destructive",
+    });
+  }
 
   const refreshGroups = async (groupId?: number) => {
     try {
-      setLoading(true);
-      const userGroups = await fetchUserGroups();
-      setGroups(userGroups);
+      await queryClient.invalidateQueries({ queryKey: ["groups"] });
+
       if (groupId) {
         setSelectedGroup(groupId);
       }
@@ -48,8 +48,6 @@ const Dashboard = () => {
         description: "Failed to refresh your groups. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -59,12 +57,12 @@ const Dashboard = () => {
         selectedGroupId={selectedGroup}
         onSelectGroup={setSelectedGroup}
         groups={groups}
-        loading={loading}
+        loading={isLoading}
         refreshGroups={refreshGroups}
       />
 
       <div className="flex-1">
-        {loading ? (
+        {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <Loader2 className="w-8 h-8 animate-spin" />
           </div>
@@ -73,7 +71,7 @@ const Dashboard = () => {
         ) : (
           <div className="flex items-center justify-center h-full border border-gray-800 rounded-lg dashboard-card">
             <p className="text-lg text-gray-400">
-              Select a group or create a new one to get started
+              Join a group or create a new one to get started
             </p>
           </div>
         )}
