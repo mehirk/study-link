@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../../hooks/use-auth";
+import { useAuth } from "@hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { Button } from "@components/ui/button";
 import { Textarea } from "@components/ui/textarea";
@@ -13,17 +13,9 @@ import {
   updateDiscussion,
   deleteDiscussion,
 } from "@lib/api/discussion";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@components/ui/alert-dialog";
 import { UploadDropzone } from "@lib/uploadthing-client";
+import { getInitials } from "./chat/utils";
+import DeleteDiscussionModal from "./modals/delete-discussion-modal";
 
 interface DiscussionInfoPanelProps {
   discussionId: number;
@@ -127,14 +119,6 @@ const DiscussionInfoPanel = ({
       setActionLoading(false);
       setDeleteDialogOpen(false);
     }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
   };
 
   if (loading) {
@@ -302,36 +286,11 @@ const DiscussionInfoPanel = ({
         </div>
       </Card>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the discussion "{discussion.title}"
-              and all associated comments. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={actionLoading}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteDiscussion}
-              disabled={actionLoading}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {actionLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteDiscussionModal
+        isOpen={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirmDelete={handleDeleteDiscussion}
+      />
     </div>
   );
 };

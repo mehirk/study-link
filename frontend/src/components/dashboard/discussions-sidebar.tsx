@@ -35,7 +35,7 @@ const DiscussionsSidebar = ({
               <button
                 key={discussion.id}
                 className={cn(
-                  "w-full px-2 py-2 text-left rounded-md transition-colors flex flex-col",
+                  "w-full px-2 py-2 mb-2 text-left rounded-md transition-colors flex flex-col",
                   "hover:bg-accent hover:text-accent-foreground",
                   selectedDiscussionId === discussion.id &&
                     "bg-accent text-accent-foreground"
