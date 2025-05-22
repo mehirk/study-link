@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@components/ui/tabs";
 import GroupMembers from "@components/dashboard/tabs/group-members";
 import GroupSettings from "@components/dashboard/tabs/group-settings";
 import GroupFiles from "@components/dashboard/tabs/group-files";
-import DiscussionsLayout from "@components/dashboard/discussions-layout";
+import DiscussionsLayout from "@components/dashboard/tabs/discussions-layout";
 import { ShieldAlert } from "lucide-react";
 import { getGroupMembers, Group } from "@lib/api/group";
 import { useQuery } from "@tanstack/react-query";
