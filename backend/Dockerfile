@@ -12,13 +12,12 @@ RUN cd backend && \
     pnpm db:generate && \
     pnpm build
 
-FROM node:20-alpine
+FROM node:20-alpine AS final
 
 WORKDIR /app
 
 COPY --from=builder /app/backend/dist ./dist
 COPY --from=builder /app/backend/node_modules ./node_modules
-COPY --from=builder /app/node_modules ./node_modules
 
 EXPOSE 4000
 CMD ["node", "dist/index.js"]
