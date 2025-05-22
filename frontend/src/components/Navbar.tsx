@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ModeToggle } from "./ui/mode-toggle";
 import { useAuth } from "../hooks/auth";
 import { Button } from "./ui/button";
-import { LogOut, User, BookOpen, Home } from "lucide-react";
+import { LogOut, User, BookOpen, Loader2 } from "lucide-react";
 import { authClient } from "@lib/api-client";
 
 const Navbar = () => {
@@ -30,35 +30,27 @@ const Navbar = () => {
       </Link>
 
       <div className="flex items-center gap-6">
-        {!isAuthenticated && (
-          <Link to="/" className="hover:underline flex items-center gap-1">
-            <Home className="h-4 w-4" />
-            Home
-          </Link>
-        )}
-
         {isLoading ? (
           <span className="flex items-center gap-1 text-sm">
-            <div className="h-3 w-3 animate-spin rounded-full border-b-2 border-primary"></div>
-            Loading...
+            <Loader2 className="animate-spin" />
           </span>
         ) : (
           <>
-            {isAuthenticated ? (
+            {isAuthenticated && (
               /* Authenticated user navigation */
               <>
                 <Link
                   to="/dashboard"
-                  className="hover:underline flex items-center gap-1"
+                  className="font-semibold text-sm flex items-center gap-1"
                 >
-                  <BookOpen className="h-4 w-4" />
+                  <BookOpen className="h-4 w-4 font-semibold" />
                   Dashboard
                 </Link>
                 <Link
                   to="/profile"
-                  className="hover:underline flex items-center gap-1"
+                  className="font-semibold text-sm flex items-center gap-1"
                 >
-                  <User className="h-4 w-4" />
+                  <User className="h-4 w-4 font-semibold" />
                   Profile
                 </Link>
                 <Button
@@ -71,11 +63,6 @@ const Navbar = () => {
                   Logout
                 </Button>
               </>
-            ) : (
-              /* Non-authenticated user navigation */
-              <Link to="/auth" className="hover:underline">
-                Login
-              </Link>
             )}
           </>
         )}
