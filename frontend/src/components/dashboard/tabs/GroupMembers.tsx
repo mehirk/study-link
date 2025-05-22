@@ -12,7 +12,7 @@ import {
 } from "../../../lib/api/group";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "../../ui/use-toast";
-import { getInitials } from "@components/chat/utils";
+import { getInitials } from "@components/dashboard/chat/utils";
 
 interface GroupMembersProps {
   groupId: number;

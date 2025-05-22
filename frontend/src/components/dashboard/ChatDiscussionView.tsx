@@ -7,11 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { ScrollArea } from "@components/ui/scroll-area";
 import DeleteCommentModal from "./modals/DeleteCommentModal";
 import { ChatSkeleton } from "@components/ui/chat-skeleton";
-import CommentItem from "../chat/CommentItem";
-import DateSeparator from "../chat/DateSeparator";
-import EditCommentForm from "../chat/EditCommentForm";
-import MessageInput from "../chat/MessageInput";
-import { getDateDisplay, getInitials } from "../chat/utils";
+import CommentItem from "./chat/CommentItem";
+import DateSeparator from "./chat/DateSeparator";
+import EditCommentForm from "./chat/EditCommentForm";
+import MessageInput from "./chat/MessageInput";
+import { getDateDisplay, getInitials } from "./chat/utils";
 
 interface ChatDiscussionViewProps {
   groupId: number;
