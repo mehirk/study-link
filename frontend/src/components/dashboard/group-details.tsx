@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useAuth } from "@hooks/auth";
+import { useAuth } from "@hooks/use-auth";
 import { CardHeader, CardContent } from "@components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@components/ui/tabs";
-import GroupMembers from "@components/dashboard/tabs/GroupMembers";
-import GroupSettings from "@components/dashboard/tabs/GroupSettings";
-import GroupFiles from "@components/dashboard/tabs/GroupFiles";
-import DiscussionsLayout from "@components/dashboard/DiscussionsLayout";
+import GroupMembers from "@components/dashboard/tabs/group-members";
+import GroupSettings from "@components/dashboard/tabs/group-settings";
+import GroupFiles from "@components/dashboard/tabs/group-files";
+import DiscussionsLayout from "@components/dashboard/discussions-layout";
 import { ShieldAlert } from "lucide-react";
 import { getGroupMembers, Group } from "@lib/api/group";
 import { useQuery } from "@tanstack/react-query";

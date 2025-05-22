@@ -1,5 +1,5 @@
-import GroupDetails from "../components/dashboard/GroupDetails";
-import GroupSidebar from "../components/dashboard/GroupSidebar";
+import GroupDetails from "@components/dashboard/group-details";
+import GroupSidebar from "@components/dashboard/group-sidebar";
 import { useState } from "react";
 import { fetchUserGroups } from "@lib/api/group";
 import { useToast } from "@components/ui/use-toast";

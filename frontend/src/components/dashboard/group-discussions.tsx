@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../../hooks/auth";
+import { useAuth } from "@hooks/use-auth";
 import { Button } from "@components/ui/button";
 import { PlusIcon, Loader2, MessageCircle, Trash2, Edit } from "lucide-react";
 import {
@@ -21,10 +21,10 @@ import {
   updateDiscussion,
   Discussion,
 } from "@lib/api/discussion";
-import CreateDiscussionModal from "./modals/CreateDiscussionModal";
-import ViewDiscussionModal from "./modals/ViewDiscussionModal";
-import EditDiscussionModal from "./modals/EditDiscussionModal";
-import DeleteDiscussionModal from "./modals/DeleteDiscussionModal";
+import CreateDiscussionModal from "@components/dashboard/modals/create-discussion-modal";
+import ViewDiscussionModal from "@components/dashboard/modals/view-discussion-modal";
+import EditDiscussionModal from "@components/dashboard/modals/edit-discussion-modal";
+import DeleteDiscussionModal from "@components/dashboard/modals/delete-discussion-modal";
 
 interface GroupDiscussionsProps {
   groupId: number;

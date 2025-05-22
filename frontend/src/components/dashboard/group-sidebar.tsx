@@ -1,6 +1,6 @@
 import { useState } from "react";
-import CreateGroupModal from "./modals/CreateGroupModal";
-import JoinGroupModal from "./modals/JoinGroupModal";
+import CreateGroupModal from "@components/dashboard/modals/create-group-modal";
+import JoinGroupModal from "@components/dashboard/modals/join-group-modal";
 import { Button } from "@components/ui/button";
 import { ScrollArea } from "@components/ui/scroll-area";
 import { cn } from "@lib/utils";

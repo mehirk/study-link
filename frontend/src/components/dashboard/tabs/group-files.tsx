@@ -19,7 +19,7 @@ import {
   formatFileSize,
   deleteFile,
 } from "@lib/api/files";
-import { useAuth } from "@hooks/auth";
+import { useAuth } from "@hooks/use-auth";
 
 interface GroupFilesProps {
   groupId: number;

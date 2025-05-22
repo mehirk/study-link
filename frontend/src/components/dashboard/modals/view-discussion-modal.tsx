@@ -7,9 +7,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../ui/dialog";
-import { Button } from "../../ui/button";
-import { Discussion } from "../../../lib/api/discussion";
+} from "@components/ui/dialog";
+import { Button } from "@components/ui/button";
+import { Discussion } from "@lib/api/discussion";
 
 interface ViewDiscussionModalProps {
   discussion: Discussion | null;

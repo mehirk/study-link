@@ -1,11 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Layout from "@components/Layout";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import NotFound from "./pages/NotFound";
-import { AuthProvider } from "./hooks/auth";
-import Profile from "./pages/Profile";
-import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "@components/layout";
+import Auth from "./pages/auth";
+import Dashboard from "./pages/dashboard";
+import NotFound from "./pages/not-found";
+import { AuthProvider } from "./hooks/use-auth";
+import Profile from "./pages/profile";
+import ProtectedRoute from "./components/protected-route";
 import { Toaster } from "@components/ui/toaster";
 
 const App = () => {

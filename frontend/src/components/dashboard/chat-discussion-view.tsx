@@ -1,17 +1,17 @@
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "@hooks/auth";
-import { useChat } from "@hooks/useChat";
+import { useAuth } from "@hooks/use-auth";
+import { useChat } from "@hooks/use-chat";
 import { isSameDay } from "date-fns";
 import { Discussion, Comment } from "@lib/api/discussion";
 import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { ScrollArea } from "@components/ui/scroll-area";
-import DeleteCommentModal from "./modals/DeleteCommentModal";
+import DeleteCommentModal from "@components/dashboard/modals/delete-comment-modal";
 import { ChatSkeleton } from "@components/ui/chat-skeleton";
-import CommentItem from "./chat/CommentItem";
-import DateSeparator from "./chat/DateSeparator";
-import EditCommentForm from "./chat/EditCommentForm";
-import MessageInput from "./chat/MessageInput";
-import { getDateDisplay, getInitials } from "./chat/utils";
+import CommentItem from "@components/dashboard/chat/comment-item";
+import DateSeparator from "@components/dashboard/chat/date-separator";
+import EditCommentForm from "@components/dashboard/chat/edit-comment-form";
+import MessageInput from "@components/dashboard/chat/message-input";
+import { getDateDisplay, getInitials } from "@components/dashboard/chat/utils";
 
 interface ChatDiscussionViewProps {
   groupId: number;

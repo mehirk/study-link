@@ -12,7 +12,7 @@ import {
 import { Switch } from "@components/ui/switch";
 import { Loader2, Trash2, Save, Users, Lock } from "lucide-react";
 import { updateGroup, deleteGroup, Group } from "@lib/api/group";
-import DeleteGroupModal from "@components/dashboard/modals/DeleteGroupModal";
+import DeleteGroupModal from "@components/dashboard/modals/delete-group-modal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface GroupSettingsProps {

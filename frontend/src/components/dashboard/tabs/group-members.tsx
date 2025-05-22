@@ -1,17 +1,17 @@
-import { useAuth } from "../../../hooks/auth";
-import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
-import { Button } from "../../ui/button";
-import { Card, CardContent } from "../../ui/card";
-import { Badge } from "../../ui/badge";
+import { useAuth } from "@hooks/use-auth";
+import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
+import { Button } from "@components/ui/button";
+import { Card, CardContent } from "@components/ui/card";
+import { Badge } from "@components/ui/badge";
 import { Loader2, UserX, ShieldAlert } from "lucide-react";
 import {
   changeUserRole,
   removeMember,
   leaveGroup,
   GroupMember,
-} from "../../../lib/api/group";
+} from "@lib/api/group";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "../../ui/use-toast";
+import { toast } from "@components/ui/use-toast";
 import { getInitials } from "@components/dashboard/chat/utils";
 
 interface GroupMembersProps {

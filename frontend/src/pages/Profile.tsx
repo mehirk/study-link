@@ -1,5 +1,5 @@
 import { UploadButton } from "@lib/uploadthing-client";
-import { useAuth } from "../hooks/auth";
+import { useAuth } from "../hooks/use-auth";
 import { Mail, Calendar, User } from "lucide-react";
 
 const Profile = () => {

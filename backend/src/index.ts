@@ -3,7 +3,7 @@ import "dotenv/config";
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./utils/auth";
-import userProfileRoutes from "./routes/userProfile.routes";
+import userProfileRoutes from "./routes/user-profile.routes";
 import groupRoutes from "./routes/group.routes";
 import { uploadRouter } from "./utils/uploadthing";
 import { createRouteHandler } from "uploadthing/express";

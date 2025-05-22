@@ -2,10 +2,10 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { SignInForm } from "./sign-in";
-import { useAuth } from "../../hooks/auth";
+import { useAuth } from "@hooks/use-auth";
 import { useState } from "react";
 import { authClient } from "@lib/api-client";
-import { Card } from "../ui/card";
+import { Card } from "@components/ui/card";
 import { SignupForm } from "./sign-up";
 
 export function AuthTabs() {

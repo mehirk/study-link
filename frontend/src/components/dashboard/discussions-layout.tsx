@@ -6,10 +6,10 @@ import {
   getDiscussion,
   Discussion,
 } from "@lib/api/discussion";
-import DiscussionsSidebar from "./DiscussionsSidebar";
-import DiscussionInfoPanel from "./DiscussionInfoPanel";
-import CreateDiscussionModal from "./modals/CreateDiscussionModal";
-import ChatDiscussionView from "./ChatDiscussionView";
+import DiscussionsSidebar from "@components/dashboard/discussions-sidebar";
+import DiscussionInfoPanel from "@components/dashboard/discussion-info-panel";
+import CreateDiscussionModal from "@components/dashboard/modals/create-discussion-modal";
+import ChatDiscussionView from "@components/dashboard/chat-discussion-view";
 
 interface DiscussionsLayoutProps {
   groupId: number;

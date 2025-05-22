@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ModeToggle } from "./ui/mode-toggle";
-import { useAuth } from "../hooks/auth";
-import { Button } from "./ui/button";
+import { ModeToggle } from "@components/ui/mode-toggle";
+import { useAuth } from "@hooks/use-auth";
+import { Button } from "@components/ui/button";
 import { LogOut, User, BookOpen, Loader2 } from "lucide-react";
 import { authClient } from "@lib/api-client";
 
