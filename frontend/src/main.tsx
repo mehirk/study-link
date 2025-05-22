@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles/index.css";
-import App from "./app.tsx";
+import App from "./App.tsx";
 import { ZeroProvider } from "@rocicorp/zero/react";
 import { z } from "@lib/zero/client.ts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

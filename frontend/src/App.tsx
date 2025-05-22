@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Layout from "@components/layout";
-import Auth from "./pages/auth";
-import Dashboard from "./pages/dashboard";
-import NotFound from "./pages/not-found";
+import Layout from "./pages/layout";
+import Auth from "./pages/auth.page";
+import Dashboard from "./pages/dashboard.page";
+import NotFound from "./pages/not-found.page";
 import { AuthProvider } from "./hooks/use-auth";
-import Profile from "./pages/profile";
+import Profile from "./pages/profile.page";
 import ProtectedRoute from "./components/protected-route";
 import { Toaster } from "@components/ui/toaster";
 

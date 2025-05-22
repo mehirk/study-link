@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { ThemeProvider } from "@hooks/use-theme";
-import Navbar from "@components/navbar";
+import Navbar from "@components/nav-bar";
 
 const Layout = () => {
   return (
