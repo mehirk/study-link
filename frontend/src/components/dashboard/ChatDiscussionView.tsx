@@ -1,22 +1,17 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useAuth } from "../../hooks/auth";
-import { Button } from "@components/ui/button";
-import { Loader2, Send, Edit, Trash2, Check, X } from "lucide-react";
-import { useToast } from "@components/ui/use-toast";
-import { format, isToday, isYesterday, isSameDay } from "date-fns";
-import {
-  addComment,
-  deleteComment,
-  updateComment,
-  Discussion,
-  Comment,
-  getDiscussion,
-} from "@lib/api/discussion";
+import { useState, useEffect, useRef } from "react";
+import { useAuth } from "@hooks/auth";
+import { useChat } from "@hooks/useChat";
+import { isSameDay } from "date-fns";
+import { Discussion, Comment } from "@lib/api/discussion";
 import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { ScrollArea } from "@components/ui/scroll-area";
 import DeleteCommentModal from "./modals/DeleteCommentModal";
-import { Input } from "@components/ui/input";
 import { ChatSkeleton } from "@components/ui/chat-skeleton";
+import CommentItem from "../chat/CommentItem";
+import DateSeparator from "../chat/DateSeparator";
+import EditCommentForm from "../chat/EditCommentForm";
+import MessageInput from "../chat/MessageInput";
+import { getDateDisplay, getInitials } from "../chat/utils";
 
 interface ChatDiscussionViewProps {
   groupId: number;
@@ -28,220 +23,6 @@ interface ChatDiscussionViewProps {
   onUpdateDiscussion?: (discussion: Discussion) => void;
 }
 
-// Helper functions
-const getInitials = (name: string) => {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-};
-
-// Helper function to format dates for message groups
-const getDateDisplay = (date: Date): string => {
-  if (isToday(date)) {
-    return "Today";
-  } else if (isYesterday(date)) {
-    return "Yesterday";
-  } else {
-    return format(date, "MMMM d, yyyy");
-  }
-};
-
-// Comment component
-interface CommentItemProps {
-  comment: Comment;
-  isCurrentUser: boolean;
-  onEdit: (comment: Comment) => void;
-  onDelete: (commentId: number) => void;
-  showAvatar: boolean;
-  isFirstInGroup: boolean;
-}
-
-const CommentItem = ({
-  comment,
-  isCurrentUser,
-  onEdit,
-  onDelete,
-  showAvatar,
-  isFirstInGroup,
-}: CommentItemProps) => (
-  <div
-    className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} ${
-      !isFirstInGroup ? "mt-1" : "mt-6"
-    }`}
-  >
-    <div
-      className={`flex gap-3 max-w-[80%] ${
-        isCurrentUser ? "flex-row-reverse" : "flex-row"
-      }`}
-    >
-      {showAvatar ? (
-        <Avatar className="h-9 w-9 flex-shrink-0">
-          <AvatarImage
-            src={comment.author.image || ""}
-            alt={comment.author.name}
-          />
-          <AvatarFallback>{getInitials(comment.author.name)}</AvatarFallback>
-        </Avatar>
-      ) : (
-        <div className="w-9 flex-shrink-0" /> // Empty spacer to maintain alignment
-      )}
-
-      <div>
-        {!isCurrentUser && isFirstInGroup && (
-          <div className="text-xs font-medium text-muted-foreground mb-1">
-            {comment.author.name}
-          </div>
-        )}
-        <div className="flex flex-col">
-          <div
-            className={`flex items-center gap-2 ${
-              isCurrentUser ? "flex-row-reverse" : "flex-row"
-            }`}
-          >
-            <div
-              className={`rounded-3xl max-w-64 p-2.5 ${
-                isCurrentUser
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted"
-              }`}
-            >
-              <div className="text-sm whitespace-pre-wrap break-words">
-                {comment.content}
-              </div>
-            </div>
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {format(new Date(comment.createdAt), "h:mm a")}
-            </span>
-          </div>
-
-          {isCurrentUser && (
-            <div className="flex justify-end gap-1 mt-1 px-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => onEdit(comment)}
-              >
-                <Edit className="h-3 w-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => onDelete(comment.id)}
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-// Date Separator Component
-interface DateSeparatorProps {
-  date: string;
-}
-
-const DateSeparator = ({ date }: DateSeparatorProps) => (
-  <div className="flex items-center justify-center my-4">
-    <div className="bg-muted text-muted-foreground text-xs px-3 py-1 rounded-full">
-      {date}
-    </div>
-  </div>
-);
-
-// Edit Comment Form
-interface EditCommentFormProps {
-  content: string;
-  onChange: (content: string) => void;
-  onSave: () => void;
-  onCancel: () => void;
-  isSubmitting: boolean;
-}
-
-const EditCommentForm = ({
-  content,
-  onChange,
-  onSave,
-  onCancel,
-  isSubmitting,
-}: EditCommentFormProps) => (
-  <div className="space-y-2">
-    <Input
-      value={content}
-      onChange={(e) => onChange(e.target.value)}
-      className="min-w-[200px] bg-background text-foreground border-muted-foreground/30"
-    />
-    <div className="flex justify-end gap-2">
-      <Button
-        size="icon"
-        variant="ghost"
-        onClick={onCancel}
-        className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-100/30"
-      >
-        <X className="h-4 w-4" />
-      </Button>
-      <Button
-        size="icon"
-        variant="ghost"
-        onClick={onSave}
-        disabled={isSubmitting}
-        className="h-8 w-8"
-      >
-        {isSubmitting ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <Check className="h-4 w-4" />
-        )}
-      </Button>
-    </div>
-  </div>
-);
-
-// Message Input Form
-interface MessageInputProps {
-  value: string;
-  onChange: (value: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
-  isSubmitting: boolean;
-}
-
-const MessageInput = ({
-  value,
-  onChange,
-  onSubmit,
-  isSubmitting,
-}: MessageInputProps) => (
-  <form onSubmit={onSubmit} className="flex gap-2">
-    <Input
-      placeholder="Type your message..."
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="flex-1 rounded-full h-11"
-      onKeyDown={(e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          if (value.trim()) {
-            onSubmit(e);
-          }
-        }
-      }}
-    />
-    <Button
-      type="submit"
-      className="self-end rounded-full h-11"
-      disabled={isSubmitting || !value.trim()}
-    >
-      <Send className="h-4 w-4" />
-    </Button>
-  </form>
-);
-
 // Main component
 const ChatDiscussionView = ({
   groupId,
@@ -252,126 +33,48 @@ const ChatDiscussionView = ({
   onUpdateDiscussion,
 }: ChatDiscussionViewProps) => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Consolidated state
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Use the chat discussion hook
+  const {
+    comments,
+    loading,
+    isSubmitting,
+    addComment,
+    updateComment,
+    deleteComment,
+  } = useChat({
+    groupId,
+    discussionId,
+    discussion,
+    discussionLoading,
+    onCommentDeleted,
+    onUpdateDiscussion,
+  });
+
+  // Local state for UI components
   const [editingComment, setEditingComment] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
   const [newComment, setNewComment] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
-  const [lastCommentId, setLastCommentId] = useState<number | null>(null);
-  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Set comments from the discussion prop
-  useEffect(() => {
-    if (discussion && discussion.comments) {
-      setComments(discussion.comments);
-
-      // Update lastCommentId for comparison during polling
-      if (discussion.comments.length > 0) {
-        const lastComment = discussion.comments[discussion.comments.length - 1];
-        setLastCommentId(lastComment.id);
-      }
-
-      setLoading(false);
-    } else {
-      // If no comments in discussion, set empty array
-      setComments([]);
-      setLoading(discussionLoading);
-    }
-  }, [discussion, discussionLoading]);
-
-  // Polling function to fetch latest discussion data
-  const pollForNewComments = useCallback(async () => {
-    if (!groupId || !discussionId) return;
-
-    try {
-      const latestDiscussion = await getDiscussion(groupId, discussionId);
-
-      // Check if there are new comments
-      if (latestDiscussion.comments?.length) {
-        const newLastComment =
-          latestDiscussion.comments[latestDiscussion.comments.length - 1];
-
-        // Only update if there are new comments
-        if (!lastCommentId || newLastComment.id > lastCommentId) {
-          setComments(latestDiscussion.comments);
-          setLastCommentId(newLastComment.id);
-
-          // Update parent component if callback exists
-          if (onUpdateDiscussion) {
-            onUpdateDiscussion(latestDiscussion);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Failed to poll for new comments:", error);
-    }
-  }, [groupId, discussionId, lastCommentId, onUpdateDiscussion]);
-
-  // Set up polling interval
-  useEffect(() => {
-    // Start polling when component mounts
-    pollIntervalRef.current = setInterval(pollForNewComments, 2000);
-
-    return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
-    };
-  }, [pollForNewComments]);
 
   // Scroll to bottom when comments change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [comments]);
 
-  // CRUD operations
+  // Handle comment submission
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!newComment.trim()) return;
 
-    try {
-      setIsSubmitting(true);
-      const comment = await addComment(groupId, discussionId, {
-        content: newComment,
-      });
-
-      // Update local comments state
-      setComments((prevComments) => [...prevComments, comment]);
-
-      // Update both count AND comments array in parent component
-      if (onUpdateDiscussion && discussion) {
-        onUpdateDiscussion({
-          ...discussion,
-          comments: [...(discussion.comments || []), comment],
-          _count: {
-            ...discussion._count,
-            comments: (discussion._count?.comments || 0) + 1,
-          },
-        });
-      }
-
-      setNewComment("");
-      setIsSubmitting(false);
-    } catch (error) {
-      console.error("Failed to add comment:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to add comment. Please try again.",
-      });
-      setIsSubmitting(false);
-    }
+    await addComment(newComment);
+    setNewComment("");
   };
 
+  // Handle comment editing
   const handleEditComment = (comment: Comment) => {
     // Only allow author to edit their own comments
     if (comment.authorId === user?.id) {
@@ -380,80 +83,33 @@ const ChatDiscussionView = ({
     }
   };
 
+  // Handle comment update
   const handleUpdateComment = async (commentId: number) => {
-    if (!editContent.trim()) {
-      return;
-    }
+    if (!editContent.trim()) return;
 
-    try {
-      setIsSubmitting(true);
-      const updated = await updateComment(groupId, discussionId, commentId, {
-        content: editContent,
-      });
-
-      // Update the local comments array
-      setComments((prevComments) =>
-        prevComments.map((c) => (c.id === commentId ? updated : c))
-      );
-
+    const result = await updateComment(commentId, editContent);
+    if (result) {
       setEditingComment(null);
-      setIsSubmitting(false);
-    } catch (error) {
-      console.error("Failed to update comment:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update comment. Please try again.",
-      });
-      setIsSubmitting(false);
     }
   };
 
+  // Handle opening delete dialog
   const openDeleteCommentDialog = (commentId: number) => {
     // Only allow author to delete their own comments
     const comment = comments.find((c) => c.id === commentId);
 
-    // Only allow author to delete their own comments
     if (comment && comment.authorId === user?.id) {
       setDeleteDialogOpen(true);
       setCommentToDelete(commentId);
     }
   };
 
+  // Handle comment deletion
   const handleDeleteComment = async () => {
     if (!commentToDelete) return;
 
-    try {
-      await deleteComment(groupId, discussionId, commentToDelete);
-
-      // Update local comments array
-      setComments((prevComments) =>
-        prevComments.filter((c) => c.id !== commentToDelete)
-      );
-
-      // Update comment count in parent component
-      if (onUpdateDiscussion && discussion) {
-        onUpdateDiscussion({
-          ...discussion,
-          _count: {
-            ...discussion._count,
-            comments: Math.max(0, (discussion._count?.comments || 1) - 1),
-          },
-        });
-      }
-
-      // Notify parent component
-      if (onCommentDeleted) {
-        onCommentDeleted(discussionId, comments.length - 1);
-      }
-    } catch (error) {
-      console.error("Failed to delete comment:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to delete comment. Please try again.",
-      });
-    } finally {
+    const success = await deleteComment(commentToDelete);
+    if (success) {
       setDeleteDialogOpen(false);
       setCommentToDelete(null);
     }

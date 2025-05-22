@@ -7,9 +7,9 @@ import {
   Discussion,
 } from "@lib/api/discussion";
 import DiscussionsSidebar from "./DiscussionsSidebar";
-import ChatDiscussionView from "./ChatDiscussionView";
 import DiscussionInfoPanel from "./DiscussionInfoPanel";
 import CreateDiscussionModal from "./modals/CreateDiscussionModal";
+import ChatDiscussionView from "./ChatDiscussionView";
 
 interface DiscussionsLayoutProps {
   groupId: number;
