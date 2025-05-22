@@ -19,17 +19,17 @@ services:
     restart: always
 
   study-link-zero-sync:
-    container_name: study-link-zero-sync
-    image: ghcr.io/shahbaz-athwal/study-link-zero-sync:latest
+    container_name: study-link-zero-syncer
+    image: ghcr.io/shahbaz-athwal/study-link-zero-syncer:latest
     env_file:
       - .env
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
-      - "traefik.http.routers.study-link-zero-sync.rule=Host(`sl-zero-sync.dryft.ca`)"
-      - "traefik.http.routers.study-link-zero-sync.entrypoints=websecure"
-      - "traefik.http.routers.study-link-zero-sync.tls=true"
-      - "traefik.http.routers.study-link-zero-sync.tls.certresolver=myresolver"
+      - "traefik.http.routers.study-link-zero-syncer.rule=Host(`sl-zero-sync.dryft.ca`)"
+      - "traefik.http.routers.study-link-zero-syncer.entrypoints=websecure"
+      - "traefik.http.routers.study-link-zero-syncer.tls=true"
+      - "traefik.http.routers.study-link-zero-syncer.tls.certresolver=myresolver"
       - "com.centurylinklabs.watchtower.enable=true"
     networks:
       - traefik
