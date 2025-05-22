@@ -31,7 +31,7 @@ app.use(
 
 app.use(metricsMiddleware);
 
-app.all("/api/auth/*", toNodeHandler(auth));
+app.all("/api/auth/*authPath", toNodeHandler(auth));
 
 app.use(
   "/api/uploadthing",
