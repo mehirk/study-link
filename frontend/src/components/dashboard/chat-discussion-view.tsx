@@ -6,12 +6,12 @@ import { Discussion, Comment } from "@lib/api/discussion";
 import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { ScrollArea } from "@components/ui/scroll-area";
 import DeleteCommentModal from "@components/dashboard/modals/delete-comment-modal";
-import { ChatSkeleton } from "@components/ui/chat-skeleton";
 import CommentItem from "@components/dashboard/chat/comment-item";
 import DateSeparator from "@components/dashboard/chat/date-separator";
 import EditCommentForm from "@components/dashboard/chat/edit-comment-form";
 import MessageInput from "@components/dashboard/chat/message-input";
 import { getDateDisplay, getInitials } from "@components/dashboard/chat/utils";
+import { Loader2 } from "lucide-react";
 
 interface ChatDiscussionViewProps {
   groupId: number;
@@ -124,7 +124,9 @@ const ChatDiscussionView = ({
       <div className="flex-1 flex flex-col min-h-0">
         <ScrollArea className="flex-1 px-3 overflow-y-auto" ref={scrollAreaRef}>
           {loading ? (
-            <ChatSkeleton />
+            <div className="flex items-center justify-center h-96 w-full">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
           ) : (
             <div className="space-y-2">
               {discussion?.comments && discussion.comments.length > 0 ? (
