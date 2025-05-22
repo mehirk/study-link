@@ -280,6 +280,10 @@ const DiscussionInfoPanel = ({
         <div className="px-4 pb-4 mt-2 border-t pt-4">
           <p className="text-sm font-medium mb-2">Attachments</p>
           <UploadDropzone
+            appearance={{
+              button:
+                "ut-ready:bg-primary w-full p-2 ut-uploading:cursor-not-allowed rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200 ease-in-out after:bg-primary/50",
+            }}
             input={{
               discussionId: discussionId.toString(),
               token: sessionToken!,
@@ -293,7 +297,7 @@ const DiscussionInfoPanel = ({
                 description: "Your files have been uploaded successfully",
               });
             }}
-            className="border-dashed border-2 ut-label:text-sm ut-allowed-content:text-xs"
+            className="border-dashed border-2 pb-4"
           />
         </div>
       </Card>
