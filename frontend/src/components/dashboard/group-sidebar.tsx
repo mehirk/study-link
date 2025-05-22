@@ -109,7 +109,7 @@ const GroupSidebar = ({
                   "w-full px-2 my-1 py-2 text-left rounded-md transition-colors",
                   "hover:bg-accent hover:text-accent-foreground",
                   selectedGroupId === group.id &&
-                    "bg-zinc-200 text-accent-foreground"
+                    "bg-accent text-accent-foreground"
                 )}
                 onClick={() => onSelectGroup(group.id)}
               >
