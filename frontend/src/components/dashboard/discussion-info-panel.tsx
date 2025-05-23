@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../../hooks/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { Button } from "@components/ui/button";
 import { Textarea } from "@components/ui/textarea";
@@ -13,17 +12,10 @@ import {
   updateDiscussion,
   deleteDiscussion,
 } from "@lib/api/discussion";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@components/ui/alert-dialog";
 import { UploadDropzone } from "@lib/uploadthing-client";
+import { getInitials } from "./chat/utils";
+import DeleteDiscussionModal from "./modals/delete-discussion-modal";
+import useAuthStore from "@store/auth-store";
 
 interface DiscussionInfoPanelProps {
   discussionId: number;
@@ -42,7 +34,8 @@ const DiscussionInfoPanel = ({
   discussionLoading = false,
   onUpdateDiscussion,
 }: DiscussionInfoPanelProps) => {
-  const { user, sessionToken } = useAuth();
+  const user = useAuthStore((state) => state.user);
+  const sessionToken = useAuthStore((state) => state.sessionToken);
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [editingInfo, setEditingInfo] = useState(false);
@@ -127,14 +120,6 @@ const DiscussionInfoPanel = ({
       setActionLoading(false);
       setDeleteDialogOpen(false);
     }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
   };
 
   if (loading) {
@@ -280,6 +265,10 @@ const DiscussionInfoPanel = ({
         <div className="px-4 pb-4 mt-2 border-t pt-4">
           <p className="text-sm font-medium mb-2">Attachments</p>
           <UploadDropzone
+            appearance={{
+              button:
+                "ut-ready:bg-primary w-full p-2 ut-uploading:cursor-not-allowed rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200 ease-in-out after:bg-primary/50",
+            }}
             input={{
               discussionId: discussionId.toString(),
               token: sessionToken!,
@@ -293,41 +282,16 @@ const DiscussionInfoPanel = ({
                 description: "Your files have been uploaded successfully",
               });
             }}
-            className="border-dashed border-2 ut-label:text-sm ut-allowed-content:text-xs"
+            className="border-dashed border-2 pb-4"
           />
         </div>
       </Card>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the discussion "{discussion.title}"
-              and all associated comments. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={actionLoading}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteDiscussion}
-              disabled={actionLoading}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {actionLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteDiscussionModal
+        isOpen={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirmDelete={handleDeleteDiscussion}
+      />
     </div>
   );
 };

@@ -25,3 +25,4 @@ dist-ssr
 *.sln
 *.sw?
 download-supabase-mcp.ps1
+backend/tsconfig.tsbuildinfo

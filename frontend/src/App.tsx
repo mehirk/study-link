@@ -1,17 +1,29 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Layout from "@components/Layout";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import NotFound from "./pages/NotFound";
-import { AuthProvider } from "./hooks/auth";
-import Profile from "./pages/Profile";
-import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "./pages/layout";
+import Auth from "./pages/auth.page";
+import Dashboard from "./pages/dashboard.page";
+import NotFound from "./pages/not-found.page";
+import Profile from "./pages/profile.page";
+import ProtectedRoute from "./components/protected-route";
 import { Toaster } from "@components/ui/toaster";
+import { useEffect } from "react";
+import useAuthStore from "@store/auth-store";
+
+// Component to initialize auth on app load
+function AuthInitializer({ children }: { children: React.ReactNode }) {
+  const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
+
+  return <>{children}</>;
+}
 
 const App = () => {
   return (
-    <Router>
-      <AuthProvider>
+    <AuthInitializer>
+      <Router>
         <Routes>
           {/* Layout wrapper for all pages */}
           <Route path="/" element={<Layout />}>
@@ -49,8 +61,8 @@ const App = () => {
           </Route>
         </Routes>
         <Toaster />
-      </AuthProvider>
-    </Router>
+      </Router>
+    </AuthInitializer>
   );
 };
 

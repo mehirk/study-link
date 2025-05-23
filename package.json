@@ -3,16 +3,16 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "pnpm run --parallel dev",
+    "dev": "pnpm --filter frontend --filter backend run --parallel dev",
+    "dev:all": "pnpm run --parallel dev",
     "frontend:build": "pnpm --filter frontend build",
     "frontend:install": "pnpm install --filter frontend --filter zero-syncer",
     "db:generate": "pnpm --filter backend db:generate",
     "db:studio": "pnpm --filter backend db:studio",
-    "zero:generate": "pnpm --filter backend zero:generate",
-    "zero:cache": "pnpm --filter zero-syncer start"
+    "zero:generate": "pnpm --filter backend zero:generate"
   },
   "engines": {
     "node": "20.x"
   },
-  "packageManager": "pnpm@9.14.2"
+  "packageManager": "pnpm@10.11.0"
 }

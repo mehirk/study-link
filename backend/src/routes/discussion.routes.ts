@@ -1,5 +1,5 @@
 import { Router, Response } from "express";
-import { authenticateUser } from "../middlewares/authenticateUser";
+import { authenticateUser } from "../middlewares/authenticate-user";
 import { AuthenticatedRequest } from "../types/auth-req";
 import prisma from "../utils/prisma";
 
