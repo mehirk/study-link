@@ -28,7 +28,6 @@ const GroupSettings = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const group = useGroupStore((state) => state.currentGroup);
-  const isAdmin = useGroupStore((state) => state.isAdmin);
   const setCurrentGroup = useGroupStore((state) => state.setCurrentGroup);
 
   const [formData, setFormData] = useState<GroupFormData>({
@@ -58,7 +57,15 @@ const GroupSettings = () => {
     onSuccess: () => {
       if (group) {
         queryClient.invalidateQueries({ queryKey: ["group", group.id] });
-        setCurrentGroup(group);
+        setCurrentGroup({
+          id: group.id,
+          createdAt: group.createdAt,
+          updatedAt: group.updatedAt,
+          name: formData.name,
+          description: formData.description,
+          private: formData.isPrivate,
+          password: formData.password,
+        });
         setInitialData({ ...formData });
       }
       toast({
@@ -110,7 +117,7 @@ const GroupSettings = () => {
     }
   }, [group]);
 
-  if (!group || !isAdmin) {
+  if (!group) {
     return null;
   }
 

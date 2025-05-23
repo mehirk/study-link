@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CreateGroupModal from "@components/dashboard/modals/create-group-modal";
 import JoinGroupModal from "@components/dashboard/modals/join-group-modal";
 import { Button } from "@components/ui/button";
@@ -23,9 +23,12 @@ const GroupSidebar = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  if (groups.length > 0 && !currentGroup) {
-    setCurrentGroup(groups[0]);
-  }
+  // Use effect to set current group when groups load and there's no current group
+  useEffect(() => {
+    if (groups.length > 0 && !currentGroup) {
+      setCurrentGroup(groups[0]);
+    }
+  }, [groups, currentGroup, setCurrentGroup]);
 
   const handleSelectGroup = (groupId: number) => {
     const selectedGroup = groups.find((group: Group) => group.id === groupId);

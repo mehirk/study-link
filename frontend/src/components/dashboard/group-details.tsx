@@ -15,7 +15,6 @@ const GroupDetails = () => {
   const [activeTab, setActiveTab] = useState("discussions");
   const user = useAuthStore((state) => state.user);
   const group = useGroupStore((state) => state.currentGroup);
-  const setIsAdmin = useGroupStore((state) => state.setIsAdmin);
 
   // Fetch group members - moved before conditional return
   const { data: members = [] } = useQuery({
@@ -36,12 +35,10 @@ const GroupDetails = () => {
   }
   const groupId = group.id;
 
-  // Determine if user is admin
   const isAdmin = members.some(
     (member) =>
       String(member.userId) === String(user?.id) && member.role === "ADMIN"
   );
-  setIsAdmin(isAdmin);
 
   const tabs = [
     { id: "discussions", label: "Discussions" },
