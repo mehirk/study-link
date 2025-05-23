@@ -56,7 +56,7 @@ const GroupSettings = () => {
     },
     onSuccess: () => {
       if (group) {
-        queryClient.invalidateQueries({ queryKey: ["group", group.id] });
+        queryClient.invalidateQueries({ queryKey: ["groups"] });
         setCurrentGroup({
           id: group.id,
           createdAt: group.createdAt,
@@ -68,11 +68,6 @@ const GroupSettings = () => {
         });
         setInitialData({ ...formData });
       }
-      toast({
-        title: "Success",
-        description: "Group settings updated successfully",
-        variant: "default",
-      });
     },
     onError: (error) => {
       console.error("Error updating group:", error);

@@ -16,17 +16,15 @@ const GroupDetails = () => {
   const user = useAuthStore((state) => state.user);
   const group = useGroupStore((state) => state.currentGroup);
 
-  // Fetch group members - moved before conditional return
   const { data: members = [] } = useQuery({
-    queryKey: ["groupMembers", group?.id],
-    queryFn: () =>
-      group?.id ? getGroupMembers(group.id) : Promise.resolve([]),
+    queryKey: ["group-members", group?.id],
+    queryFn: () => getGroupMembers(group?.id as number),
     enabled: !!group?.id,
   });
 
   if (!group) {
     return (
-      <div className="flex items-center justify-center h-full border border-gray-800 rounded-lg dashboard-card">
+      <div className="flex items-center justify-center h-full">
         <p className="text-lg text-gray-400">
           Join a group or create a new one to get started
         </p>
