@@ -18,11 +18,6 @@ const DiscussionsLayout = () => {
     (state) => state.setCurrentDiscussionId
   );
 
-  // Reset currentDiscussionId when groupId changes
-  useEffect(() => {
-    setCurrentDiscussionId(null);
-  }, [groupId, setCurrentDiscussionId]);
-
   // Query for fetching discussions list
   const { data: discussions = [], isLoading: discussionsLoading } = useQuery({
     queryKey: ["discussions", groupId],

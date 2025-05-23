@@ -37,6 +37,7 @@ const GroupSidebar = () => {
     const selectedGroup = groups.find((group: Group) => group.id === groupId);
     if (selectedGroup) {
       setCurrentGroup(selectedGroup);
+      setCurrentDiscussionId(null);
     }
   };
 
