@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "@hooks/use-auth";
+import useAuthStore from "@store/auth-store";
 
 type ProtectedRouteProps = {
   children: ReactNode;
@@ -13,16 +13,11 @@ const ProtectedRoute = ({
   requireAuth,
   redirectTo,
 }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isLoading = useAuthStore((state) => state.isLoading);
 
   // While loading, show nothing to prevent flashing
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  if (isLoading) return null;
 
   // For auth-required routes: redirect to login if not authenticated
   if (requireAuth && !isAuthenticated) {

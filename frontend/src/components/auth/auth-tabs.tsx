@@ -2,15 +2,18 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { SignInForm } from "./sign-in";
-import { useAuth } from "@hooks/use-auth";
 import { useState } from "react";
 import { authClient } from "@lib/api-client";
 import { Card } from "@components/ui/card";
 import { SignupForm } from "./sign-up";
 import { useToast } from "@components/ui/use-toast";
+import useAuthStore from "@store/auth-store";
 
 export function AuthTabs() {
-  const { setUser, setIsAuthenticated, refreshSession } = useAuth();
+  const setUser = useAuthStore((state) => state.setUser);
+  const setIsAuthenticated = useAuthStore((state) => state.setIsAuthenticated);
+  const refreshSession = useAuthStore((state) => state.refreshSession);
+
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -37,7 +40,7 @@ export function AuthTabs() {
 
       setUser(data.user);
       setIsAuthenticated(true);
-      refreshSession();
+      await refreshSession();
 
       toast({
         title: "Success",
@@ -81,7 +84,7 @@ export function AuthTabs() {
 
       setUser(data.user);
       setIsAuthenticated(true);
-      refreshSession();
+      await refreshSession();
 
       toast({
         title: "Account created",

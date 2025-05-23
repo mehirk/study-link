@@ -18,6 +18,7 @@ export default defineConfig({
       "@hooks": resolve(__dirname, "./src/hooks"),
       "@styles": resolve(__dirname, "./src/styles"),
       "@assets": resolve(__dirname, "./src/assets"),
+      "@store": resolve(__dirname, "./src/store"),
     },
   },
 });

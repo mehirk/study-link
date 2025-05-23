@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "@hooks/use-auth";
 import { useChat } from "@hooks/use-chat";
 import { isSameDay } from "date-fns";
 import { Discussion, Comment } from "@lib/api/discussion";
@@ -12,6 +11,7 @@ import EditCommentForm from "@components/dashboard/chat/edit-comment-form";
 import MessageInput from "@components/dashboard/chat/message-input";
 import { getDateDisplay, getInitials } from "@components/dashboard/chat/utils";
 import { Loader2 } from "lucide-react";
+import useAuthStore from "@store/auth-store";
 
 interface ChatDiscussionViewProps {
   groupId: number;
@@ -32,7 +32,8 @@ const ChatDiscussionView = ({
   onCommentDeleted,
   onUpdateDiscussion,
 }: ChatDiscussionViewProps) => {
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
+
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 

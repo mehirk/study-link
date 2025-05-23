@@ -1,9 +1,10 @@
 import { UploadButton } from "@lib/uploadthing-client";
-import { useAuth } from "../hooks/use-auth";
+import useAuthStore from "@store/auth-store";
 import { Mail, Calendar, User } from "lucide-react";
 
 const Profile = () => {
-  const { user, sessionToken } = useAuth();
+  const user = useAuthStore((state) => state.user);
+  const sessionToken = useAuthStore((state) => state.sessionToken);
 
   return (
     <div className="flex flex-col items-center justify-center p-4 py-12">

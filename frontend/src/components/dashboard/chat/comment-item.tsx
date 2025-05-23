@@ -57,7 +57,7 @@ const CommentItem = ({
             }`}
           >
             <div
-              className={`rounded-3xl max-w-64 p-2.5 ${
+              className={`rounded-md max-w-64 px-4 py-2 ${
                 isCurrentUser
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted"

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useAuth } from "@hooks/use-auth";
 import { CardHeader, CardContent } from "@components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@components/ui/tabs";
 import GroupMembers from "@components/dashboard/tabs/group-members";
@@ -9,6 +8,7 @@ import DiscussionsLayout from "@components/dashboard/tabs/discussions-layout";
 import { ShieldAlert } from "lucide-react";
 import { getGroupMembers, Group } from "@lib/api/group";
 import { useQuery } from "@tanstack/react-query";
+import useAuthStore from "@store/auth-store";
 
 interface GroupDetailsProps {
   groupId: number;
@@ -17,7 +17,7 @@ interface GroupDetailsProps {
 
 const GroupDetails = ({ groupId, group }: GroupDetailsProps) => {
   const [activeTab, setActiveTab] = useState("discussions");
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
 
   // Fetch group members
   const { data: members = [] } = useQuery({

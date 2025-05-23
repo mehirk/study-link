@@ -19,7 +19,7 @@ import {
   formatFileSize,
   deleteFile,
 } from "@lib/api/files";
-import { useAuth } from "@hooks/use-auth";
+import useAuthStore from "@store/auth-store";
 
 interface GroupFilesProps {
   groupId: number;
@@ -27,7 +27,7 @@ interface GroupFilesProps {
 }
 
 const GroupFiles = ({ groupId, isAdmin }: GroupFilesProps) => {
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
 
   // Fetch files

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { Button } from "@components/ui/button";
 import { Textarea } from "@components/ui/textarea";
@@ -16,6 +15,7 @@ import {
 import { UploadDropzone } from "@lib/uploadthing-client";
 import { getInitials } from "./chat/utils";
 import DeleteDiscussionModal from "./modals/delete-discussion-modal";
+import useAuthStore from "@store/auth-store";
 
 interface DiscussionInfoPanelProps {
   discussionId: number;
@@ -34,7 +34,8 @@ const DiscussionInfoPanel = ({
   discussionLoading = false,
   onUpdateDiscussion,
 }: DiscussionInfoPanelProps) => {
-  const { user, sessionToken } = useAuth();
+  const user = useAuthStore((state) => state.user);
+  const sessionToken = useAuthStore((state) => state.sessionToken);
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [editingInfo, setEditingInfo] = useState(false);

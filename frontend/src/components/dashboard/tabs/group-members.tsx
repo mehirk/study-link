@@ -1,4 +1,4 @@
-import { useAuth } from "@hooks/use-auth";
+import useAuthStore from "@store/auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { Button } from "@components/ui/button";
 import { Card, CardContent } from "@components/ui/card";
@@ -21,7 +21,7 @@ interface GroupMembersProps {
 }
 
 const GroupMembers = ({ groupId, isAdmin, members }: GroupMembersProps) => {
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
 
   // Remove member mutation
