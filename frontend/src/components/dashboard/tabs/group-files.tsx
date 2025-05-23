@@ -11,7 +11,7 @@ import {
 import { Button } from "@components/ui/button";
 import { toast } from "@components/ui/use-toast";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { getInitials } from "@components/dashboard/chat/utils";
+import { getInitials } from "@lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import {
   getGroupFiles,

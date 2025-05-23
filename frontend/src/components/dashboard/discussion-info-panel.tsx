@@ -13,7 +13,7 @@ import {
   deleteDiscussion,
 } from "@lib/api/discussion";
 import { UploadDropzone } from "@lib/uploadthing-client";
-import { getInitials } from "./chat/utils";
+import { getInitials } from "@lib/utils";
 import DeleteDiscussionModal from "./modals/delete-discussion-modal";
 import useAuthStore from "@store/auth-store";
 

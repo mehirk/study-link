@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Comment } from "@lib/api/discussion";
-import { getInitials } from "./utils";
+import { getInitials } from "@lib/utils";
 
 interface CommentItemProps {
   comment: Comment;

@@ -12,7 +12,7 @@ import {
 } from "@lib/api/group";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@components/ui/use-toast";
-import { getInitials } from "@components/dashboard/chat/utils";
+import { getInitials } from "@lib/utils";
 import useGroupStore from "@store/group-store";
 
 const GroupMembers = () => {
