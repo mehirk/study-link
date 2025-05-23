@@ -4,33 +4,41 @@ import JoinGroupModal from "@components/dashboard/modals/join-group-modal";
 import { Button } from "@components/ui/button";
 import { ScrollArea } from "@components/ui/scroll-area";
 import { cn } from "@lib/utils";
-import { createGroup, joinGroup, Group } from "@lib/api/group";
+import { Group, createGroup, joinGroup, fetchUserGroups } from "@lib/api/group";
 import { useToast } from "@components/ui/use-toast";
 import { Loader2 } from "lucide-react";
+import useGroupStore from "@store/group-store";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-interface GroupSidebarProps {
-  onSelectGroup: (groupId: number | null) => void;
-  selectedGroupId: number | null;
-  groups: Group[];
-  loading: boolean;
-  refreshGroups: (groupId?: number) => Promise<void>;
-}
-
-const GroupSidebar = ({
-  onSelectGroup,
-  selectedGroupId,
-  groups,
-  loading,
-  refreshGroups,
-}: GroupSidebarProps) => {
+const GroupSidebar = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const { toast } = useToast();
+  const { currentGroup, setCurrentGroup } = useGroupStore();
+  const queryClient = useQueryClient();
+
+  const { data: groups = [], isLoading } = useQuery<Group[]>({
+    queryKey: ["groups"],
+    queryFn: fetchUserGroups,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  if (groups.length > 0 && !currentGroup) {
+    setCurrentGroup(groups[0]);
+  }
+
+  const handleSelectGroup = (groupId: number) => {
+    const selectedGroup = groups.find((group: Group) => group.id === groupId);
+    if (selectedGroup) {
+      setCurrentGroup(selectedGroup);
+    }
+  };
 
   const handleCreateGroup = async (name: string, description: string) => {
     try {
       const newGroup = await createGroup({ name, description });
-      await refreshGroups(newGroup.id);
+      setCurrentGroup(newGroup);
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
       toast({
         title: "Success",
         description: "Group created successfully",
@@ -48,11 +56,20 @@ const GroupSidebar = ({
   const handleJoinGroup = async (groupId: string, password?: string) => {
     try {
       await joinGroup(Number(groupId), password);
-      await refreshGroups(Number(groupId));
-      toast({
-        title: "Success",
-        description: "Successfully joined the group",
-      });
+      // Refresh groups to get the newly joined group
+      await queryClient.invalidateQueries({ queryKey: ["groups"] });
+
+      // After joining, we need to fetch the latest groups to find the joined one
+      const updatedGroups = await fetchUserGroups();
+      const joinedGroup = updatedGroups.find((g) => g.id === Number(groupId));
+
+      if (joinedGroup) {
+        setCurrentGroup(joinedGroup);
+        toast({
+          title: "Success",
+          description: "Successfully joined the group",
+        });
+      }
     } catch (error) {
       console.error("Failed to join group:", error);
       toast({
@@ -97,21 +114,21 @@ const GroupSidebar = ({
       {/* Groups list */}
       <ScrollArea className="flex-1">
         <div className="px-2">
-          {loading ? (
+          {isLoading ? (
             <div className="flex justify-center p-4">
               <Loader2 className="animate-spin" />
             </div>
           ) : groups.length > 0 ? (
-            groups.map((group) => (
+            groups.map((group: Group) => (
               <button
                 key={group.id}
                 className={cn(
                   "w-full px-2 my-1 py-2 text-left rounded-md transition-colors",
                   "hover:bg-accent hover:text-accent-foreground",
-                  selectedGroupId === group.id &&
+                  currentGroup?.id === group.id &&
                     "bg-accent text-accent-foreground"
                 )}
-                onClick={() => onSelectGroup(group.id)}
+                onClick={() => handleSelectGroup(group.id)}
               >
                 {group.name}
               </button>

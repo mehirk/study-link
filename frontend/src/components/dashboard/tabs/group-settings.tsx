@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@components/ui/input";
 import { Button } from "@components/ui/button";
 import { Textarea } from "@components/ui/textarea";
@@ -11,102 +11,157 @@ import {
 } from "@components/ui/card";
 import { Switch } from "@components/ui/switch";
 import { Loader2, Trash2, Save, Users, Lock } from "lucide-react";
-import { updateGroup, deleteGroup, Group } from "@lib/api/group";
+import { updateGroup, deleteGroup } from "@lib/api/group";
 import DeleteGroupModal from "@components/dashboard/modals/delete-group-modal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import useGroupStore from "@store/group-store";
+import { useToast } from "@components/ui/use-toast";
 
-interface GroupSettingsProps {
-  groupId: number;
-  groupData: Group;
-  isAdmin: boolean;
-}
+type GroupFormData = {
+  name: string;
+  description: string;
+  isPrivate: boolean;
+  password: string;
+};
 
-const GroupSettings = ({ groupId, groupData }: GroupSettingsProps) => {
-  const [name, setName] = useState(groupData.name);
-  const [description, setDescription] = useState(groupData.description || "");
-  const [isPrivate, setIsPrivate] = useState(groupData.private);
-  const [groupPassword, setGroupPassword] = useState(groupData.password || "");
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
+const GroupSettings = () => {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
+  const group = useGroupStore((state) => state.currentGroup);
+  const isAdmin = useGroupStore((state) => state.isAdmin);
+  const setCurrentGroup = useGroupStore((state) => state.setCurrentGroup);
 
-  // Check if any form values have changed from their original values
-  const hasChanges =
-    name !== groupData.name ||
-    description !== (groupData.description || "") ||
-    isPrivate !== Boolean(groupData.private) ||
-    (isPrivate && groupPassword !== (groupData.password || ""));
-
-  const clearMessages = () => {
-    setSuccessMessage(null);
-    setErrorMessage(null);
-  };
+  const [formData, setFormData] = useState<GroupFormData>({
+    name: "",
+    description: "",
+    isPrivate: false,
+    password: "",
+  });
+  const [initialData, setInitialData] = useState<GroupFormData>({
+    name: "",
+    description: "",
+    isPrivate: false,
+    password: "",
+  });
 
   // Update group mutation
   const updateGroupMutation = useMutation({
-    mutationFn: (data: {
-      name: string;
-      description: string;
-      private: boolean;
-      password?: string;
-    }) => updateGroup(groupId, data),
-    onSuccess: (response) => {
-      queryClient.setQueryData(["group", groupId], response);
-      setSuccessMessage("Group settings updated successfully");
+    mutationFn: (data: GroupFormData) => {
+      if (!group) throw new Error("Group not found");
+      return updateGroup(group.id, {
+        name: data.name,
+        description: data.description,
+        private: data.isPrivate,
+        password: data.isPrivate ? data.password : undefined,
+      });
+    },
+    onSuccess: () => {
+      if (group) {
+        queryClient.invalidateQueries({ queryKey: ["group", group.id] });
+        setCurrentGroup(group);
+        setInitialData({ ...formData });
+      }
+      toast({
+        title: "Success",
+        description: "Group settings updated successfully",
+        variant: "default",
+      });
     },
     onError: (error) => {
       console.error("Error updating group:", error);
-      setErrorMessage("Failed to update group settings");
+      toast({
+        title: "Error",
+        description: "Failed to update group settings",
+        variant: "destructive",
+      });
     },
   });
 
   // Delete group mutation
   const deleteGroupMutation = useMutation({
-    mutationFn: () => deleteGroup(groupId),
+    mutationFn: () => {
+      if (!group) throw new Error("Group not found");
+      return deleteGroup(group.id);
+    },
     onSuccess: () => {
       window.location.href = "/dashboard";
     },
     onError: (error) => {
       console.error("Error deleting group:", error);
-      setErrorMessage("Failed to delete group");
+      toast({
+        title: "Error",
+        description: "Failed to delete group",
+        variant: "destructive",
+      });
     },
   });
 
-  const handleSave = () => {
-    if (!name.trim()) {
-      setErrorMessage("Group name cannot be empty");
-      return;
+  // Update state values when group changes
+  useEffect(() => {
+    if (group) {
+      const newData = {
+        name: group.name,
+        description: group.description || "",
+        isPrivate: Boolean(group.private),
+        password: group.password || "",
+      };
+      setFormData(newData);
+      setInitialData(newData);
+    }
+  }, [group]);
+
+  if (!group || !isAdmin) {
+    return null;
+  }
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const togglePrivate = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, isPrivate: checked }));
+  };
+
+  // Check if any form values have changed from their original values
+  const hasChanges = JSON.stringify(formData) !== JSON.stringify(initialData);
+
+  const validateForm = (): boolean => {
+    if (!formData.name.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Group name cannot be empty",
+        variant: "destructive",
+      });
+      return false;
     }
 
-    clearMessages();
-    updateGroupMutation.mutate({
-      name,
-      description,
-      private: isPrivate,
-      password: isPrivate && groupPassword ? groupPassword : undefined,
-    });
+    if (formData.isPrivate && !formData.password.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Password is required for private groups",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSave = () => {
+    if (validateForm()) {
+      updateGroupMutation.mutate(formData);
+    }
   };
 
   const handleDelete = () => {
-    clearMessages();
     deleteGroupMutation.mutate();
   };
 
   return (
     <div className="space-y-6 w-full">
-      {successMessage && (
-        <div className="bg-green-500/20 text-green-700 p-3 rounded-md text-sm">
-          {successMessage}
-        </div>
-      )}
-
-      {errorMessage && (
-        <div className="bg-red-500/20 text-red-700 p-3 rounded-md text-sm">
-          {errorMessage}
-        </div>
-      )}
-
       <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -124,8 +179,8 @@ const GroupSettings = ({ groupId, groupData }: GroupSettingsProps) => {
             </label>
             <Input
               id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={formData.name}
+              onChange={handleInputChange}
               placeholder="Enter group name"
             />
           </div>
@@ -135,9 +190,9 @@ const GroupSettings = ({ groupId, groupData }: GroupSettingsProps) => {
             </label>
             <Textarea
               id="description"
-              value={description}
+              value={formData.description}
               className="shadow-sm"
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={handleInputChange}
               placeholder="Enter group description"
               rows={4}
             />
@@ -165,21 +220,21 @@ const GroupSettings = ({ groupId, groupData }: GroupSettingsProps) => {
             </div>
             <Switch
               id="private-group"
-              checked={isPrivate}
-              onCheckedChange={setIsPrivate}
+              checked={formData.isPrivate}
+              onCheckedChange={togglePrivate}
             />
           </div>
 
-          {isPrivate && (
+          {formData.isPrivate && (
             <div className="space-y-2">
-              <label htmlFor="group-password" className="text-sm font-medium">
+              <label htmlFor="password" className="text-sm font-medium">
                 Group Password
               </label>
               <Input
-                id="group-password"
+                id="password"
                 type="password"
-                value={groupPassword}
-                onChange={(e) => setGroupPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleInputChange}
                 placeholder="Enter password for the group"
               />
               <p className="text-xs text-muted-foreground">
@@ -193,15 +248,16 @@ const GroupSettings = ({ groupId, groupData }: GroupSettingsProps) => {
       <Button
         onClick={handleSave}
         disabled={updateGroupMutation.isPending || !hasChanges}
+        className="gap-2"
       >
         {updateGroupMutation.isPending ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
             Saving...
           </>
         ) : (
           <>
-            <Save className="mr-2 h-4 w-4" />
+            <Save className="h-4 w-4" />
             Save Changes
           </>
         )}

@@ -6,31 +6,42 @@ import GroupSettings from "@components/dashboard/tabs/group-settings";
 import GroupFiles from "@components/dashboard/tabs/group-files";
 import DiscussionsLayout from "@components/dashboard/tabs/discussions-layout";
 import { ShieldAlert } from "lucide-react";
-import { getGroupMembers, Group } from "@lib/api/group";
+import { getGroupMembers } from "@lib/api/group";
 import { useQuery } from "@tanstack/react-query";
 import useAuthStore from "@store/auth-store";
+import useGroupStore from "@store/group-store";
 
-interface GroupDetailsProps {
-  groupId: number;
-  group?: Group;
-}
-
-const GroupDetails = ({ groupId, group }: GroupDetailsProps) => {
+const GroupDetails = () => {
   const [activeTab, setActiveTab] = useState("discussions");
   const user = useAuthStore((state) => state.user);
+  const group = useGroupStore((state) => state.currentGroup);
+  const setIsAdmin = useGroupStore((state) => state.setIsAdmin);
 
-  // Fetch group members
+  // Fetch group members - moved before conditional return
   const { data: members = [] } = useQuery({
-    queryKey: ["groupMembers", groupId],
-    queryFn: () => getGroupMembers(groupId),
-    enabled: !!groupId,
+    queryKey: ["groupMembers", group?.id],
+    queryFn: () =>
+      group?.id ? getGroupMembers(group.id) : Promise.resolve([]),
+    enabled: !!group?.id,
   });
+
+  if (!group) {
+    return (
+      <div className="flex items-center justify-center h-full border border-gray-800 rounded-lg dashboard-card">
+        <p className="text-lg text-gray-400">
+          Join a group or create a new one to get started
+        </p>
+      </div>
+    );
+  }
+  const groupId = group.id;
 
   // Determine if user is admin
   const isAdmin = members.some(
     (member) =>
       String(member.userId) === String(user?.id) && member.role === "ADMIN"
   );
+  setIsAdmin(isAdmin);
 
   const tabs = [
     { id: "discussions", label: "Discussions" },
@@ -38,16 +49,6 @@ const GroupDetails = ({ groupId, group }: GroupDetailsProps) => {
     { id: "members", label: "Members" },
     ...(isAdmin ? [{ id: "settings", label: "Settings" }] : []),
   ];
-
-  if (!group) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center">
-        <p className="text-muted-foreground">
-          Group not found. Please select another group.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="h-full flex flex-col">
@@ -114,11 +115,7 @@ const GroupDetails = ({ groupId, group }: GroupDetailsProps) => {
               value="settings"
               className="flex-1 border-none p-6 data-[state=active]:flex flex-col"
             >
-              <GroupSettings
-                groupId={groupId}
-                groupData={group}
-                isAdmin={isAdmin}
-              />
+              <GroupSettings />
             </TabsContent>
           )}
         </Tabs>
