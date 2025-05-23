@@ -1,32 +1,27 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useToast } from "@components/ui/use-toast";
-import {
-  fetchGroupDiscussions,
-  createDiscussion,
-  getDiscussion,
-  Discussion,
-} from "@lib/api/discussion";
+import { fetchGroupDiscussions, getDiscussion } from "@lib/api/discussion";
 import DiscussionsSidebar from "@components/dashboard/discussions-sidebar";
 import DiscussionInfoPanel from "@components/dashboard/discussion-info-panel";
-import CreateDiscussionModal from "@components/dashboard/modals/create-discussion-modal";
 import ChatDiscussionView from "@components/dashboard/chat-discussion-view";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import useGroupStore from "@store/group-store";
+import useChatStore from "@store/chat-store";
 
 const DiscussionsLayout = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const isAdmin = useGroupStore((state) => state.isAdmin);
-  const groupId = useGroupStore((state) => state.currentGroup?.id) as number;
-  const [selectedDiscussionId, setSelectedDiscussionId] = useState<
-    number | null
-  >(null);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const groupId = useGroupStore((state) => state.currentGroup?.id)!;
+  const currentDiscussionId = useChatStore(
+    (state) => state.currentDiscussionId
+  );
+  const setCurrentDiscussionId = useChatStore(
+    (state) => state.setCurrentDiscussionId
+  );
 
-  // Reset selectedDiscussionId whenever groupId changes
+  // Reset currentDiscussionId when groupId changes
   useEffect(() => {
-    setSelectedDiscussionId(null);
-  }, [groupId]);
+    setCurrentDiscussionId(null);
+  }, [groupId, setCurrentDiscussionId]);
 
   // Query for fetching discussions list
   const { data: discussions = [], isLoading: discussionsLoading } = useQuery({
@@ -40,147 +35,61 @@ const DiscussionsLayout = () => {
           title: "Error",
           description: "Failed to load discussions. Please try again.",
         });
-        throw error;
+        console.error(error);
       }
     },
-    enabled: !!groupId,
   });
 
   // Auto-select first discussion when discussions load and none is selected
   useEffect(() => {
-    if (discussions.length > 0 && !selectedDiscussionId) {
-      setSelectedDiscussionId(discussions[0].id);
+    if (discussions.length > 0 && !currentDiscussionId) {
+      setCurrentDiscussionId(discussions[0].id);
     }
-  }, [discussions, selectedDiscussionId]);
+  }, [discussions, currentDiscussionId, setCurrentDiscussionId]);
 
   // Query for fetching selected discussion details
   const { data: selectedDiscussion, isLoading: discussionDetailsLoading } =
     useQuery({
-      queryKey: ["discussion-details", groupId, selectedDiscussionId],
+      queryKey: ["discussion-details", groupId, currentDiscussionId],
       queryFn: async () => {
         try {
-          if (!groupId || !selectedDiscussionId) {
-            throw new Error("Group ID or Discussion ID is missing");
-          }
-          return await getDiscussion(groupId, selectedDiscussionId);
+          return await getDiscussion(groupId, currentDiscussionId!);
         } catch (error) {
           toast({
             variant: "destructive",
             title: "Error",
             description: "Failed to load discussion details. Please try again.",
           });
-          throw error;
+          console.error(error);
         }
       },
       enabled:
-        !!groupId &&
-        !!selectedDiscussionId &&
-        discussions.some((d) => d.id === selectedDiscussionId),
+        !!currentDiscussionId &&
+        !!discussions.find((d) => d.id === currentDiscussionId),
     });
-
-  // Mutation for creating new discussions
-  const createDiscussionMutation = useMutation({
-    mutationFn: ({ title, content }: { title: string; content: string }) =>
-      createDiscussion(groupId, {
-        title,
-        content: content || undefined,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["discussions", groupId] });
-      toast({
-        title: "Success",
-        description: "Discussion created successfully",
-      });
-      setCreateDialogOpen(false);
-    },
-    onError: () => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to create discussion. Please try again.",
-      });
-    },
-  });
-
-  const handleSelectDiscussion = (discussionId: number) => {
-    setSelectedDiscussionId(discussionId);
-  };
-
-  const handleCreateDiscussion = async (title: string, content: string) => {
-    createDiscussionMutation.mutate({ title, content });
-  };
-
-  const handleCommentDeleted = () => {
-    queryClient.invalidateQueries({
-      queryKey: ["discussion", groupId, selectedDiscussionId],
-    });
-  };
-
-  const handleUpdateDiscussion = (updatedDiscussion: Discussion) => {
-    // Update both queries in one go
-    queryClient.setQueryData<Discussion>(
-      ["discussion-details", groupId, updatedDiscussion.id],
-      updatedDiscussion
-    );
-
-    queryClient.setQueryData<Discussion[]>(
-      ["discussions", groupId],
-      (oldData) => {
-        if (!oldData) return [];
-        return oldData.map((disc) =>
-          disc.id === updatedDiscussion.id
-            ? { ...disc, _count: updatedDiscussion._count }
-            : disc
-        );
-      }
-    );
-  };
-
-  // Compute loading state
-  const loading = discussionsLoading || discussionDetailsLoading;
 
   return (
     <div className="flex h-full w-full">
       <DiscussionsSidebar
+        loading={discussionsLoading}
         discussions={discussions}
-        selectedDiscussionId={selectedDiscussionId}
-        onSelectDiscussion={handleSelectDiscussion}
-        onNewDiscussion={() => setCreateDialogOpen(true)}
       />
 
       <div className="flex w-full">
-        {selectedDiscussionId && (
+        {currentDiscussionId && !discussionsLoading && (
           <>
             <div className="flex-1">
               <ChatDiscussionView
-                groupId={groupId}
-                discussionId={selectedDiscussionId}
-                isAdmin={isAdmin}
-                onCommentDeleted={handleCommentDeleted}
-                onUpdateDiscussion={handleUpdateDiscussion}
                 discussion={selectedDiscussion}
-                discussionLoading={loading}
+                discussionLoading={discussionDetailsLoading}
               />
             </div>
             <div className="min-w-80 max-w-80 shrink-0 border-l">
-              <DiscussionInfoPanel
-                discussionId={selectedDiscussionId}
-                groupId={groupId}
-                isAdmin={isAdmin}
-                discussion={selectedDiscussion}
-                discussionLoading={loading}
-                onUpdateDiscussion={handleUpdateDiscussion}
-              />
+              <DiscussionInfoPanel />
             </div>
           </>
         )}
       </div>
-
-      <CreateDiscussionModal
-        isOpen={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-        onCreateDiscussion={handleCreateDiscussion}
-      />
     </div>
   );
 };

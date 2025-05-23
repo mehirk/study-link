@@ -83,16 +83,16 @@ export function useChat({
   }, [groupId, discussionId, lastCommentId, onUpdateDiscussion]);
 
   // Set up polling interval
-  useEffect(() => {
-    // Start polling when component mounts
-    pollIntervalRef.current = setInterval(pollForNewComments, 2000);
+  // useEffect(() => {
+  //   // Start polling when component mounts
+  //   pollIntervalRef.current = setInterval(pollForNewComments, 2000);
 
-    return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
-    };
-  }, [pollForNewComments]);
+  //   return () => {
+  //     if (pollIntervalRef.current) {
+  //       clearInterval(pollIntervalRef.current);
+  //     }
+  //   };
+  // }, [pollForNewComments]);
 
   // Add comment
   const addComment = async (content: string) => {

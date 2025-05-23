@@ -9,12 +9,17 @@ import { useToast } from "@components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 import useGroupStore from "@store/group-store";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import useChatStore from "@store/chat-store";
 
 const GroupSidebar = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const { toast } = useToast();
-  const { currentGroup, setCurrentGroup } = useGroupStore();
+  const currentGroup = useGroupStore((state) => state.currentGroup);
+  const setCurrentGroup = useGroupStore((state) => state.setCurrentGroup);
+  const setCurrentDiscussionId = useChatStore(
+    (state) => state.setCurrentDiscussionId
+  );
   const queryClient = useQueryClient();
 
   const { data: groups = [], isLoading } = useQuery<Group[]>({
@@ -39,6 +44,7 @@ const GroupSidebar = () => {
     try {
       const newGroup = await createGroup({ name, description });
       setCurrentGroup(newGroup);
+      setCurrentDiscussionId(null);
       queryClient.invalidateQueries({ queryKey: ["groups"] });
     } catch (error) {
       console.error("Failed to create group:", error);
@@ -63,6 +69,7 @@ const GroupSidebar = () => {
       const joinedGroup = updatedGroups.find((g) => g.id === Number(groupId));
       if (joinedGroup) {
         setCurrentGroup(joinedGroup);
+        setCurrentDiscussionId(null);
       }
     } catch (error) {
       console.error("Failed to join group:", error);

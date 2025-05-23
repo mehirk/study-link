@@ -12,31 +12,52 @@ import MessageInput from "@components/dashboard/chat/message-input";
 import { getDateDisplay, getInitials } from "@lib/utils";
 import { Loader2 } from "lucide-react";
 import useAuthStore from "@store/auth-store";
+import useGroupStore from "@store/group-store";
+import useChatStore from "@store/chat-store";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ChatDiscussionViewProps {
-  groupId: number;
-  discussionId: number;
-  isAdmin: boolean;
   discussion?: Discussion | null;
-  discussionLoading?: boolean;
-  onCommentDeleted?: (discussionId: number, commentCount: number) => void;
-  onUpdateDiscussion?: (discussion: Discussion) => void;
+  discussionLoading: boolean;
 }
 
 // Main component
 const ChatDiscussionView = ({
-  groupId,
-  discussionId,
   discussion,
-  discussionLoading = false,
-  onCommentDeleted,
-  onUpdateDiscussion,
+  discussionLoading,
 }: ChatDiscussionViewProps) => {
   const user = useAuthStore((state) => state.user);
-
+  const groupId = useGroupStore((state) => state.currentGroup?.id)!;
+  const discussionId = useChatStore((state) => state.currentDiscussionId)!;
+  const queryClient = useQueryClient();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const handleCommentDeleted = () => {
+    queryClient.invalidateQueries({
+      queryKey: ["discussion", groupId, discussionId],
+    });
+  };
+
+  const handleUpdateDiscussion = (updatedDiscussion: Discussion) => {
+    // Update both queries in one go
+    queryClient.setQueryData<Discussion>(
+      ["discussion-details", groupId, updatedDiscussion.id],
+      updatedDiscussion
+    );
+
+    queryClient.setQueryData<Discussion[]>(
+      ["discussions", groupId],
+      (oldData) => {
+        if (!oldData) return [];
+        return oldData.map((disc) =>
+          disc.id === updatedDiscussion.id
+            ? { ...disc, _count: updatedDiscussion._count }
+            : disc
+        );
+      }
+    );
+  };
   // Use the chat discussion hook
   const {
     comments,
@@ -50,8 +71,8 @@ const ChatDiscussionView = ({
     discussionId,
     discussion,
     discussionLoading,
-    onCommentDeleted,
-    onUpdateDiscussion,
+    onCommentDeleted: handleCommentDeleted,
+    onUpdateDiscussion: handleUpdateDiscussion,
   });
 
   // Local state for UI components
@@ -119,7 +140,7 @@ const ChatDiscussionView = ({
   return (
     <div className="flex flex-col h-[calc(100vh-180px)] min-w-[40vw]">
       <div className="px-4 py-3 border-b flex-shrink-0">
-        <h2 className="text-xl font-semibold">Group Chat</h2>
+        <h2 className="text-xl font-semibold">Discussion Chat</h2>
       </div>
 
       <div className="flex-1 flex flex-col min-h-0">
