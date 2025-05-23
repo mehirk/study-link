@@ -9,7 +9,7 @@ import CommentItem from "@components/dashboard/chat/comment-item";
 import DateSeparator from "@components/dashboard/chat/date-separator";
 import EditCommentForm from "@components/dashboard/chat/edit-comment-form";
 import MessageInput from "@components/dashboard/chat/message-input";
-import { getDateDisplay, getInitials } from "@components/dashboard/chat/utils";
+import { getDateDisplay, getInitials } from "@lib/utils";
 import { Loader2 } from "lucide-react";
 import useAuthStore from "@store/auth-store";
 
