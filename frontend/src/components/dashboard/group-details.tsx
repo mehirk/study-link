@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { CardHeader, CardContent } from "@components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@components/ui/tabs";
 import GroupMembers from "@components/dashboard/tabs/group-members";
@@ -8,19 +7,40 @@ import DiscussionsLayout from "@components/dashboard/tabs/discussions-layout";
 import { ShieldAlert } from "lucide-react";
 import { getGroupMembers } from "@lib/api/group";
 import { useQuery } from "@tanstack/react-query";
-import useAuthStore from "@store/auth-store";
 import useGroupStore from "@store/group-store";
+import { useEffect } from "react";
+import { getGroupFiles } from "@lib/api/files";
 
 const GroupDetails = () => {
-  const [activeTab, setActiveTab] = useState("discussions");
-  const user = useAuthStore((state) => state.user);
   const group = useGroupStore((state) => state.currentGroup);
+  const activeTab = useGroupStore((state) => state.activeTab);
+  const setActiveTab = useGroupStore((state) => state.setActiveTab);
+  const isAdmin = useGroupStore((state) => state.isAdmin);
+  const updateAdminStatus = useGroupStore((state) => state.updateAdminStatus);
 
   const { data: members = [] } = useQuery({
     queryKey: ["group-members", group?.id],
     queryFn: () => getGroupMembers(group?.id as number),
     enabled: !!group?.id,
   });
+
+  useQuery({
+    queryKey: ["group-files", group?.id],
+    queryFn: () => getGroupFiles(group?.id as number),
+    enabled: !!group?.id,
+  });
+
+  useEffect(() => {
+    if (members.length > 0) {
+      updateAdminStatus(members);
+    }
+  }, [members, updateAdminStatus]);
+
+  useEffect(() => {
+    if (activeTab === "settings" && !isAdmin) {
+      setActiveTab("discussions");
+    }
+  }, [activeTab, isAdmin, setActiveTab]);
 
   if (!group) {
     return (
@@ -31,12 +51,6 @@ const GroupDetails = () => {
       </div>
     );
   }
-  const groupId = group.id;
-
-  const isAdmin = members.some(
-    (member) =>
-      String(member.userId) === String(user?.id) && member.role === "ADMIN"
-  );
 
   const tabs = [
     { id: "discussions", label: "Discussions" },
@@ -84,25 +98,21 @@ const GroupDetails = () => {
             value="discussions"
             className="flex-1 border-none data-[state=active]:flex"
           >
-            <DiscussionsLayout groupId={groupId} isAdmin={isAdmin} />
+            <DiscussionsLayout />
           </TabsContent>
 
           <TabsContent
             value="files"
             className="flex-1 border-none p-6 data-[state=active]:flex flex-col"
           >
-            <GroupFiles groupId={groupId} isAdmin={isAdmin} />
+            <GroupFiles />
           </TabsContent>
 
           <TabsContent
             value="members"
             className="flex-1 border-none p-6 data-[state=active]:flex flex-col"
           >
-            <GroupMembers
-              groupId={groupId}
-              members={members}
-              isAdmin={isAdmin}
-            />
+            <GroupMembers />
           </TabsContent>
 
           {isAdmin && (

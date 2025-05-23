@@ -20,19 +20,17 @@ import {
   deleteFile,
 } from "@lib/api/files";
 import useAuthStore from "@store/auth-store";
+import useGroupStore from "@store/group-store";
 
-interface GroupFilesProps {
-  groupId: number;
-  isAdmin: boolean;
-}
-
-const GroupFiles = ({ groupId, isAdmin }: GroupFilesProps) => {
+const GroupFiles = () => {
   const user = useAuthStore((state) => state.user);
+  const isAdmin = useGroupStore((state) => state.isAdmin);
+  const groupId = useGroupStore((state) => state.currentGroup?.id) as number;
   const queryClient = useQueryClient();
 
   // Fetch files
   const { data: files = [] } = useQuery({
-    queryKey: ["groupFiles", groupId],
+    queryKey: ["group-files", groupId],
     queryFn: () => getGroupFiles(groupId),
     enabled: !!groupId,
   });

@@ -8,21 +8,23 @@ import {
   changeUserRole,
   removeMember,
   leaveGroup,
-  GroupMember,
+  getGroupMembers,
 } from "@lib/api/group";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@components/ui/use-toast";
 import { getInitials } from "@components/dashboard/chat/utils";
+import useGroupStore from "@store/group-store";
 
-interface GroupMembersProps {
-  groupId: number;
-  isAdmin: boolean;
-  members: GroupMember[];
-}
-
-const GroupMembers = ({ groupId, isAdmin, members }: GroupMembersProps) => {
+const GroupMembers = () => {
   const user = useAuthStore((state) => state.user);
+  const groupId = useGroupStore((state) => state.currentGroup?.id) as number;
+  const isAdmin = useGroupStore((state) => state.isAdmin);
   const queryClient = useQueryClient();
+
+  const { data: members = [] } = useQuery({
+    queryKey: ["group-members", groupId],
+    queryFn: () => getGroupMembers(groupId),
+  });
 
   // Remove member mutation
   const removeMemberMutation = useMutation({

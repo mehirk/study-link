@@ -11,15 +11,13 @@ import DiscussionInfoPanel from "@components/dashboard/discussion-info-panel";
 import CreateDiscussionModal from "@components/dashboard/modals/create-discussion-modal";
 import ChatDiscussionView from "@components/dashboard/chat-discussion-view";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import useGroupStore from "@store/group-store";
 
-interface DiscussionsLayoutProps {
-  groupId: number;
-  isAdmin: boolean;
-}
-
-const DiscussionsLayout = ({ groupId, isAdmin }: DiscussionsLayoutProps) => {
+const DiscussionsLayout = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const isAdmin = useGroupStore((state) => state.isAdmin);
+  const groupId = useGroupStore((state) => state.currentGroup?.id) as number;
   const [selectedDiscussionId, setSelectedDiscussionId] = useState<
     number | null
   >(null);
