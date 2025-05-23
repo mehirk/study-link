@@ -41,11 +41,6 @@ export function AuthTabs() {
       setUser(data.user);
       setIsAuthenticated(true);
       await refreshSession();
-
-      toast({
-        title: "Success",
-        description: "You have been signed in successfully!",
-      });
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred during sign in";
@@ -85,11 +80,6 @@ export function AuthTabs() {
       setUser(data.user);
       setIsAuthenticated(true);
       await refreshSession();
-
-      toast({
-        title: "Account created",
-        description: "Your account has been created successfully!",
-      });
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred during sign up";
