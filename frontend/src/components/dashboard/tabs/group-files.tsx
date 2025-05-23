@@ -25,14 +25,13 @@ import useGroupStore from "@store/group-store";
 const GroupFiles = () => {
   const user = useAuthStore((state) => state.user);
   const isAdmin = useGroupStore((state) => state.isAdmin);
-  const groupId = useGroupStore((state) => state.currentGroup?.id) as number;
+  const groupId = useGroupStore((state) => state.currentGroup?.id)!;
   const queryClient = useQueryClient();
 
   // Fetch files
   const { data: files = [] } = useQuery({
     queryKey: ["group-files", groupId],
     queryFn: () => getGroupFiles(groupId),
-    enabled: !!groupId,
   });
 
   // Delete file mutation

@@ -17,8 +17,10 @@ import useGroupStore from "@store/group-store";
 
 const GroupMembers = () => {
   const user = useAuthStore((state) => state.user);
-  const groupId = useGroupStore((state) => state.currentGroup?.id) as number;
+  const groupId = useGroupStore((state) => state.currentGroup?.id)!;
   const isAdmin = useGroupStore((state) => state.isAdmin);
+  const setCurrentGroup = useGroupStore((state) => state.setCurrentGroup);
+  const setActiveTab = useGroupStore((state) => state.setActiveTab);
   const queryClient = useQueryClient();
 
   const { data: members = [] } = useQuery({
@@ -31,7 +33,7 @@ const GroupMembers = () => {
     mutationFn: ({ groupId, userId }: { groupId: number; userId: string }) =>
       removeMember(groupId, userId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groupMembers", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["group-members", groupId] });
       toast({
         title: "Success",
         description: "Member removed successfully",
@@ -51,7 +53,9 @@ const GroupMembers = () => {
   const leaveGroupMutation = useMutation({
     mutationFn: (groupId: number) => leaveGroup(groupId),
     onSuccess: () => {
-      window.location.reload();
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      setCurrentGroup(null);
+      setActiveTab("discussions");
     },
     onError: (error) => {
       console.error("Error leaving group:", error);
@@ -75,7 +79,7 @@ const GroupMembers = () => {
       role: "ADMIN" | "MEMBER";
     }) => changeUserRole(groupId, userId, role),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groupMembers", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["group-members", groupId] });
       toast({
         title: "Success",
         description: "Role updated successfully",

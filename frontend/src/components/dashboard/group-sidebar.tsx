@@ -20,7 +20,6 @@ const GroupSidebar = () => {
   const { data: groups = [], isLoading } = useQuery<Group[]>({
     queryKey: ["groups"],
     queryFn: fetchUserGroups,
-    staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {

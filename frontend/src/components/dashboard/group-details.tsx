@@ -12,22 +12,20 @@ import { useEffect } from "react";
 import { getGroupFiles } from "@lib/api/files";
 
 const GroupDetails = () => {
-  const group = useGroupStore((state) => state.currentGroup);
+  const group = useGroupStore((state) => state.currentGroup)!;
   const activeTab = useGroupStore((state) => state.activeTab);
   const setActiveTab = useGroupStore((state) => state.setActiveTab);
   const isAdmin = useGroupStore((state) => state.isAdmin);
   const updateAdminStatus = useGroupStore((state) => state.updateAdminStatus);
 
   const { data: members = [] } = useQuery({
-    queryKey: ["group-members", group?.id],
-    queryFn: () => getGroupMembers(group?.id as number),
-    enabled: !!group?.id,
+    queryKey: ["group-members", group.id],
+    queryFn: () => getGroupMembers(group.id),
   });
 
   useQuery({
-    queryKey: ["group-files", group?.id],
-    queryFn: () => getGroupFiles(group?.id as number),
-    enabled: !!group?.id,
+    queryKey: ["group-files", group.id],
+    queryFn: () => getGroupFiles(group.id),
   });
 
   useEffect(() => {
@@ -41,16 +39,6 @@ const GroupDetails = () => {
       setActiveTab("discussions");
     }
   }, [activeTab, isAdmin, setActiveTab]);
-
-  if (!group) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-lg text-gray-400">
-          Join a group or create a new one to get started
-        </p>
-      </div>
-    );
-  }
 
   const tabs = [
     { id: "discussions", label: "Discussions" },

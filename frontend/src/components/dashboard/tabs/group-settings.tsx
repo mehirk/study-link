@@ -27,7 +27,7 @@ type GroupFormData = {
 const GroupSettings = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const group = useGroupStore((state) => state.currentGroup);
+  const group = useGroupStore((state) => state.currentGroup)!;
   const setCurrentGroup = useGroupStore((state) => state.setCurrentGroup);
 
   const [formData, setFormData] = useState<GroupFormData>({
@@ -111,10 +111,6 @@ const GroupSettings = () => {
       setInitialData(newData);
     }
   }, [group]);
-
-  if (!group) {
-    return null;
-  }
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
