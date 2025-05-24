@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 import { useToast } from "@components/ui/use-toast";
-import { fetchGroupDiscussions, getDiscussion } from "@lib/api/discussion";
+import {
+  fetchGroupDiscussions,
+  // getDiscussionDetails,
+} from "@lib/api/discussion";
 import DiscussionsSidebar from "@components/dashboard/discussions-sidebar";
 import DiscussionInfoPanel from "@components/dashboard/discussion-info-panel";
 import ChatDiscussionView from "@components/dashboard/chat-discussion-view";
@@ -42,26 +45,26 @@ const DiscussionsLayout = () => {
     }
   }, [discussions, currentDiscussionId, setCurrentDiscussionId]);
 
-  // Query for fetching selected discussion details
-  const { data: selectedDiscussion, isLoading: discussionDetailsLoading } =
-    useQuery({
-      queryKey: ["discussion-details", groupId, currentDiscussionId],
-      queryFn: async () => {
-        try {
-          return await getDiscussion(groupId, currentDiscussionId!);
-        } catch (error) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to load discussion details. Please try again.",
-          });
-          console.error(error);
-        }
-      },
-      enabled:
-        !!currentDiscussionId &&
-        !!discussions.find((d) => d.id === currentDiscussionId),
-    });
+  // // Query for fetching selected discussion details
+  // const { data: selectedDiscussion, isLoading: discussionDetailsLoading } =
+  //   useQuery({
+  //     queryKey: ["discussion-details", groupId, currentDiscussionId],
+  //     queryFn: async () => {
+  //       try {
+  //         return await getDiscussionDetails(groupId, currentDiscussionId!);
+  //       } catch (error) {
+  //         toast({
+  //           variant: "destructive",
+  //           title: "Error",
+  //           description: "Failed to load discussion details. Please try again.",
+  //         });
+  //         console.error(error);
+  //       }
+  //     },
+  //     enabled:
+  //       !!currentDiscussionId &&
+  //       !!discussions.find((d) => d.id === currentDiscussionId),
+  //   });
 
   return (
     <div className="flex h-full w-full">
@@ -75,8 +78,8 @@ const DiscussionsLayout = () => {
           <>
             <div className="flex-1">
               <ChatDiscussionView
-                discussion={selectedDiscussion}
-                discussionLoading={discussionDetailsLoading}
+              // discussion={selectedDiscussion}
+              // discussionLoading={discussionDetailsLoading}
               />
             </div>
             <div className="min-w-80 max-w-80 shrink-0 border-l">

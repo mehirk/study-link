@@ -1,10 +1,9 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@components/ui/use-toast";
 import {
   addComment as apiAddComment,
   deleteComment as apiDeleteComment,
   updateComment as apiUpdateComment,
-  getDiscussion as apiGetDiscussion,
   Discussion,
   Comment,
 } from "@lib/api/discussion";
@@ -32,20 +31,11 @@ export function useChat({
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [lastCommentId, setLastCommentId] = useState<number | null>(null);
-  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Set comments from the discussion prop
   useEffect(() => {
     if (discussion && discussion.comments) {
       setComments(discussion.comments);
-
-      // Update lastCommentId for comparison during polling
-      if (discussion.comments.length > 0) {
-        const lastComment = discussion.comments[discussion.comments.length - 1];
-        setLastCommentId(lastComment.id);
-      }
-
       setLoading(false);
     } else {
       // If no comments in discussion, set empty array
@@ -53,46 +43,6 @@ export function useChat({
       setLoading(discussionLoading);
     }
   }, [discussion, discussionLoading]);
-
-  // Polling function to fetch latest discussion data
-  const pollForNewComments = useCallback(async () => {
-    if (!groupId || !discussionId) return;
-
-    try {
-      const latestDiscussion = await apiGetDiscussion(groupId, discussionId);
-
-      // Check if there are new comments
-      if (latestDiscussion.comments?.length) {
-        const newLastComment =
-          latestDiscussion.comments[latestDiscussion.comments.length - 1];
-
-        // Only update if there are new comments
-        if (!lastCommentId || newLastComment.id > lastCommentId) {
-          setComments(latestDiscussion.comments);
-          setLastCommentId(newLastComment.id);
-
-          // Update parent component if callback exists
-          if (onUpdateDiscussion) {
-            onUpdateDiscussion(latestDiscussion);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Failed to poll for new comments:", error);
-    }
-  }, [groupId, discussionId, lastCommentId, onUpdateDiscussion]);
-
-  // Set up polling interval
-  // useEffect(() => {
-  //   // Start polling when component mounts
-  //   pollIntervalRef.current = setInterval(pollForNewComments, 2000);
-
-  //   return () => {
-  //     if (pollIntervalRef.current) {
-  //       clearInterval(pollIntervalRef.current);
-  //     }
-  //   };
-  // }, [pollForNewComments]);
 
   // Add comment
   const addComment = async (content: string) => {

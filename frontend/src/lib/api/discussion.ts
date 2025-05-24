@@ -25,9 +25,9 @@ export interface Comment {
   content: string;
   authorId: string;
   discussionId: number;
-  createdAt: string;
-  updatedAt: string;
-  author: {
+  createdAt: string | number;
+  updatedAt: string | number;
+  author?: {
     id: string;
     name: string;
     email: string;
@@ -38,13 +38,13 @@ export interface Comment {
 // Fetch discussions for a group
 export const fetchGroupDiscussions = async (
   groupId: number
-): Promise<Discussion[]> => {
+): Promise<Omit<Discussion, "comments">[]> => {
   const response = await apiClient.get(`/discussions/${groupId}`);
   return response.data;
 };
 
 // Get a specific discussion with comments
-export const getDiscussion = async (
+export const getDiscussionDetails = async (
   groupId: number,
   discussionId: number
 ): Promise<Discussion> => {
