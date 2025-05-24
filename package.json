@@ -14,5 +14,10 @@
   "engines": {
     "node": "20.x"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@rocicorp/zero-sqlite3"
+    ]
+  },
   "packageManager": "pnpm@10.11.0"
 }
