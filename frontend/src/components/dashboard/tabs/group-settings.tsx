@@ -27,7 +27,7 @@ type GroupFormData = {
 const GroupSettings = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const group = useGroupStore((state) => state.currentGroup);
+  const group = useGroupStore((state) => state.currentGroup)!;
   const setCurrentGroup = useGroupStore((state) => state.setCurrentGroup);
 
   const [formData, setFormData] = useState<GroupFormData>({
@@ -56,7 +56,7 @@ const GroupSettings = () => {
     },
     onSuccess: () => {
       if (group) {
-        queryClient.invalidateQueries({ queryKey: ["group", group.id] });
+        queryClient.invalidateQueries({ queryKey: ["groups"] });
         setCurrentGroup({
           id: group.id,
           createdAt: group.createdAt,
@@ -68,11 +68,6 @@ const GroupSettings = () => {
         });
         setInitialData({ ...formData });
       }
-      toast({
-        title: "Success",
-        description: "Group settings updated successfully",
-        variant: "default",
-      });
     },
     onError: (error) => {
       console.error("Error updating group:", error);
@@ -116,10 +111,6 @@ const GroupSettings = () => {
       setInitialData(newData);
     }
   }, [group]);
-
-  if (!group) {
-    return null;
-  }
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

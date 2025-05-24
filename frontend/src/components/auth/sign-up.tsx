@@ -70,7 +70,7 @@ export function SignupForm({
   };
 
   return (
-    <Card className="max-w-md w-full mx-auto rounded-none md:rounded-2xl p-0 shadow-input">
+    <Card className="max-w-md w-full mx-auto">
       <CardHeader className="pb-0">
         <CardTitle>Welcome to Study Link</CardTitle>
         <CardDescription>
@@ -80,20 +80,18 @@ export function SignupForm({
 
       <CardContent>
         <form className="my-4" onSubmit={handleSubmit}>
-          <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
-            <LabelInputContainer className="w-full">
-              <Label htmlFor="firstname">Name</Label>
-              <Input
-                id="firstname"
-                placeholder="Your name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={isLoading}
-                required
-              />
-            </LabelInputContainer>
-          </div>
+          <LabelInputContainer className="mb-4">
+            <Label htmlFor="firstname">Name</Label>
+            <Input
+              id="firstname"
+              placeholder="Your name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={isLoading}
+              required
+            />
+          </LabelInputContainer>
 
           <LabelInputContainer className="mb-4">
             <Label htmlFor="email">Email Address</Label>

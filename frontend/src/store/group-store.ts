@@ -1,24 +1,45 @@
-import { fetchUserGroups, Group } from "@lib/api/group";
+import type { Group, GroupMember } from "@lib/api/group";
 import { create } from "zustand";
+import useAuthStore from "./auth-store";
 
 interface GroupStore {
-  groups: Group[];
   currentGroup: Group | null;
   isAdmin: boolean;
+  activeTab: string;
   setCurrentGroup: (group: Group | null) => void;
   setIsAdmin: (isAdmin: boolean) => void;
-  fetchGroups: () => Promise<void>;
+  setActiveTab: (tab: string) => void;
+  updateAdminStatus: (members: GroupMember[]) => void;
 }
 
-const useGroupStore = create<GroupStore>((set) => ({
-  groups: [],
+const useGroupStore = create<GroupStore>((set, get) => ({
   currentGroup: null,
-  setCurrentGroup: (group) => set({ currentGroup: group }),
+  activeTab: "discussions",
   isAdmin: false,
+
+  setCurrentGroup: (group) => {
+    set({ currentGroup: group });
+  },
+
   setIsAdmin: (isAdmin) => set({ isAdmin }),
-  fetchGroups: async () => {
-    const groups = await fetchUserGroups();
-    set({ groups });
+
+  setActiveTab: (tab) => set({ activeTab: tab }),
+
+  updateAdminStatus: (members) => {
+    const currentGroup = get().currentGroup;
+    const user = useAuthStore.getState().user;
+
+    if (!currentGroup || !user || members.length === 0) {
+      set({ isAdmin: false });
+      return;
+    }
+
+    const isAdmin = members.some(
+      (member) =>
+        String(member.userId) === String(user.id) && member.role === "ADMIN"
+    );
+
+    set({ isAdmin });
   },
 }));
 

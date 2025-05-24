@@ -8,28 +8,32 @@ import {
   changeUserRole,
   removeMember,
   leaveGroup,
-  GroupMember,
+  getGroupMembers,
 } from "@lib/api/group";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@components/ui/use-toast";
-import { getInitials } from "@components/dashboard/chat/utils";
+import { getInitials } from "@lib/utils";
+import useGroupStore from "@store/group-store";
 
-interface GroupMembersProps {
-  groupId: number;
-  isAdmin: boolean;
-  members: GroupMember[];
-}
-
-const GroupMembers = ({ groupId, isAdmin, members }: GroupMembersProps) => {
+const GroupMembers = () => {
   const user = useAuthStore((state) => state.user);
+  const groupId = useGroupStore((state) => state.currentGroup?.id)!;
+  const isAdmin = useGroupStore((state) => state.isAdmin);
+  const setCurrentGroup = useGroupStore((state) => state.setCurrentGroup);
+  const setActiveTab = useGroupStore((state) => state.setActiveTab);
   const queryClient = useQueryClient();
+
+  const { data: members = [] } = useQuery({
+    queryKey: ["group-members", groupId],
+    queryFn: () => getGroupMembers(groupId),
+  });
 
   // Remove member mutation
   const removeMemberMutation = useMutation({
     mutationFn: ({ groupId, userId }: { groupId: number; userId: string }) =>
       removeMember(groupId, userId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groupMembers", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["group-members", groupId] });
       toast({
         title: "Success",
         description: "Member removed successfully",
@@ -49,7 +53,9 @@ const GroupMembers = ({ groupId, isAdmin, members }: GroupMembersProps) => {
   const leaveGroupMutation = useMutation({
     mutationFn: (groupId: number) => leaveGroup(groupId),
     onSuccess: () => {
-      window.location.reload();
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      setCurrentGroup(null);
+      setActiveTab("discussions");
     },
     onError: (error) => {
       console.error("Error leaving group:", error);
@@ -73,7 +79,7 @@ const GroupMembers = ({ groupId, isAdmin, members }: GroupMembersProps) => {
       role: "ADMIN" | "MEMBER";
     }) => changeUserRole(groupId, userId, role),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groupMembers", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["group-members", groupId] });
       toast({
         title: "Success",
         description: "Role updated successfully",

@@ -9,34 +9,63 @@ import CommentItem from "@components/dashboard/chat/comment-item";
 import DateSeparator from "@components/dashboard/chat/date-separator";
 import EditCommentForm from "@components/dashboard/chat/edit-comment-form";
 import MessageInput from "@components/dashboard/chat/message-input";
-import { getDateDisplay, getInitials } from "@components/dashboard/chat/utils";
+import { getDateDisplay, getInitials } from "@lib/utils";
 import { Loader2 } from "lucide-react";
 import useAuthStore from "@store/auth-store";
+import useGroupStore from "@store/group-store";
+import useChatStore from "@store/chat-store";
+import { useQueryClient } from "@tanstack/react-query";
+import { Schema } from "../../../../zero-syncer/generated/schema";
+import { useQuery as useZeroQuery, useZero } from "@rocicorp/zero/react";
 
-interface ChatDiscussionViewProps {
-  groupId: number;
-  discussionId: number;
-  isAdmin: boolean;
-  discussion?: Discussion | null;
-  discussionLoading?: boolean;
-  onCommentDeleted?: (discussionId: number, commentCount: number) => void;
-  onUpdateDiscussion?: (discussion: Discussion) => void;
-}
+// interface ChatDiscussionViewProps {
+//   discussion?: Discussion | null;
+//   discussionLoading: boolean;
+// }
 
 // Main component
-const ChatDiscussionView = ({
-  groupId,
-  discussionId,
-  discussion,
-  discussionLoading = false,
-  onCommentDeleted,
-  onUpdateDiscussion,
-}: ChatDiscussionViewProps) => {
+const ChatDiscussionView = () => {
   const user = useAuthStore((state) => state.user);
-
+  const groupId = useGroupStore((state) => state.currentGroup?.id)!;
+  const discussionId = useChatStore((state) => state.currentDiscussionId)!;
+  const queryClient = useQueryClient();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const z = useZero<Schema>();
+
+  const discussionQuery = z.query.comment
+    .where("discussionId", "=", discussionId)
+    .where("deletedAt", "IS", null)
+    .related("author");
+
+  const [chat] = useZeroQuery(discussionQuery);
+
+  const handleCommentDeleted = () => {
+    queryClient.invalidateQueries({
+      queryKey: ["discussion", groupId, discussionId],
+    });
+  };
+
+  const handleUpdateDiscussion = (updatedDiscussion: Discussion) => {
+    // Update both queries in one go
+    queryClient.setQueryData<Discussion>(
+      ["discussion-details", groupId, updatedDiscussion.id],
+      updatedDiscussion
+    );
+
+    queryClient.setQueryData<Discussion[]>(
+      ["discussions", groupId],
+      (oldData) => {
+        if (!oldData) return [];
+        return oldData.map((disc) =>
+          disc.id === updatedDiscussion.id
+            ? { ...disc, _count: updatedDiscussion._count }
+            : disc
+        );
+      }
+    );
+  };
   // Use the chat discussion hook
   const {
     comments,
@@ -48,10 +77,10 @@ const ChatDiscussionView = ({
   } = useChat({
     groupId,
     discussionId,
-    discussion,
-    discussionLoading,
-    onCommentDeleted,
-    onUpdateDiscussion,
+    // discussion,
+    // discussionLoading,
+    onCommentDeleted: handleCommentDeleted,
+    onUpdateDiscussion: handleUpdateDiscussion,
   });
 
   // Local state for UI components
@@ -119,7 +148,7 @@ const ChatDiscussionView = ({
   return (
     <div className="flex flex-col h-[calc(100vh-180px)] min-w-[40vw]">
       <div className="px-4 py-3 border-b flex-shrink-0">
-        <h2 className="text-xl font-semibold">Group Chat</h2>
+        <h2 className="text-xl font-semibold">Discussion Chat</h2>
       </div>
 
       <div className="flex-1 flex flex-col min-h-0">
@@ -130,18 +159,16 @@ const ChatDiscussionView = ({
             </div>
           ) : (
             <div className="space-y-2">
-              {discussion?.comments && discussion.comments.length > 0 ? (
+              {chat && chat.length > 0 ? (
                 <>
-                  {discussion.comments.reduce<React.ReactNode[]>(
+                  {chat.reduce<React.ReactNode[]>(
                     (elements, comment, index) => {
                       const currentDate = new Date(comment.createdAt);
                       const isCurrentUser = comment.authorId === user?.id;
 
                       // Check if this comment is from the same author as the previous one
                       const prevComment =
-                        index > 0 && discussion.comments
-                          ? discussion.comments[index - 1]
-                          : null;
+                        index > 0 && chat ? chat[index - 1] : null;
                       const isSameAuthorAsPrevious =
                         prevComment &&
                         prevComment.authorId === comment.authorId;
@@ -187,11 +214,11 @@ const ChatDiscussionView = ({
                                 {showAvatar ? (
                                   <Avatar className="h-10 w-10 flex-shrink-0">
                                     <AvatarImage
-                                      src={comment.author.image || ""}
-                                      alt={comment.author.name}
+                                      src={comment.author?.image ?? ""}
+                                      alt={comment.author?.name || ""}
                                     />
                                     <AvatarFallback>
-                                      {getInitials(comment.author.name)}
+                                      {getInitials(comment.author?.name || "")}
                                     </AvatarFallback>
                                   </Avatar>
                                 ) : (
@@ -200,7 +227,7 @@ const ChatDiscussionView = ({
                                 <div>
                                   {!isCurrentUser && isFirstInGroup && (
                                     <div className="text-sm font-medium mb-1">
-                                      {comment.author.name}
+                                      {comment.author?.name}
                                     </div>
                                   )}
                                   <div
@@ -231,7 +258,15 @@ const ChatDiscussionView = ({
                           elements.push(
                             <CommentItem
                               key={comment.id}
-                              comment={comment}
+                              comment={{
+                                ...comment,
+                                author: comment.author
+                                  ? {
+                                      ...comment.author,
+                                      image: comment.author.image ?? undefined,
+                                    }
+                                  : undefined,
+                              }}
                               isCurrentUser={isCurrentUser}
                               onEdit={handleEditComment}
                               onDelete={openDeleteCommentDialog}
@@ -244,7 +279,15 @@ const ChatDiscussionView = ({
                         elements.push(
                           <CommentItem
                             key={comment.id}
-                            comment={comment}
+                            comment={{
+                              ...comment,
+                              author: comment.author
+                                ? {
+                                    ...comment.author,
+                                    image: comment.author.image ?? undefined,
+                                  }
+                                : undefined,
+                            }}
                             isCurrentUser={isCurrentUser}
                             onEdit={handleEditComment}
                             onDelete={openDeleteCommentDialog}

@@ -26,12 +26,53 @@ export const commentTable = table("comment")
   })
   .primaryKey("id");
 
+export const userTable = table("user")
+  .columns({
+    id: string(),
+    email: string(),
+    createdAt: number(),
+    updatedAt: number(),
+    name: string(),
+    emailVerified: boolean(),
+    image: string().optional(),
+  })
+  .primaryKey("id");
+
+
+// Define relationships
+
+export const commentTableRelationships = relationships(commentTable, ({ one }) => ({
+  author: one({
+    sourceField: ["authorId"],
+    destField: ["id"],
+    destSchema: userTable,
+  })
+}));
+
+export const userTableRelationships = relationships(userTable, ({ many }) => ({
+  comments: many({
+    sourceField: ["id"],
+    destField: ["authorId"],
+    destSchema: commentTable,
+  })
+}));
+
 // Define schema
 
-export const schema = createSchema({
-  tables: [commentTable],
-});
+export const schema = createSchema(
+  {
+    tables: [
+      commentTable,
+      userTable,
+    ],
+    relationships: [
+      commentTableRelationships,
+      userTableRelationships,
+    ],
+  }
+);
 
 // Define types
 export type Schema = typeof schema;
 export type Comment = Row<typeof schema.tables.comment>;
+export type User = Row<typeof schema.tables.user>;

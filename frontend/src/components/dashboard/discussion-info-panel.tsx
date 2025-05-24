@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { Button } from "@components/ui/button";
 import { Textarea } from "@components/ui/textarea";
@@ -8,55 +8,45 @@ import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@components/ui/use-toast";
 import {
-  Discussion,
   updateDiscussion,
   deleteDiscussion,
+  fetchGroupDiscussions,
 } from "@lib/api/discussion";
 import { UploadDropzone } from "@lib/uploadthing-client";
-import { getInitials } from "./chat/utils";
+import { getInitials } from "@lib/utils";
 import DeleteDiscussionModal from "./modals/delete-discussion-modal";
 import useAuthStore from "@store/auth-store";
+import useGroupStore from "@store/group-store";
+import useChatStore from "@store/chat-store";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-interface DiscussionInfoPanelProps {
-  discussionId: number;
-  groupId: number;
-  isAdmin: boolean;
-  discussion?: Discussion | null;
-  discussionLoading?: boolean;
-  onUpdateDiscussion?: (discussion: Discussion) => void;
-}
-
-const DiscussionInfoPanel = ({
-  discussionId,
-  groupId,
-  isAdmin,
-  discussion,
-  discussionLoading = false,
-  onUpdateDiscussion,
-}: DiscussionInfoPanelProps) => {
+const DiscussionInfoPanel = () => {
+  const discussionId = useChatStore((state) => state.currentDiscussionId)!;
+  const setCurrentDiscussionId = useChatStore(
+    (state) => state.setCurrentDiscussionId
+  );
+  const groupId = useGroupStore((state) => state.currentGroup?.id)!;
+  const isAdmin = useGroupStore((state) => state.isAdmin);
   const user = useAuthStore((state) => state.user);
   const sessionToken = useAuthStore((state) => state.sessionToken);
+
+  const queryClient = useQueryClient();
+  const { data: discussions } = useQuery({
+    queryKey: ["discussions", groupId],
+    queryFn: () => fetchGroupDiscussions(groupId),
+  });
+
+  const discussion = discussions?.find((d) => d.id === discussionId);
+
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
+
   const [editingInfo, setEditingInfo] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [editedInfo, setEditedInfo] = useState({
-    title: "",
-    content: "",
+    title: discussion?.title ?? "",
+    content: discussion?.content ?? "",
   });
-  // Set the edited info when the discussion changes
-  useEffect(() => {
-    if (discussion) {
-      setEditedInfo({
-        title: discussion.title,
-        content: discussion.content || "",
-      });
-      setLoading(false);
-    } else {
-      setLoading(discussionLoading);
-    }
-  }, [discussion, discussionLoading]);
 
   const handleUpdateInfo = async () => {
     if (!editedInfo.title.trim()) {
@@ -70,15 +60,13 @@ const DiscussionInfoPanel = ({
 
     try {
       setActionLoading(true);
-      const updated = await updateDiscussion(groupId, discussionId, {
+      await updateDiscussion(groupId, discussionId, {
         title: editedInfo.title,
         content: editedInfo.content || undefined,
       });
-
-      // Update via parent component
-      if (onUpdateDiscussion) {
-        onUpdateDiscussion(updated);
-      }
+      await queryClient.invalidateQueries({
+        queryKey: ["discussions", groupId],
+      });
 
       setEditingInfo(false);
       toast({
@@ -102,13 +90,15 @@ const DiscussionInfoPanel = ({
       setActionLoading(true);
       await deleteDiscussion(groupId, discussionId);
 
+      await queryClient.invalidateQueries({
+        queryKey: ["discussions", groupId],
+      });
+      setCurrentDiscussionId(null);
+
       toast({
         title: "Success",
         description: "Discussion deleted successfully",
       });
-
-      // Redirect to group discussions page or handle as needed
-      window.location.reload();
     } catch (error) {
       console.error("Failed to delete discussion:", error);
       toast({
@@ -121,14 +111,6 @@ const DiscussionInfoPanel = ({
       setDeleteDialogOpen(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
 
   if (!discussion) {
     return null;
@@ -275,8 +257,7 @@ const DiscussionInfoPanel = ({
               groupId: groupId.toString(),
             }}
             endpoint="discussionFiles"
-            onClientUploadComplete={(res) => {
-              console.log(res);
+            onClientUploadComplete={() => {
               toast({
                 title: "Files uploaded",
                 description: "Your files have been uploaded successfully",

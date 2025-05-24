@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import CreateGroupModal from "@components/dashboard/modals/create-group-modal";
 import JoinGroupModal from "@components/dashboard/modals/join-group-modal";
 import { Button } from "@components/ui/button";
@@ -9,21 +9,24 @@ import { useToast } from "@components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 import useGroupStore from "@store/group-store";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import useChatStore from "@store/chat-store";
 
 const GroupSidebar = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const { toast } = useToast();
-  const { currentGroup, setCurrentGroup } = useGroupStore();
+  const currentGroup = useGroupStore((state) => state.currentGroup);
+  const setCurrentGroup = useGroupStore((state) => state.setCurrentGroup);
+  const setCurrentDiscussionId = useChatStore(
+    (state) => state.setCurrentDiscussionId
+  );
   const queryClient = useQueryClient();
 
   const { data: groups = [], isLoading } = useQuery<Group[]>({
     queryKey: ["groups"],
     queryFn: fetchUserGroups,
-    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Use effect to set current group when groups load and there's no current group
   useEffect(() => {
     if (groups.length > 0 && !currentGroup) {
       setCurrentGroup(groups[0]);
@@ -34,6 +37,7 @@ const GroupSidebar = () => {
     const selectedGroup = groups.find((group: Group) => group.id === groupId);
     if (selectedGroup) {
       setCurrentGroup(selectedGroup);
+      setCurrentDiscussionId(null);
     }
   };
 
@@ -41,11 +45,8 @@ const GroupSidebar = () => {
     try {
       const newGroup = await createGroup({ name, description });
       setCurrentGroup(newGroup);
+      setCurrentDiscussionId(null);
       queryClient.invalidateQueries({ queryKey: ["groups"] });
-      toast({
-        title: "Success",
-        description: "Group created successfully",
-      });
     } catch (error) {
       console.error("Failed to create group:", error);
       toast({
@@ -59,19 +60,17 @@ const GroupSidebar = () => {
   const handleJoinGroup = async (groupId: string, password?: string) => {
     try {
       await joinGroup(Number(groupId), password);
-      // Refresh groups to get the newly joined group
+
       await queryClient.invalidateQueries({ queryKey: ["groups"] });
+      const updatedGroups = await queryClient.fetchQuery({
+        queryKey: ["groups"],
+        queryFn: fetchUserGroups,
+      });
 
-      // After joining, we need to fetch the latest groups to find the joined one
-      const updatedGroups = await fetchUserGroups();
       const joinedGroup = updatedGroups.find((g) => g.id === Number(groupId));
-
       if (joinedGroup) {
         setCurrentGroup(joinedGroup);
-        toast({
-          title: "Success",
-          description: "Successfully joined the group",
-        });
+        setCurrentDiscussionId(null);
       }
     } catch (error) {
       console.error("Failed to join group:", error);
@@ -126,7 +125,7 @@ const GroupSidebar = () => {
               <button
                 key={group.id}
                 className={cn(
-                  "w-full px-2 my-1 py-2 text-left rounded-md transition-colors",
+                  "w-full px-3 my-1 py-2 text-left rounded-md transition-colors",
                   "hover:bg-accent hover:text-accent-foreground",
                   currentGroup?.id === group.id &&
                     "bg-accent text-accent-foreground"
