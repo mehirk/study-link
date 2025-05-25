@@ -72,8 +72,8 @@ const GroupDetails = () => {
           onValueChange={setActiveTab}
           className="h-full flex flex-col"
         >
-          <div className="w-full overflow-x-auto">
-            <TabsList className="h-fit justify-start rounded-none w-full bg-transparent p-0 inline-flex border-b">
+          <div className="w-full overflow-x-auto border-b">
+            <TabsList className="h-fit justify-start rounded-none w-full bg-transparent p-0 inline-flex ">
               {tabs.map((tab) => (
                 <TabsTrigger
                   key={tab.id}
@@ -86,32 +86,20 @@ const GroupDetails = () => {
             </TabsList>
           </div>
 
-          <TabsContent
-            value="discussions"
-            className="flex-1 border-none data-[state=active]:flex"
-          >
+          <TabsContent value="discussions" className="flex-1 ">
             <DiscussionsLayout />
           </TabsContent>
 
-          <TabsContent
-            value="files"
-            className="flex-1 border-none p-6 data-[state=active]:flex flex-col"
-          >
+          <TabsContent value="files" className="flex-1">
             <GroupFiles />
           </TabsContent>
 
-          <TabsContent
-            value="members"
-            className="flex-1 border-none p-6 data-[state=active]:flex flex-col"
-          >
+          <TabsContent value="members" className="flex-1">
             <GroupMembers />
           </TabsContent>
 
           {isAdmin && (
-            <TabsContent
-              value="settings"
-              className="flex-1 border-none p-6 data-[state=active]:flex flex-col"
-            >
+            <TabsContent value="settings" className="flex-1">
               <GroupSettings />
             </TabsContent>
           )}
