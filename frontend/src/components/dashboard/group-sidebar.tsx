@@ -156,17 +156,21 @@ const GroupSidebar = () => {
               </button>
             </>
           ) : (
-            <div className="text-center p-4 text-muted-foreground">
-              <div className="mb-2">No groups yet.</div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsGroupActionModalOpen(true)}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Get Started
-              </Button>
-            </div>
+            <>
+              {/* Mobile empty state */}
+              <div className="md:hidden w-full px-1 my-1 py-2 text-left rounded-md transition-colors hover:bg-accent hover:text-accent-foreground flex items-center justify-center text-muted-foreground">
+                <button
+                  className="flex items-center justify-center rounded-full border-2 border-dashed border-muted-foreground w-8 h-8"
+                  onClick={() => setIsGroupActionModalOpen(true)}
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+              {/* Desktop empty state */}
+              <div className="hidden md:block text-center p-4 text-muted-foreground">
+                No groups yet.
+              </div>
+            </>
           )}
         </div>
       </ScrollArea>
