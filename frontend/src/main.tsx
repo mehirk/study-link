@@ -5,6 +5,7 @@ import App from "./App.tsx";
 import { ZeroProvider } from "@rocicorp/zero/react";
 import { z } from "@lib/zero/client.ts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PostHogProvider } from "posthog-js/react";
 
 // Create a client
 export const queryClient = new QueryClient({
@@ -20,10 +21,19 @@ export const queryClient = new QueryClient({
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ZeroProvider zero={z}>
-        <App />
-      </ZeroProvider>
-    </QueryClientProvider>
+    <PostHogProvider
+      apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY}
+      options={{
+        api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
+        capture_exceptions: true, // This enables capturing exceptions using Error Tracking
+        debug: import.meta.env.MODE === "development",
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <ZeroProvider zero={z}>
+          <App />
+        </ZeroProvider>
+      </QueryClientProvider>
+    </PostHogProvider>
   </StrictMode>
 );
