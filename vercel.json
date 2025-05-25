@@ -1,11 +1,4 @@
 {
-  "routes": [
-    {
-      "src": "/[^.]+",
-      "dest": "/"
-    }
-  ],
-
   "rewrites": [
     {
       "source": "/ingest/static/:path*",
@@ -14,6 +7,10 @@
     {
       "source": "/ingest/:path*",
       "destination": "https://us.i.posthog.com/:path*"
+    },
+    {
+      "source": "/((?!api|_next/static|_next/image|favicon.ico|ingest).*)",
+      "destination": "/"
     }
   ]
 }
