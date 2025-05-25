@@ -34,6 +34,7 @@ const useAuthStore = create<AuthStore>((set) => ({
       user: null,
       sessionToken: null,
     });
+    window.location.reload();
   },
 
   refreshSession: async () => {

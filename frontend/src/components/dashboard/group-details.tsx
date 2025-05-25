@@ -3,13 +3,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@components/ui/tabs";
 import GroupMembers from "@components/dashboard/tabs/group-members";
 import GroupSettings from "@components/dashboard/tabs/group-settings";
 import GroupFiles from "@components/dashboard/tabs/group-files";
-import DiscussionsLayout from "@components/dashboard/tabs/discussions-layout";
 import { ShieldAlert } from "lucide-react";
 import { getGroupMembers } from "@lib/api/group";
 import { useQuery } from "@tanstack/react-query";
 import useGroupStore from "@store/group-store";
 import { useEffect } from "react";
 import { getGroupFiles } from "@lib/api/files";
+import DiscussionsLayout from "@components/dashboard/tabs/discussions-layout";
 
 const GroupDetails = () => {
   const group = useGroupStore((state) => state.currentGroup)!;
@@ -49,11 +49,13 @@ const GroupDetails = () => {
 
   return (
     <div className="h-full flex flex-col">
-      <CardHeader className="p-4">
+      <CardHeader className="px-2 pb-1 pt-2 md:p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">{group.name}</h1>
-            <p className="text-muted-foreground text-sm">{group.description}</p>
+            <h1 className="text-xl md:text-2xl font-semibold">{group.name}</h1>
+            <p className="text-muted-foreground text-sm hidden md:block">
+              {group.description}
+            </p>
           </div>
           {isAdmin && (
             <div className="flex items-center text-xs font-medium text-primary">
@@ -70,17 +72,19 @@ const GroupDetails = () => {
           onValueChange={setActiveTab}
           className="h-full flex flex-col"
         >
-          <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
-            {tabs.map((tab) => (
-              <TabsTrigger
-                key={tab.id}
-                value={tab.id}
-                className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-              >
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="w-full overflow-x-auto">
+            <TabsList className="h-fit justify-start rounded-none w-full bg-transparent p-0 inline-flex border-b">
+              {tabs.map((tab) => (
+                <TabsTrigger
+                  key={tab.id}
+                  value={tab.id}
+                  className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none whitespace-nowrap flex-shrink-0"
+                >
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
           <TabsContent
             value="discussions"
