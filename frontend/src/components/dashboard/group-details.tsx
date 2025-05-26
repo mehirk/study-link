@@ -70,7 +70,7 @@ const GroupDetails = () => {
               <h1 className="text-xl md:text-2xl font-semibold">
                 {group.name}
               </h1>
-              <p className="text-muted-foreground font-mono text-sm hidden md:block">
+              <p className="text-muted-foreground font-mono text-sm">
                 {group.description ? group.description : "No description"}
               </p>
             </div>
@@ -102,7 +102,7 @@ const GroupDetails = () => {
                       className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none whitespace-nowrap flex-shrink-0"
                     >
                       <div className="flex items-center gap-2">
-                        <IconComponent className="w-4 h-4 md:hidden" />
+                        <IconComponent className="w-5 h-5 md:hidden" />
                         <span className="hidden md:inline">{tab.label}</span>
                         <span className="md:hidden sr-only">{tab.label}</span>
                       </div>
