@@ -19,7 +19,10 @@ import { Schema } from "../../../../zero-syncer/generated/schema";
 import { useQuery as useZeroQuery, useZero } from "@rocicorp/zero/react";
 import { Button } from "@components/ui/button";
 
-const ChatDiscussionView = () => {
+interface ChatDiscussionViewProps {
+  discussionTitle: string;
+}
+const ChatDiscussionView = ({ discussionTitle }: ChatDiscussionViewProps) => {
   const user = useAuthStore((state) => state.user);
   const groupId = useGroupStore((state) => state.currentGroup?.id)!;
   const discussionId = useChatStore((state) => state.currentDiscussionId)!;
@@ -139,25 +142,25 @@ const ChatDiscussionView = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] sm:h-[calc(100vh-180px)] min-w-[40vw]">
-      <div className="px-2 sm:px-4 py-2 sm:py-3 border-b flex-shrink-0">
+    <div className="flex flex-col h-full min-w-[40vw]">
+      <div className="px-3 sm:px-4 py-2 sm:py-3 border-b flex-shrink-0">
         <div
           onClick={() => useChatStore.getState().setCurrentDiscussionId(null)}
           className="flex items-center gap-2 md:hidden mb-1"
         >
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-            <ChevronLeft className="h-6 w-6" />
+            <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-lg font-semibold truncate">Discussion Chat</h2>
+          <h2 className="text-lg font-semibold truncate">{discussionTitle}</h2>
         </div>
         <h2 className="text-xl font-semibold hidden md:block">
-          Discussion Chat
+          {discussionTitle} - Discussion Chat
         </h2>
       </div>
 
       <div className="flex-1 flex flex-col min-h-0">
         <ScrollArea
-          className="flex-1 px-2 sm:px-3 overflow-y-auto"
+          className="flex-1 min-h-0  px-2 sm:px-3"
           ref={scrollAreaRef}
         >
           {loading ? (
@@ -319,7 +322,7 @@ const ChatDiscussionView = () => {
           )}
         </ScrollArea>
 
-        <div className="p-2 sm:p-3 border-t sticky bottom-0 bg-background flex-shrink-0">
+        <div className="p-2 sm:p-3 border-t bg-background flex-shrink-0">
           <MessageInput
             value={newComment}
             onChange={(value) => setNewComment(value)}

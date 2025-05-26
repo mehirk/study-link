@@ -1,9 +1,6 @@
 import { useEffect } from "react";
 import { useToast } from "@components/ui/use-toast";
-import {
-  fetchGroupDiscussions,
-  // getDiscussionDetails,
-} from "@lib/api/discussion";
+import { fetchGroupDiscussions } from "@lib/api/discussion";
 import DiscussionsSidebar from "@components/dashboard/discussions-sidebar";
 
 import ChatDiscussionView from "@components/dashboard/chat-discussion-view";
@@ -63,7 +60,13 @@ const DiscussionsLayout = () => {
         {currentDiscussionId && !discussionsLoading && (
           <>
             <div className="flex-1">
-              <ChatDiscussionView />
+              <ChatDiscussionView
+                discussionTitle={
+                  discussions.find(
+                    (discussion) => discussion.id === currentDiscussionId
+                  )?.title || ""
+                }
+              />
             </div>
             {/* <div className="min-w-80 max-w-80 shrink-0 border-l">
               <DiscussionInfoPanel />

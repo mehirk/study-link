@@ -41,7 +41,6 @@ const Navbar = () => {
                 to="/dashboard"
                 className="group relative px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
               >
-                <BookOpen className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
                 Dashboard
                 <span className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
               </Link>
@@ -49,7 +48,6 @@ const Navbar = () => {
                 to="/profile"
                 className="group relative px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
               >
-                <User className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
                 Profile
                 <span className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
               </Link>
