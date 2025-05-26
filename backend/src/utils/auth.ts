@@ -38,7 +38,7 @@ export const auth = betterAuth({
         process.env.FRONTEND_URL,
         "http://localhost:5173",
         "http://10.0.0.47:5173",
-        "https://*shahbazs-projects-0c71becb.vercel.app",
+        "https://*.vercel.app",
       ]
     : ["*"],
 });
