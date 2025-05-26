@@ -69,7 +69,7 @@ const DiscussionsLayout = () => {
               />
             </div>
             {!isMobile && (
-              <div className="hidden lg:block min-w-60 max-w-72 shrink-0 lg:border-l">
+              <div className="hidden lg:block w-68 lg:w-72 shrink-0 lg:border-l">
                 <DiscussionInfoPanel />
               </div>
             )}
