@@ -64,8 +64,8 @@ const GroupDetails = () => {
               <h1 className="text-xl md:text-2xl font-semibold">
                 {group.name}
               </h1>
-              <p className="text-muted-foreground text-sm hidden md:block">
-                {group.description}
+              <p className="text-muted-foreground font-mono text-sm hidden md:block">
+                {group.description ? group.description : "No description"}
               </p>
             </div>
             {isAdmin && (
