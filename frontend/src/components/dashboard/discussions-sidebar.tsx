@@ -56,7 +56,7 @@ const DiscussionsSidebar = ({
   );
 
   return (
-    <div className="md:min-w-72 min-w-full md:w-72 md:border-r h-full flex flex-col">
+    <div className="md:min-w-64 min-w-full md:w-64 md:border-r h-full flex flex-col">
       <div className="p-4 border-b bg-muted flex justify-between items-center">
         <h3 className="font-semibold">Group Discussions</h3>
         <Button size="sm" onClick={() => setCreateDialogOpen(true)}>

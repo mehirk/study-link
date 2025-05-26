@@ -1,9 +1,8 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
+import { useState, useEffect } from "react";
 import { Button } from "@components/ui/button";
 import { Textarea } from "@components/ui/textarea";
 import { Input } from "@components/ui/input";
-import { Loader2, Edit, Trash2 } from "lucide-react";
+import { Loader2, Edit, Trash2, Calendar, User, Upload, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@components/ui/use-toast";
@@ -44,9 +43,19 @@ const DiscussionInfoPanel = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [editedInfo, setEditedInfo] = useState({
-    title: discussion?.title ?? "",
-    content: discussion?.content ?? "",
+    title: "",
+    content: "",
   });
+
+  // Update editedInfo when discussion changes
+  useEffect(() => {
+    if (discussion) {
+      setEditedInfo({
+        title: discussion.title,
+        content: discussion.content || "",
+      });
+    }
+  }, [discussion]);
 
   const handleUpdateInfo = async () => {
     if (!editedInfo.title.trim()) {
@@ -69,10 +78,6 @@ const DiscussionInfoPanel = () => {
       });
 
       setEditingInfo(false);
-      toast({
-        title: "Success",
-        description: "Discussion information updated successfully",
-      });
     } catch (error) {
       console.error("Failed to update discussion:", error);
       toast({
@@ -85,6 +90,16 @@ const DiscussionInfoPanel = () => {
     }
   };
 
+  const handleCancelEdit = () => {
+    if (discussion) {
+      setEditedInfo({
+        title: discussion.title,
+        content: discussion.content || "",
+      });
+    }
+    setEditingInfo(false);
+  };
+
   const handleDeleteDiscussion = async () => {
     try {
       setActionLoading(true);
@@ -94,11 +109,6 @@ const DiscussionInfoPanel = () => {
         queryKey: ["discussions", groupId],
       });
       setCurrentDiscussionId(null);
-
-      toast({
-        title: "Success",
-        description: "Discussion deleted successfully",
-      });
     } catch (error) {
       console.error("Failed to delete discussion:", error);
       toast({
@@ -119,76 +129,90 @@ const DiscussionInfoPanel = () => {
   const canEditDiscussion = isAdmin || discussion.authorId === user?.id;
 
   return (
-    <div className="h-full min-w-full p-4">
-      <h2 className="text-2xl font-semibold mb-4">Discussion Info</h2>
-
-      <Card className="shadow-none border-none">
-        <CardHeader className="pb-2 space-y-4 relative">
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="flex-shrink-0 border-b px-4 py-3 bg-accent">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Discussion Details</h2>
           {canEditDiscussion && !editingInfo && (
-            <div className="absolute top-4 right-4 flex space-x-1">
+            <div className="flex items-center space-x-1">
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={() => setEditingInfo(true)}
-                className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                className="h-7 px-2 text-xs text-muted-foreground hover:text-primary"
               >
-                <Edit className="h-4 w-4" />
+                <Edit className="h-3 w-3 mr-1" />
               </Button>
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={() => setDeleteDialogOpen(true)}
-                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3 w-3 mr-1" />
               </Button>
             </div>
           )}
+        </div>
+      </div>
 
-          <div className="flex flex-col space-y-4">
-            {editingInfo ? (
-              <Input
-                value={editedInfo.title}
-                onChange={(e) =>
-                  setEditedInfo({
-                    ...editedInfo,
-                    title: e.target.value,
-                  })
-                }
-                className="font-semibold text-xl"
-                placeholder="Discussion title"
-              />
-            ) : (
-              <CardTitle className="text-2xl leading-tight break-words pr-16">
-                {discussion.title}
-              </CardTitle>
-            )}
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Title */}
+        {editingInfo ? (
+          <div>
+            <Input
+              value={editedInfo.title}
+              onChange={(e) =>
+                setEditedInfo({
+                  ...editedInfo,
+                  title: e.target.value,
+                })
+              }
+              className="font-semibold"
+              placeholder="Discussion title..."
+              autoFocus
+            />
+          </div>
+        ) : (
+          <h1 className="text-xl font-bold leading-tight break-words">
+            {discussion.title}
+          </h1>
+        )}
 
-            <div className="flex items-center space-x-3 border-l-4 pl-3 border-primary/30 py-1">
-              <Avatar className="h-12 w-12 border-2 border-background">
-                <AvatarImage
-                  src={discussion.author.image || ""}
-                  alt={discussion.author.name}
-                />
-                <AvatarFallback className="bg-primary/10 text-primary">
-                  {getInitials(discussion.author.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="font-medium text-base">
-                  {discussion.author.name}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {formatDistanceToNow(new Date(discussion.createdAt), {
-                    addSuffix: true,
-                  })}
-                </div>
-              </div>
+        {/* Author Info */}
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage
+              src={discussion.author.image || ""}
+              alt={discussion.author.name}
+            />
+            <AvatarFallback className="bg-primary/10 text-primary text-sm">
+              {getInitials(discussion.author.name)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-1">
+              <User className="h-3 w-3 text-muted-foreground" />
+              <span className="font-medium text-sm truncate">
+                by {discussion.author.name}
+              </span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Calendar className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                {formatDistanceToNow(new Date(discussion.createdAt), {
+                  addSuffix: true,
+                })}
+              </span>
             </div>
           </div>
-        </CardHeader>
+        </div>
 
-        <CardContent className="pt-4">
+        {/* Description */}
+        <div>
+          <h3 className="text-sm font-semibold mb-2">Description</h3>
           {editingInfo ? (
             <Textarea
               value={editedInfo.content}
@@ -198,58 +222,75 @@ const DiscussionInfoPanel = () => {
                   content: e.target.value,
                 })
               }
-              placeholder="Add a description for your discussion..."
-              rows={5}
-              className="resize-none"
+              placeholder="Add a description..."
+              rows={4}
+              className="resize-none text-sm"
             />
           ) : (
-            <div className="prose prose-sm max-w-none">
+            <div className="min-h-[60px] p-3 bg-muted/30 rounded-md">
               {discussion.content ? (
-                <p className="leading-relaxed text-sm">{discussion.content}</p>
-              ) : (
-                <p className="text-muted-foreground text-sm italic">
-                  No description provided
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                  {discussion.content}
                 </p>
+              ) : (
+                <div className="flex items-center justify-center h-full text-center">
+                  <p className="text-muted-foreground text-xs">
+                    No description provided
+                  </p>
+                </div>
               )}
             </div>
           )}
-        </CardContent>
+        </div>
 
+        {/* Edit Actions */}
         {editingInfo && (
-          <div className="flex justify-end pb-4 pr-4">
+          <div className="flex items-center space-x-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setEditingInfo(false)}
+              onClick={handleCancelEdit}
               disabled={actionLoading}
-              className="mr-2"
+              className="h-7 px-2 text-xs"
             >
+              <X className="h-3 w-3" />
               Cancel
             </Button>
             <Button
-              variant="default"
               size="sm"
               onClick={handleUpdateInfo}
-              disabled={actionLoading}
+              disabled={actionLoading || !editedInfo.title.trim()}
+              className="h-7 px-2 text-xs"
             >
               {actionLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="h-3 w-3 animate-spin" />
                   Saving...
                 </>
               ) : (
-                "Save Changes"
+                <>
+                  <Edit className="h-3 w-3" />
+                  Save
+                </>
               )}
             </Button>
           </div>
         )}
 
-        <div className="px-4 pb-4 mt-2 border-t pt-4">
-          <p className="text-sm font-medium mb-2">Attachments</p>
+        {/* Attachments */}
+        <div>
+          <h3 className="text-lg font-semibold my-2 flex items-center">
+            <Upload className="h-4 w-4 mr-2" />
+            Attachments
+          </h3>
           <UploadDropzone
             appearance={{
+              container:
+                "border-2 border-dashed border-border rounded-md p-4 transition-colors hover:border-primary/50",
               button:
-                "ut-ready:bg-primary w-full p-2 ut-uploading:cursor-not-allowed rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200 ease-in-out after:bg-primary/50",
+                "ut-ready:bg-primary w-full p-2 ut-uploading:cursor-not-allowed rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 text-sm",
+              label: "text-foreground text-sm",
+              allowedContent: "text-muted-foreground text-xs",
             }}
             input={{
               discussionId: discussionId.toString(),
@@ -263,10 +304,16 @@ const DiscussionInfoPanel = () => {
                 description: "Your files have been uploaded successfully",
               });
             }}
-            className="border-dashed border-2 pb-4"
+            onUploadError={(error) => {
+              toast({
+                variant: "destructive",
+                title: "Upload failed",
+                description: error.message || "Failed to upload files",
+              });
+            }}
           />
         </div>
-      </Card>
+      </div>
 
       <DeleteDiscussionModal
         isOpen={deleteDialogOpen}

@@ -2,12 +2,12 @@ import { useEffect } from "react";
 import { useToast } from "@components/ui/use-toast";
 import { fetchGroupDiscussions } from "@lib/api/discussion";
 import DiscussionsSidebar from "@components/dashboard/discussions-sidebar";
-
 import ChatDiscussionView from "@components/dashboard/chat-discussion-view";
 import { useQuery } from "@tanstack/react-query";
 import useGroupStore from "@store/group-store";
 import useChatStore from "@store/chat-store";
 import { useMobile } from "@hooks/use-mobile";
+import DiscussionInfoPanel from "@components/dashboard/discussion-info-panel";
 
 const DiscussionsLayout = () => {
   const { toast } = useToast();
@@ -68,9 +68,11 @@ const DiscussionsLayout = () => {
                 }
               />
             </div>
-            {/* <div className="min-w-80 max-w-80 shrink-0 border-l">
-              <DiscussionInfoPanel />
-            </div> */}
+            {!isMobile && (
+              <div className="hidden lg:block w-68 lg:w-72 shrink-0 lg:border-l">
+                <DiscussionInfoPanel />
+              </div>
+            )}
           </>
         )}
       </div>

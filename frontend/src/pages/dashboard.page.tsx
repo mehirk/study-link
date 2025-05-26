@@ -13,7 +13,7 @@ const Dashboard = () => {
   const showSidebar = !currentDiscussionId || !isMobile;
 
   return (
-    <div className="flex min-h-screen sm:min-h-[calc(100vh-54px)] w-full">
+    <div className="flex min-h-screen md:min-h-[calc(100vh-54px)] w-full">
       {showSidebar && <GroupSidebar />}
       <div className="flex-1 min-w-0">{currentGroup && <GroupDetails />}</div>
     </div>
