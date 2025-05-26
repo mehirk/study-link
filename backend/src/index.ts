@@ -20,9 +20,8 @@ app.use(
     origin: [
       process.env.FRONTEND_URL!,
       "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:5175",
-      "http://localhost:4173",
+      "http://10.0.0.47:5173",
+      /^https:\/\/.*\.vercel\.app$/,
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
