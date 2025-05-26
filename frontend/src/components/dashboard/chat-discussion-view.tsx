@@ -37,7 +37,11 @@ const ChatDiscussionView = ({ discussionTitle }: ChatDiscussionViewProps) => {
     .where("deletedAt", "IS", null)
     .related("author");
 
-  const [chat] = useZeroQuery(discussionQuery);
+  const [chat, chatResponse] = useZeroQuery(discussionQuery, {
+    ttl: "forever",
+  });
+
+  console.log("chatResponse.type", chatResponse.type);
 
   const handleCommentDeleted = () => {
     queryClient.invalidateQueries({

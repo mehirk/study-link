@@ -76,12 +76,12 @@ const GroupFiles = () => {
   }
 
   return (
-    <div className="space-y-2 p-2 md:p-0">
+    <div className="w-full">
       {/* Mobile Card Layout */}
-      <h2 className="text-lg md:text-xl block md:hidden font-semibold">
-        Group Files ({files.length})
-      </h2>
-      <div className="block md:hidden space-y-2">
+      <div className="p-4 border-b bg-muted flex justify-between items-center">
+        <h3 className="font-semibold">Group Files - {files.length}</h3>
+      </div>
+      <div className="block md:hidden p-3 md:p-6 space-y-2">
         {files.map((file) => (
           <div key={file.id} className="border rounded-lg p-3 space-y-3">
             <div className="flex items-start justify-between">
