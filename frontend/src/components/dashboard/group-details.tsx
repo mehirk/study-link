@@ -3,7 +3,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@components/ui/tabs";
 import GroupMembers from "@components/dashboard/tabs/group-members";
 import GroupSettings from "@components/dashboard/tabs/group-settings";
 import GroupFiles from "@components/dashboard/tabs/group-files";
-import { ShieldAlert } from "lucide-react";
+import {
+  ShieldAlert,
+  MessageCircle,
+  FileText,
+  Users,
+  Settings,
+} from "lucide-react";
 import { getGroupMembers } from "@lib/api/group";
 import { useQuery } from "@tanstack/react-query";
 import useGroupStore from "@store/group-store";
@@ -46,10 +52,10 @@ const GroupDetails = () => {
   }, [activeTab, isAdmin, setActiveTab]);
 
   const tabs = [
-    { id: "discussions", label: "Discussions" },
-    { id: "files", label: "Files & Resources" },
-    { id: "members", label: "Members" },
-    ...(isAdmin ? [{ id: "settings", label: "Settings" }] : []),
+    { id: "discussions", label: "Discussions", icon: MessageCircle },
+    { id: "files", label: "Files & Resources", icon: FileText },
+    { id: "members", label: "Members", icon: Users },
+    ...(isAdmin ? [{ id: "settings", label: "Settings", icon: Settings }] : []),
   ];
 
   const isMobile = useMobile();
@@ -87,15 +93,22 @@ const GroupDetails = () => {
           {showGroupHeader && (
             <div className="w-full overflow-x-auto border-b">
               <TabsList className="h-fit justify-start rounded-none w-full bg-transparent p-0 inline-flex ">
-                {tabs.map((tab) => (
-                  <TabsTrigger
-                    key={tab.id}
-                    value={tab.id}
-                    className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none whitespace-nowrap flex-shrink-0"
-                  >
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
+                {tabs.map((tab) => {
+                  const IconComponent = tab.icon;
+                  return (
+                    <TabsTrigger
+                      key={tab.id}
+                      value={tab.id}
+                      className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none whitespace-nowrap flex-shrink-0"
+                    >
+                      <div className="flex items-center gap-2">
+                        <IconComponent className="w-4 h-4 md:hidden" />
+                        <span className="hidden md:inline">{tab.label}</span>
+                        <span className="md:hidden sr-only">{tab.label}</span>
+                      </div>
+                    </TabsTrigger>
+                  );
+                })}
               </TabsList>
             </div>
           )}

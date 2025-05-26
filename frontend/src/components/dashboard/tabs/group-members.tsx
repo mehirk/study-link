@@ -109,11 +109,11 @@ const GroupMembers = () => {
   };
 
   return (
-    <div className="space-y-4 p-2 md:p-6 w-full">
-      <h2 className="text-lg md:text-xl font-semibold">
-        Group Members ({members.length})
-      </h2>
-      <div className="grid grid-cols-1 gap-3 md:gap-4">
+    <div className="w-full">
+      <div className="p-4 border-b bg-muted flex justify-between items-center">
+        <h3 className="font-semibold">Group Members - {members.length}</h3>
+      </div>
+      <div className="grid p-3 md:p-6 grid-cols-1 gap-3 md:gap-4">
         {members.map((member) => (
           <Card key={member.id} className="overflow-hidden shadow-none">
             <CardContent className="p-3 md:p-4">

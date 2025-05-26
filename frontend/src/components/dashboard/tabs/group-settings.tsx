@@ -159,134 +159,139 @@ const GroupSettings = () => {
   };
 
   return (
-    <div className="space-y-3 md:space-y-4 p-3 md:p-6 w-full max-w-4xl mx-auto">
-      <Card className="shadow-none">
-        <CardHeader className="pb-3 md:pb-6">
-          <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-            <Users className="h-4 w-4 md:h-5 md:w-5" />
-            Group Information
-          </CardTitle>
-          <CardDescription className="text-sm">
-            Update your group's basic information
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3 md:space-y-4 px-4 md:px-6 pb-4 md:pb-6">
-          <div className="space-y-1.5 md:space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
-              Group Name
-            </label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="Enter group name"
-              className="text-base md:text-sm"
-            />
-          </div>
-          <div className="space-y-1.5 md:space-y-2">
-            <label htmlFor="description" className="text-sm font-medium">
-              Description
-            </label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              className="shadow-sm text-base md:text-sm resize-none"
-              onChange={handleInputChange}
-              placeholder="Enter group description"
-              rows={3}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-none">
-        <CardHeader className="pb-3 md:pb-6">
-          <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-            <Lock className="h-4 w-4 md:h-5 md:w-5" />
-            Privacy Settings
-          </CardTitle>
-          <CardDescription className="text-sm">
-            Control who can join your group
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 md:space-y-6 px-4 md:px-6 pb-4 md:pb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6">
-            <div className="space-y-0.5 flex-1">
-              <label htmlFor="private-group" className="text-sm font-medium">
-                Private Group
-              </label>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                Private groups require a password to join
-              </p>
-            </div>
-            <div className="flex justify-start sm:justify-end">
-              <Switch
-                id="private-group"
-                checked={formData.isPrivate}
-                onCheckedChange={togglePrivate}
-              />
-            </div>
-          </div>
-
-          {formData.isPrivate && (
-            <div className="space-y-1.5 md:space-y-2 animate-in slide-in-from-top-2 duration-200">
-              <label htmlFor="password" className="text-sm font-medium">
-                Group Password
+    <div className="w-full">
+      <div className="p-4 border-b bg-muted flex justify-between items-center">
+        <h3 className="font-semibold">Group Settings</h3>
+      </div>
+      <div className="grid p-3 md:p-6 grid-cols-1 gap-3 md:gap-4">
+        <Card className="shadow-none">
+          <CardHeader className="pb-3 md:pb-6">
+            <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+              <Users className="h-4 w-4 md:h-5 md:w-5" />
+              Group Information
+            </CardTitle>
+            <CardDescription className="text-sm">
+              Update your group's basic information
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 md:space-y-4 px-4 md:px-6 pb-4 md:pb-6">
+            <div className="space-y-1.5 md:space-y-2">
+              <label htmlFor="name" className="text-sm font-medium">
+                Group Name
               </label>
               <Input
-                id="password"
-                type="password"
-                value={formData.password}
+                id="name"
+                value={formData.name}
                 onChange={handleInputChange}
-                placeholder="Enter password for the group"
+                placeholder="Enter group name"
                 className="text-base md:text-sm"
               />
-              <p className="text-xs text-muted-foreground">
-                Members will need this password to join your group
-              </p>
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <div className="space-y-1.5 md:space-y-2">
+              <label htmlFor="description" className="text-sm font-medium">
+                Description
+              </label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                className="shadow-sm text-base md:text-sm resize-none"
+                onChange={handleInputChange}
+                placeholder="Enter group description"
+                rows={3}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-      <div className="pt-2">
-        <Button
-          onClick={handleSave}
-          disabled={updateGroupMutation.isPending || !hasChanges}
-          className="gap-2 w-full sm:w-auto min-h-[44px]"
-          size="lg"
-        >
-          {updateGroupMutation.isPending ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4" />
-              Save Changes
-            </>
-          )}
-        </Button>
+        <Card className="shadow-none">
+          <CardHeader className="pb-3 md:pb-6">
+            <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+              <Lock className="h-4 w-4 md:h-5 md:w-5" />
+              Privacy Settings
+            </CardTitle>
+            <CardDescription className="text-sm">
+              Control who can join your group
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 md:space-y-6 px-4 md:px-6 pb-4 md:pb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6">
+              <div className="space-y-0.5 flex-1">
+                <label htmlFor="private-group" className="text-sm font-medium">
+                  Private Group
+                </label>
+                <p className="text-xs md:text-sm text-muted-foreground">
+                  Private groups require a password to join
+                </p>
+              </div>
+              <div className="flex justify-start sm:justify-end">
+                <Switch
+                  id="private-group"
+                  checked={formData.isPrivate}
+                  onCheckedChange={togglePrivate}
+                />
+              </div>
+            </div>
+
+            {formData.isPrivate && (
+              <div className="space-y-1.5 md:space-y-2 animate-in slide-in-from-top-2 duration-200">
+                <label htmlFor="password" className="text-sm font-medium">
+                  Group Password
+                </label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="Enter password for the group"
+                  className="text-base md:text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Members will need this password to join your group
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <div className="pt-2">
+          <Button
+            onClick={handleSave}
+            disabled={updateGroupMutation.isPending || !hasChanges}
+            className="gap-2 w-full sm:w-auto min-h-[44px]"
+            size="lg"
+          >
+            {updateGroupMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                Save Changes
+              </>
+            )}
+          </Button>
+        </div>
+
+        <Card className="border-destructive shadow-none">
+          <CardHeader className="pb-3 md:pb-6">
+            <CardTitle className="text-destructive flex items-center gap-2 text-lg md:text-xl">
+              <Trash2 className="h-4 w-4 md:h-5 md:w-5" />
+              Danger Zone
+            </CardTitle>
+            <CardDescription className="text-sm">
+              Actions here cannot be undone
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-4 md:px-6 pb-4 md:pb-6">
+            <DeleteGroupModal
+              onDelete={handleDelete}
+              isDeleting={deleteGroupMutation.isPending}
+            />
+          </CardContent>
+        </Card>
       </div>
-
-      <Card className="border-destructive shadow-none">
-        <CardHeader className="pb-3 md:pb-6">
-          <CardTitle className="text-destructive flex items-center gap-2 text-lg md:text-xl">
-            <Trash2 className="h-4 w-4 md:h-5 md:w-5" />
-            Danger Zone
-          </CardTitle>
-          <CardDescription className="text-sm">
-            Actions here cannot be undone
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="px-4 md:px-6 pb-4 md:pb-6">
-          <DeleteGroupModal
-            onDelete={handleDelete}
-            isDeleting={deleteGroupMutation.isPending}
-          />
-        </CardContent>
-      </Card>
     </div>
   );
 };

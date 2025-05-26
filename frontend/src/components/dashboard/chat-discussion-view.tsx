@@ -37,7 +37,9 @@ const ChatDiscussionView = ({ discussionTitle }: ChatDiscussionViewProps) => {
     .where("deletedAt", "IS", null)
     .related("author");
 
-  const [chat] = useZeroQuery(discussionQuery);
+  const [chat] = useZeroQuery(discussionQuery, {
+    ttl: "forever",
+  });
 
   const handleCommentDeleted = () => {
     queryClient.invalidateQueries({
@@ -160,7 +162,7 @@ const ChatDiscussionView = ({ discussionTitle }: ChatDiscussionViewProps) => {
 
       <div className="flex-1 flex flex-col min-h-0">
         <ScrollArea
-          className="flex-1 min-h-0 max-h-[calc(100vh-115px)] sm:max-h-[calc(100vh-300px)] px-2 sm:px-3"
+          className="flex-1 min-h-0 max-h-[calc(100dvh-115px)] sm:max-h-[calc(100dvh-300px)] px-2 sm:px-3"
           ref={scrollAreaRef}
         >
           {loading ? (
