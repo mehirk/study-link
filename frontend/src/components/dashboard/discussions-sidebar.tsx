@@ -56,16 +56,16 @@ const DiscussionsSidebar = ({
   );
 
   return (
-    <div className="min-w-72 w-72 border-r h-full flex flex-col">
-      <div className="p-4 border-b flex justify-between items-center">
-        <h3 className="font-semibold">My Discussions</h3>
+    <div className="md:min-w-72 min-w-full md:w-72 md:border-r h-full flex flex-col">
+      <div className="p-4 border-b bg-muted flex justify-between items-center">
+        <h3 className="font-semibold">Group Discussions</h3>
         <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
           <Plus className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Discussions list */}
-      <ScrollArea className="flex-1 p-1">
+      <ScrollArea className="flex-1 md:p-1">
         {loading ? (
           <div className="text-center p-4 flex justify-center items-center">
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -75,8 +75,8 @@ const DiscussionsSidebar = ({
             <button
               key={discussion.id}
               className={cn(
-                "w-full px-3 py-2 mb-2 text-left rounded-md transition-colors flex flex-col",
-                "hover:bg-accent hover:text-accent-foreground",
+                "w-full px-3 py-2 md:mb-2 text-left md:rounded-md transition-colors border-b md:border-b-0 flex flex-col",
+                "hover:bg-accent/50 hover:text-accent-foreground",
                 currentDiscussionId === discussion.id &&
                   "bg-accent text-accent-foreground"
               )}

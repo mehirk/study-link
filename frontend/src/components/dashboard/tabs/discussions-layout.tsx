@@ -1,15 +1,13 @@
 import { useEffect } from "react";
 import { useToast } from "@components/ui/use-toast";
-import {
-  fetchGroupDiscussions,
-  // getDiscussionDetails,
-} from "@lib/api/discussion";
+import { fetchGroupDiscussions } from "@lib/api/discussion";
 import DiscussionsSidebar from "@components/dashboard/discussions-sidebar";
-import DiscussionInfoPanel from "@components/dashboard/discussion-info-panel";
+
 import ChatDiscussionView from "@components/dashboard/chat-discussion-view";
 import { useQuery } from "@tanstack/react-query";
 import useGroupStore from "@store/group-store";
 import useChatStore from "@store/chat-store";
+import { useMobile } from "@hooks/use-mobile";
 
 const DiscussionsLayout = () => {
   const { toast } = useToast();
@@ -38,53 +36,41 @@ const DiscussionsLayout = () => {
     },
   });
 
-  // Auto-select first discussion when discussions load and none is selected
+  const isMobile = useMobile();
+
+  // Auto-select first discussion when discussions load and none is selected (desktop only)
   useEffect(() => {
-    if (discussions.length > 0 && !currentDiscussionId) {
+    if (discussions.length > 0 && !currentDiscussionId && !isMobile) {
       setCurrentDiscussionId(discussions[0].id);
     }
-  }, [discussions, currentDiscussionId, setCurrentDiscussionId]);
+  }, [discussions, currentDiscussionId, setCurrentDiscussionId, isMobile]);
 
-  // // Query for fetching selected discussion details
-  // const { data: selectedDiscussion, isLoading: discussionDetailsLoading } =
-  //   useQuery({
-  //     queryKey: ["discussion-details", groupId, currentDiscussionId],
-  //     queryFn: async () => {
-  //       try {
-  //         return await getDiscussionDetails(groupId, currentDiscussionId!);
-  //       } catch (error) {
-  //         toast({
-  //           variant: "destructive",
-  //           title: "Error",
-  //           description: "Failed to load discussion details. Please try again.",
-  //         });
-  //         console.error(error);
-  //       }
-  //     },
-  //     enabled:
-  //       !!currentDiscussionId &&
-  //       !!discussions.find((d) => d.id === currentDiscussionId),
-  //   });
+  const showSidebar = !currentDiscussionId || !isMobile;
 
   return (
     <div className="flex h-full w-full">
-      <DiscussionsSidebar
-        loading={discussionsLoading}
-        discussions={discussions}
-      />
+      {showSidebar && (
+        <DiscussionsSidebar
+          loading={discussionsLoading}
+          discussions={discussions}
+        />
+      )}
 
       <div className="flex w-full">
         {currentDiscussionId && !discussionsLoading && (
           <>
             <div className="flex-1">
               <ChatDiscussionView
-              // discussion={selectedDiscussion}
-              // discussionLoading={discussionDetailsLoading}
+                discussionTitle={
+                  discussions.find(
+                    (discussion) => discussion.id === currentDiscussionId
+                  )?.title || ""
+                }
               />
             </div>
-            <div className="min-w-80 max-w-80 shrink-0 border-l">
+            {/* <div className="min-w-80 max-w-80 shrink-0 border-l">
               <DiscussionInfoPanel />
-            </div>
+            </div> */}
           </>
         )}
       </div>

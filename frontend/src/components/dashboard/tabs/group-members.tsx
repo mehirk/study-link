@@ -109,40 +109,45 @@ const GroupMembers = () => {
   };
 
   return (
-    <div className="space-y-4 w-full">
-      <h2 className="text-xl font-semibold">
+    <div className="space-y-4 p-2 md:p-6 w-full">
+      <h2 className="text-lg md:text-xl font-semibold">
         Group Members ({members.length})
       </h2>
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-3 md:gap-4">
         {members.map((member) => (
           <Card key={member.id} className="overflow-hidden shadow-none">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <Avatar>
+            <CardContent className="p-3 md:p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-10 w-10 md:h-12 md:w-12">
                     <AvatarImage
                       className="object-cover"
                       src={member.user.image || ""}
                     />
-                    <AvatarFallback>
+                    <AvatarFallback className="text-sm">
                       {getInitials(member.user.name)}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <p className="font-medium">{member.user.name}</p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium text-sm md:text-base truncate">
+                        {member.user.name}
+                      </p>
                       <Badge
                         variant={
                           member.role === "ADMIN" ? "destructive" : "outline"
                         }
+                        className="text-xs"
                       >
                         {member.role}
                       </Badge>
                       {user && member.id === Number(user.id) && (
-                        <Badge variant="secondary">You</Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          You
+                        </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs md:text-sm text-muted-foreground truncate">
                       {member.user.email}
                     </p>
                   </div>
@@ -151,7 +156,7 @@ const GroupMembers = () => {
                   user &&
                   member.id !== Number(user.id) &&
                   member.role === "MEMBER" && (
-                    <div className="flex space-x-2">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                       <Button
                         variant="outline"
                         size="sm"
@@ -162,28 +167,30 @@ const GroupMembers = () => {
                           )
                         }
                         disabled={changeRoleMutation.isPending}
+                        className="w-full sm:w-auto text-xs"
                       >
                         {changeRoleMutation.isPending &&
                         changeRoleMutation.variables?.userId ===
                           member.userId ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          <Loader2 className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2 animate-spin" />
                         ) : (
-                          <ShieldAlert className="w-4 h-4 mr-2" />
+                          <ShieldAlert className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                         )}
-                        {"Make Admin"}
+                        Make Admin
                       </Button>
                       <Button
                         variant="destructive"
                         size="sm"
                         onClick={() => handleRemoveMember(member.userId)}
                         disabled={removeMemberMutation.isPending}
+                        className="w-full sm:w-auto text-xs"
                       >
                         {removeMemberMutation.isPending &&
                         removeMemberMutation.variables?.userId ===
                           member.userId ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          <Loader2 className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2 animate-spin" />
                         ) : (
-                          <UserX className="w-4 h-4 mr-2" />
+                          <UserX className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                         )}
                         Remove
                       </Button>
@@ -192,17 +199,18 @@ const GroupMembers = () => {
                 {user &&
                   member.userId === user.id &&
                   member.role === "MEMBER" && (
-                    <div>
+                    <div className="w-full sm:w-auto">
                       <Button
                         variant="destructive"
                         size="sm"
                         onClick={handleLeaveGroup}
                         disabled={leaveGroupMutation.isPending}
+                        className="w-full sm:w-auto text-xs"
                       >
                         {leaveGroupMutation.isPending ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          <Loader2 className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2 animate-spin" />
                         ) : (
-                          <UserX className="w-4 h-4 mr-2" />
+                          <UserX className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                         )}
                         Leave Group
                       </Button>

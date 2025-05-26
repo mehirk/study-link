@@ -11,7 +11,8 @@ export const getInitials = (name: string) => {
     .split(" ")
     .map((n) => n[0])
     .join("")
-    .toUpperCase();
+    .toUpperCase()
+    .slice(0, 3);
 };
 
 // Helper function to format dates for message groups

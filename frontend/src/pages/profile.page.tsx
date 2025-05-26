@@ -54,7 +54,8 @@ const Profile = () => {
           <UploadButton
             endpoint="profilePicture"
             appearance={{
-              button: { width: "100%", backgroundColor: "maroon" },
+              button:
+                "ut-ready:bg-primary w-full p-2 ut-uploading:cursor-not-allowed rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200 ease-in-out after:bg-primary/50",
             }}
             input={{
               userId: user.id,
