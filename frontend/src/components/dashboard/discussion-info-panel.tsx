@@ -119,7 +119,7 @@ const DiscussionInfoPanel = () => {
   const canEditDiscussion = isAdmin || discussion.authorId === user?.id;
 
   return (
-    <div className="h-full min-w-full p-4">
+    <div className="h-full min-w-full p-3">
       <h2 className="text-2xl font-semibold mb-4">Discussion Info</h2>
 
       <Card className="shadow-none border-none">
@@ -244,7 +244,7 @@ const DiscussionInfoPanel = () => {
           </div>
         )}
 
-        <div className="px-4 pb-4 mt-2 border-t pt-4">
+        <div className="px-6 pb-4 mt-2 border-t -mx-3 pt-4">
           <p className="text-sm font-medium mb-2">Attachments</p>
           <UploadDropzone
             appearance={{
@@ -263,7 +263,7 @@ const DiscussionInfoPanel = () => {
                 description: "Your files have been uploaded successfully",
               });
             }}
-            className="border-dashed border-2 pb-4"
+            className="border-dashed border-2 pt-2 pb-4"
           />
         </div>
       </Card>

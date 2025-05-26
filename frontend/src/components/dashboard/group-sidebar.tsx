@@ -87,9 +87,9 @@ const GroupSidebar = () => {
   };
 
   return (
-    <div className="w-16 md:w-64 min-w-16 md:min-w-64 border-r h-auto flex flex-col">
+    <div className="w-16 xl:w-64 min-w-16 xl:min-w-64 border-r h-auto flex flex-col">
       {/* Header - Desktop only */}
-      <div className="hidden md:block p-4 border-b">
+      <div className="hidden xl:block p-4 border-b">
         <a
           href="/dashboard"
           className="text-lg font-semibold hover:text-muted-foreground transition-colors cursor-pointer"
@@ -99,7 +99,7 @@ const GroupSidebar = () => {
       </div>
 
       {/* Create/Join Group buttons - Desktop only */}
-      <div className="hidden md:block p-4 space-y-2">
+      <div className="hidden xl:block p-4 space-y-2">
         <Button className="w-full" onClick={() => setIsCreateModalOpen(true)}>
           Create Group
         </Button>
@@ -113,7 +113,7 @@ const GroupSidebar = () => {
       </div>
 
       {/* Groups heading - Desktop only */}
-      <div className="hidden md:block px-4 py-4 text-base font-extrabold text-muted-foreground">
+      <div className="hidden xl:block px-4 py-4 text-base font-extrabold text-muted-foreground">
         Groups
       </div>
       {/* Groups list */}
@@ -129,25 +129,25 @@ const GroupSidebar = () => {
                 <button
                   key={group.id}
                   className={cn(
-                    "w-full px-1 md:px-3 my-1 py-2 text-left rounded-md transition-colors",
+                    "w-full px-1 xl:px-3 my-1 py-2 text-left rounded-md transition-colors",
                     "hover:bg-accent hover:text-accent-foreground",
-                    "flex items-center gap-3 md:gap-3",
+                    "flex items-center gap-3 xl:gap-3",
                     currentGroup?.id === group.id &&
                       "bg-accent text-accent-foreground"
                   )}
                   onClick={() => handleSelectGroup(group.id)}
                 >
                   {/* Mobile: Avatar with initials */}
-                  <div className="md:hidden flex justify-center w-full">
+                  <div className="xl:hidden flex justify-center w-full">
                     <GroupAvatar name={group.name} />
                   </div>
                   {/* Desktop: Full name */}
-                  <span className="hidden md:block">{group.name}</span>
+                  <span className="hidden xl:block">{group.name}</span>
                 </button>
               ))}
               {/* Add group button - Mobile (in the list) */}
               <button
-                className="md:hidden w-full px-1 my-1 py-2 text-left rounded-md transition-colors hover:bg-accent hover:text-accent-foreground flex items-center justify-center text-muted-foreground"
+                className="xl:hidden w-full px-1 my-1 py-2 text-left rounded-md transition-colors hover:bg-accent hover:text-accent-foreground flex items-center justify-center text-muted-foreground"
                 onClick={() => setIsGroupActionModalOpen(true)}
               >
                 <div className="flex items-center justify-center rounded-full border-2 border-dashed border-muted-foreground w-8 h-8">
@@ -158,7 +158,7 @@ const GroupSidebar = () => {
           ) : (
             <>
               {/* Mobile empty state */}
-              <div className="md:hidden w-full px-1 my-1 py-2 text-left rounded-md transition-colors hover:bg-accent hover:text-accent-foreground flex items-center justify-center text-muted-foreground">
+              <div className="xl:hidden w-full px-1 my-1 py-2 text-left rounded-md transition-colors hover:bg-accent hover:text-accent-foreground flex items-center justify-center text-muted-foreground">
                 <button
                   className="flex items-center justify-center rounded-full border-2 border-dashed border-muted-foreground w-8 h-8"
                   onClick={() => setIsGroupActionModalOpen(true)}
@@ -167,7 +167,7 @@ const GroupSidebar = () => {
                 </button>
               </div>
               {/* Desktop empty state */}
-              <div className="hidden md:block text-center p-4 text-muted-foreground">
+              <div className="hidden xl:block text-center p-4 text-muted-foreground">
                 No groups yet.
               </div>
             </>
