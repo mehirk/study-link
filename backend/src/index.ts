@@ -17,12 +17,14 @@ const PORT = process.env.PORT ?? 3000;
 
 app.use(
   cors({
-    origin: [
-      process.env.FRONTEND_URL!,
-      "http://localhost:5173",
-      "http://10.0.0.47:5173",
-      /^https:\/\/.*\.vercel\.app$/,
-    ],
+    origin: process.env.FRONTEND_URL
+      ? [
+          process.env.FRONTEND_URL,
+          "http://localhost:5173",
+          "http://10.0.0.47:5173",
+          /^https:\/\/.*shahbazs-projects-0c71becb\.vercel\.app$/,
+        ]
+      : ["*"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
