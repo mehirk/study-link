@@ -58,7 +58,7 @@ export function SignInForm({
   };
 
   return (
-    <Card className="max-w-md w-full mx-auto">
+    <Card className="max-w-md w-full mx-auto border-none">
       <CardHeader className="pb-0">
         <CardTitle>Welcome to Study Link</CardTitle>
         <CardDescription>Sign in to your account to continue</CardDescription>

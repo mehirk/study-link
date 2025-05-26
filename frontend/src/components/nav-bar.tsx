@@ -34,6 +34,7 @@ const Navbar = () => {
 
       {/* Desktop Navigation */}
       <div className="hidden md:flex items-center gap-2">
+        <ModeToggle />
         {isAuthenticated && (
           <>
             <div className="flex items-center gap-1 mr-4">
@@ -53,7 +54,6 @@ const Navbar = () => {
               </Link>
             </div>
             <div className="h-6 w-px bg-border mr-3" />
-            <ModeToggle />
             <Button
               variant="outline"
               size="sm"
