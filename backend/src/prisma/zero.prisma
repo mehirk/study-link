@@ -1,0 +1,36 @@
+generator zero {
+  provider = "prisma-generator-zero"
+  output   = "../../../zero-syncer/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Comment {
+  id           Int       @id @default(autoincrement())
+  content      String
+  // discussion   Discussion @relation(fields: [discussionId], references: [id])
+  discussionId Int
+  author       User      @relation(fields: [authorId], references: [id])
+  authorId     String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  @@map("comment")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  name          String
+  emailVerified Boolean
+  image         String?
+  comments      Comment[]
+
+  @@map("user")
+}

@@ -2,22 +2,22 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY backend/package.json backend/package-lock.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml ./
+COPY backend/package.json ./backend/
+RUN npm install -g pnpm && pnpm install --filter backend
 
-COPY backend/ .
+COPY backend/ ./backend/
 
-RUN npm run db:generate
-RUN npm run build
+RUN cd backend && \
+    pnpm db:generate && \
+    pnpm build
 
-FROM node:20-alpine
+FROM node:20-alpine AS final
 
 WORKDIR /app
 
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY backend/package.json ./
+COPY --from=builder /app/backend/dist ./dist
+COPY --from=builder /app/backend/node_modules ./node_modules
 
 EXPOSE 4000
-
-CMD ["npm", "run", "start"]
+CMD ["node", "dist/index.js"]

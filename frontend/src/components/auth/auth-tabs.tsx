@@ -2,45 +2,39 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { SignInForm } from "./sign-in";
-import { useAuth } from "../../hooks/auth";
 import { useState } from "react";
 import { authClient } from "@lib/api-client";
-import { Card } from "../ui/card";
+import { Card } from "@components/ui/card";
 import { SignupForm } from "./sign-up";
+import { toast } from "@components/ui/use-toast";
+import useAuthStore from "@store/auth-store";
 
 export function AuthTabs() {
-  const { setUser, setIsAuthenticated, refreshSession } = useAuth();
+  const refreshSession = useAuthStore((state) => state.refreshSession);
+
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // const { toast } = useToast();
 
   const handleSignIn = async (credentials: {
     email: string;
     password: string;
   }) => {
-    try {
-      setIsLoading(true);
-      setError(null);
+    setIsLoading(true);
 
-      const { data, error } = await authClient.signIn.email({
-        ...credentials,
+    const { error } = await authClient.signIn.email({
+      ...credentials,
+    });
+
+    if (error) {
+      toast({
+        title: "Sign in failed",
+        description: error.message || "Invalid credentials. Please try again.",
+        variant: "destructive",
       });
-
-      if (error) {
-        setError(error.message || "Sign in failed");
-        return;
-      }
-
-      setUser(data.user);
-      setIsAuthenticated(true);
-      refreshSession();
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "An error occurred during sign in";
-      setError(errorMessage);
-      console.error("Sign in error:", err);
-    } finally {
       setIsLoading(false);
+      return;
     }
+    await refreshSession();
   };
 
   const handleSignUp = async (credentials: {
@@ -48,30 +42,23 @@ export function AuthTabs() {
     password: string;
     name: string;
   }) => {
-    try {
-      setIsLoading(true);
-      setError(null);
+    setIsLoading(true);
 
-      const { data, error } = await authClient.signUp.email({
-        ...credentials,
+    const { error } = await authClient.signUp.email({
+      ...credentials,
+    });
+
+    if (error) {
+      toast({
+        title: "Sign up failed",
+        description:
+          error.message || "Unable to create account. Please try again.",
+        variant: "destructive",
       });
-
-      if (error) {
-        setError(error.message || "Sign up failed");
-        return;
-      }
-
-      setUser(data.user);
-      setIsAuthenticated(true);
-      refreshSession();
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "An error occurred during sign up";
-      setError(errorMessage);
-      console.error("Sign up error:", err);
-    } finally {
       setIsLoading(false);
+      return;
     }
+    await refreshSession();
   };
 
   return (
@@ -81,11 +68,6 @@ export function AuthTabs() {
         <TabsTrigger value="signup">Sign Up</TabsTrigger>
       </TabsList>
       <Card className="my-2">
-        {error && (
-          <div className="m-2 p-3 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-200 rounded">
-            {error}
-          </div>
-        )}
         <TabsContent value="signin">
           <SignInForm onSubmit={handleSignIn} isLoading={isLoading} />
         </TabsContent>

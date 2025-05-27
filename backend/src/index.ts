@@ -3,7 +3,7 @@ import "dotenv/config";
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./utils/auth";
-import userProfileRoutes from "./routes/userProfile.routes";
+import userProfileRoutes from "./routes/user-profile.routes";
 import groupRoutes from "./routes/group.routes";
 import { uploadRouter } from "./utils/uploadthing";
 import { createRouteHandler } from "uploadthing/express";
@@ -17,13 +17,14 @@ const PORT = process.env.PORT ?? 3000;
 
 app.use(
   cors({
-    origin: [
-      process.env.FRONTEND_URL!,
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:5175",
-      "http://localhost:4173",
-    ],
+    origin: process.env.FRONTEND_URL
+      ? [
+          process.env.FRONTEND_URL,
+          "http://localhost:5173",
+          "http://10.0.0.47:5173",
+          /^https:\/\/.*shahbazs-projects-0c71becb\.vercel\.app$/,
+        ]
+      : ["*"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -31,7 +32,7 @@ app.use(
 
 app.use(metricsMiddleware);
 
-app.all("/api/auth/*", toNodeHandler(auth));
+app.all("/api/auth/*authPath", toNodeHandler(auth));
 
 app.use(
   "/api/uploadthing",

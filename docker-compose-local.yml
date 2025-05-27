@@ -1,0 +1,20 @@
+services:
+  study-link-api:
+    container_name: study-link-api
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - backend/.env
+    ports:
+      - 4000:4000
+
+  study-link-zero-sync:
+    container_name: study-link-zero-syncer
+    build:
+      context: .
+      dockerfile: zero-syncer/Dockerfile
+    env_file:
+      - zero-syncer/.env
+    ports:
+      - 4848:4848
