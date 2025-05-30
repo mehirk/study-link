@@ -9,6 +9,7 @@
     "frontend:install": "pnpm install --filter frontend --filter zero-syncer",
     "db:generate": "pnpm --filter backend db:generate",
     "db:studio": "pnpm --filter backend db:studio",
+    "db:push": "pnpm --filter backend db:push",
     "zero:generate": "pnpm --filter backend zero:generate"
   },
   "engines": {
