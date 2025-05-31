@@ -40,7 +40,6 @@ const Navbar = () => {
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
-            size="sm"
             onClick={() => window.open("https://shahcodes.in", "_blank")}
             className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
           >
@@ -48,7 +47,6 @@ const Navbar = () => {
           </Button>
           <Button
             variant="ghost"
-            size="sm"
             onClick={() =>
               window.open(
                 "https://github.com/shahbaz-athwal/study-link",
@@ -69,7 +67,6 @@ const Navbar = () => {
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
-                size="sm"
                 onClick={() => navigate("/dashboard")}
                 className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
               >
@@ -77,7 +74,6 @@ const Navbar = () => {
               </Button>
               <Button
                 variant="ghost"
-                size="sm"
                 onClick={() => navigate("/profile")}
                 className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
               >
@@ -90,7 +86,6 @@ const Navbar = () => {
             {/* Logout Button */}
             <Button
               variant="outline"
-              size="sm"
               onClick={handleLogout}
               className="flex items-center gap-2 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all duration-200 group"
             >
