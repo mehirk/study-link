@@ -117,7 +117,7 @@ const CommentItem = ({
           )}
           <div className="flex flex-col">
             <div
-              className={`flex items-center gap-2 ${
+              className={`flex items-center gap-2 relative ${
                 isCurrentUser ? "flex-row-reverse" : "flex-row"
               }`}
             >
@@ -139,20 +139,19 @@ const CommentItem = ({
                 </span>
 
                 {isCurrentUser && (
+                  // <div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 transition-opacity duration-200"
+                        // className="h-6 w-6 bg-background border rounded-md shadow-sm hover:bg-muted/80"
                       >
                         <MoreVertical className="h-3 w-3" />
                         <span className="sr-only">Message options</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align={isCurrentUser ? "end" : "start"}
-                    >
+                    <DropdownMenuContent align="end" className="w-32">
                       <DropdownMenuItem
                         onClick={() => {
                           setIsEditing(true);
@@ -173,6 +172,7 @@ const CommentItem = ({
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  // </div>
                 )}
               </div>
             </div>
