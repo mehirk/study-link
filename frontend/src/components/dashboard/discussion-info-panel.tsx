@@ -18,6 +18,7 @@ import useAuthStore from "@store/auth-store";
 import useGroupStore from "@store/group-store";
 import useChatStore from "@store/chat-store";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ScrollArea } from "@components/ui/scroll-area";
 
 const DiscussionInfoPanel = () => {
   const discussionId = useChatStore((state) => state.currentDiscussionId)!;
@@ -158,168 +159,170 @@ const DiscussionInfoPanel = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Title */}
-        {editingInfo ? (
-          <div>
-            <Input
-              value={editedInfo.title}
-              onChange={(e) =>
-                setEditedInfo({
-                  ...editedInfo,
-                  title: e.target.value,
-                })
-              }
-              className="font-semibold"
-              placeholder="Discussion title..."
-              autoFocus
-            />
-          </div>
-        ) : (
-          <h1 className="text-xl font-bold leading-tight break-words">
-            {discussion.title}
-          </h1>
-        )}
-
-        {/* Author Info */}
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-10 w-10">
-            <AvatarImage
-              src={discussion.author.image || ""}
-              alt={discussion.author.name}
-            />
-            <AvatarFallback className="bg-primary/10 text-primary text-sm">
-              {getInitials(discussion.author.name)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center space-x-1">
-              <User className="h-3 w-3 text-muted-foreground" />
-              <span className="font-medium text-sm truncate">
-                by {discussion.author.name}
-              </span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Calendar className="h-3 w-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(discussion.createdAt), {
-                  addSuffix: true,
-                })}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Description */}
-        <div>
-          <h3 className="text-sm font-semibold mb-2">Description</h3>
+      <ScrollArea className="flex-1 max-h-[calc(100vh-14.5rem)]">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Title */}
           {editingInfo ? (
-            <Textarea
-              value={editedInfo.content}
-              onChange={(e) =>
-                setEditedInfo({
-                  ...editedInfo,
-                  content: e.target.value,
-                })
-              }
-              placeholder="Add a description..."
-              rows={4}
-              className="resize-none text-sm"
-            />
+            <div>
+              <Input
+                value={editedInfo.title}
+                onChange={(e) =>
+                  setEditedInfo({
+                    ...editedInfo,
+                    title: e.target.value,
+                  })
+                }
+                className="font-semibold"
+                placeholder="Discussion title..."
+                autoFocus
+              />
+            </div>
           ) : (
-            <div className="min-h-[60px] p-3 bg-muted/30 rounded-md">
-              {discussion.content ? (
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                  {discussion.content}
-                </p>
-              ) : (
-                <div className="flex items-center justify-center h-full text-center">
-                  <p className="text-muted-foreground text-xs">
-                    No description provided
+            <h1 className="text-xl font-bold leading-tight break-words">
+              {discussion.title}
+            </h1>
+          )}
+
+          {/* Author Info */}
+          <div className="flex items-center space-x-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage
+                src={discussion.author.image || ""}
+                alt={discussion.author.name}
+              />
+              <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                {getInitials(discussion.author.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-1">
+                <User className="h-3 w-3 text-muted-foreground" />
+                <span className="font-medium text-sm truncate">
+                  by {discussion.author.name}
+                </span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Calendar className="h-3 w-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">
+                  {formatDistanceToNow(new Date(discussion.createdAt), {
+                    addSuffix: true,
+                  })}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <h3 className="text-sm font-semibold mb-2">Description</h3>
+            {editingInfo ? (
+              <Textarea
+                value={editedInfo.content}
+                onChange={(e) =>
+                  setEditedInfo({
+                    ...editedInfo,
+                    content: e.target.value,
+                  })
+                }
+                placeholder="Add a description..."
+                rows={4}
+                className="resize-none text-sm"
+              />
+            ) : (
+              <div className="min-h-[60px] p-3 bg-muted/30 rounded-md">
+                {discussion.content ? (
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                    {discussion.content}
                   </p>
-                </div>
-              )}
+                ) : (
+                  <div className="flex items-center justify-center h-full text-center">
+                    <p className="text-muted-foreground text-xs">
+                      No description provided
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Edit Actions */}
+          {editingInfo && (
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCancelEdit}
+                disabled={actionLoading}
+                className="h-7 px-2 text-xs"
+              >
+                <X className="h-3 w-3" />
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleUpdateInfo}
+                disabled={actionLoading || !editedInfo.title.trim()}
+                className="h-7 px-2 text-xs"
+              >
+                {actionLoading ? (
+                  <>
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Edit className="h-3 w-3" />
+                    Save
+                  </>
+                )}
+              </Button>
             </div>
           )}
-        </div>
 
-        {/* Edit Actions */}
-        {editingInfo && (
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCancelEdit}
-              disabled={actionLoading}
-              className="h-7 px-2 text-xs"
-            >
-              <X className="h-3 w-3" />
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              onClick={handleUpdateInfo}
-              disabled={actionLoading || !editedInfo.title.trim()}
-              className="h-7 px-2 text-xs"
-            >
-              {actionLoading ? (
-                <>
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Edit className="h-3 w-3" />
-                  Save
-                </>
-              )}
-            </Button>
+          {/* Attachments */}
+          <div>
+            <h3 className="text-lg font-semibold my-2 flex items-center">
+              <Upload className="h-4 w-4 mr-2" />
+              Attachments
+            </h3>
+            <UploadDropzone
+              appearance={{
+                container:
+                  "border-2 border-dashed border-border rounded-md p-4 transition-colors hover:border-primary/50",
+                button:
+                  "ut-ready:bg-primary w-full p-2 ut-uploading:cursor-not-allowed rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 text-sm",
+                label: "text-foreground text-sm",
+                allowedContent: "text-muted-foreground text-xs",
+              }}
+              input={{
+                discussionId: discussionId.toString(),
+                token: sessionToken!,
+                groupId: groupId.toString(),
+              }}
+              endpoint="discussionFiles"
+              onClientUploadComplete={() => {
+                toast({
+                  title: "Files uploaded",
+                  description: "Your files have been uploaded successfully",
+                });
+              }}
+              onUploadError={(error) => {
+                toast({
+                  variant: "destructive",
+                  title: "Upload failed",
+                  description: error.message || "Failed to upload files",
+                });
+              }}
+            />
           </div>
-        )}
-
-        {/* Attachments */}
-        <div>
-          <h3 className="text-lg font-semibold my-2 flex items-center">
-            <Upload className="h-4 w-4 mr-2" />
-            Attachments
-          </h3>
-          <UploadDropzone
-            appearance={{
-              container:
-                "border-2 border-dashed border-border rounded-md p-4 transition-colors hover:border-primary/50",
-              button:
-                "ut-ready:bg-primary w-full p-2 ut-uploading:cursor-not-allowed rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 text-sm",
-              label: "text-foreground text-sm",
-              allowedContent: "text-muted-foreground text-xs",
-            }}
-            input={{
-              discussionId: discussionId.toString(),
-              token: sessionToken!,
-              groupId: groupId.toString(),
-            }}
-            endpoint="discussionFiles"
-            onClientUploadComplete={() => {
-              toast({
-                title: "Files uploaded",
-                description: "Your files have been uploaded successfully",
-              });
-            }}
-            onUploadError={(error) => {
-              toast({
-                variant: "destructive",
-                title: "Upload failed",
-                description: error.message || "Failed to upload files",
-              });
-            }}
-          />
         </div>
-      </div>
 
-      <DeleteDiscussionModal
-        isOpen={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        onConfirmDelete={handleDeleteDiscussion}
-      />
+        <DeleteDiscussionModal
+          isOpen={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirmDelete={handleDeleteDiscussion}
+        />
+      </ScrollArea>
     </div>
   );
 };

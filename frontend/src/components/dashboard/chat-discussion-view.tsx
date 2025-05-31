@@ -145,7 +145,7 @@ const ChatDiscussionView = ({ discussionTitle }: ChatDiscussionViewProps) => {
 
   return (
     <div className="flex flex-col h-full min-w-[40vw]">
-      <div className="px-3 sm:px-4 py-2 sm:py-3 border-b flex-shrink-0">
+      <div className="px-3 bg-accent sm:px-4 py-2 sm:py-3 border-b flex-shrink-0">
         <div
           onClick={() => useChatStore.getState().setCurrentDiscussionId(null)}
           className="flex items-center gap-2 md:hidden mb-1"
