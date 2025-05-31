@@ -1,11 +1,11 @@
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@components/ui/dialog";
+  Credenza,
+  CredenzaContent,
+  CredenzaDescription,
+  CredenzaFooter,
+  CredenzaHeader,
+  CredenzaTitle,
+} from "@components/ui/credenza";
 import { Button } from "@components/ui/button";
 
 interface DeleteCommentModalProps {
@@ -20,25 +20,25 @@ const DeleteCommentModal = ({
   onConfirmDelete,
 }: DeleteCommentModalProps) => {
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Comment</DialogTitle>
-          <DialogDescription>
+    <Credenza open={isOpen} onOpenChange={onOpenChange}>
+      <CredenzaContent>
+        <CredenzaHeader>
+          <CredenzaTitle>Delete Comment</CredenzaTitle>
+          <CredenzaDescription>
             Are you sure you want to delete this comment? This action cannot be
             undone.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
+          </CredenzaDescription>
+        </CredenzaHeader>
+        <CredenzaFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button variant="destructive" onClick={onConfirmDelete}>
             Delete
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </CredenzaFooter>
+      </CredenzaContent>
+    </Credenza>
   );
 };
 

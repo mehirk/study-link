@@ -1,9 +1,11 @@
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@components/ui/dialog";
+  Credenza,
+  CredenzaContent,
+  CredenzaDescription,
+  CredenzaFooter,
+  CredenzaHeader,
+  CredenzaTitle,
+} from "@components/ui/credenza";
 import { Button } from "@components/ui/button";
 import { UserPlus, Users } from "lucide-react";
 
@@ -21,12 +23,15 @@ const GroupActionModal = ({
   onJoinGroup,
 }: GroupActionModalProps) => {
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>What would you like to do?</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col space-y-3 pt-2">
+    <Credenza open={isOpen} onOpenChange={onClose}>
+      <CredenzaContent>
+        <CredenzaHeader>
+          <CredenzaTitle>What would you like to do?</CredenzaTitle>
+          <CredenzaDescription>
+            Choose an option to proceed with your action.
+          </CredenzaDescription>
+        </CredenzaHeader>
+        <div className="px-4 flex flex-col space-y-3 pt-2">
           <Button
             onClick={() => {
               onClose();
@@ -51,8 +56,13 @@ const GroupActionModal = ({
             Join existing group
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+        <CredenzaFooter>
+          <Button variant="outline" onClick={() => onClose()}>
+            Cancel
+          </Button>
+        </CredenzaFooter>
+      </CredenzaContent>
+    </Credenza>
   );
 };
 
