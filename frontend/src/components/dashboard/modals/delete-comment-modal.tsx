@@ -11,7 +11,7 @@ import { Button } from "@components/ui/button";
 interface DeleteCommentModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirmDelete: () => Promise<void>;
+  onConfirmDelete: () => void;
 }
 
 const DeleteCommentModal = ({

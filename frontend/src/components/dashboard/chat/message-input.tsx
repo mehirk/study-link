@@ -12,6 +12,7 @@ const MessageInput = () => {
       onSubmit={(e) => {
         e.preventDefault();
         useChatStore.getState().sendNewMessage(message);
+        setMessage("");
       }}
       className="flex gap-2"
     >
@@ -25,6 +26,7 @@ const MessageInput = () => {
             e.preventDefault();
             if (message.trim()) {
               useChatStore.getState().sendNewMessage(message);
+              setMessage("");
             }
           }
         }}

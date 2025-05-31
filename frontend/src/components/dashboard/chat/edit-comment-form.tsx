@@ -4,8 +4,8 @@ import useChatStore from "@store/chat-store";
 import { Loader2, Check, X } from "lucide-react";
 import { useState } from "react";
 
-const EditCommentForm = () => {
-  const [content, setContent] = useState("");
+const EditCommentForm = ({ initialContent }: { initialContent: string }) => {
+  const [content, setContent] = useState(initialContent);
   const isSubmitting = useChatStore((state) => state.sendingComment);
   return (
     <div className="space-y-2">
