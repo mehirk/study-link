@@ -4,7 +4,13 @@ import useChatStore from "@store/chat-store";
 import { Loader2, Check, X } from "lucide-react";
 import { useState } from "react";
 
-const EditCommentForm = ({ initialContent }: { initialContent: string }) => {
+const EditCommentForm = ({
+  initialContent,
+  onCancel,
+}: {
+  initialContent: string;
+  onCancel: () => void;
+}) => {
   const [content, setContent] = useState(initialContent);
   const isSubmitting = useChatStore((state) => state.sendingComment);
   return (
@@ -18,7 +24,10 @@ const EditCommentForm = ({ initialContent }: { initialContent: string }) => {
         <Button
           size="icon"
           variant="ghost"
-          onClick={() => useChatStore.getState().setCommentToEdit(null)}
+          onClick={() => {
+            useChatStore.getState().setCommentToEdit(null);
+            onCancel();
+          }}
           className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-100/30"
         >
           <X className="h-4 w-4" />
@@ -26,7 +35,10 @@ const EditCommentForm = ({ initialContent }: { initialContent: string }) => {
         <Button
           size="icon"
           variant="ghost"
-          onClick={() => useChatStore.getState().updateMessage(content)}
+          onClick={() => {
+            useChatStore.getState().updateMessage(content);
+            onCancel();
+          }}
           disabled={isSubmitting}
           className="h-8 w-8"
         >

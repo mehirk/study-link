@@ -49,6 +49,7 @@ const useChatStore = create<ChatStore>((set) => ({
       { content: message }
     );
     set({ sendingComment: false });
+    set({ commentToEdit: null });
   },
   deleteComment: async () => {
     await deleteComment(
