@@ -113,12 +113,12 @@ const GroupSidebar = () => {
       </div>
 
       {/* Groups heading - Desktop only */}
-      <div className="hidden xl:block px-4 py-4 text-base font-extrabold text-muted-foreground">
+      <div className="hidden bg-accent border-y xl:block px-4 py-4 text-base font-extrabold text-muted-foreground">
         Groups
       </div>
       {/* Groups list */}
-      <ScrollArea className="flex-1">
-        <div className="px-2">
+      <ScrollArea className="flex-1 max-h-[calc(100vh-3.5rem)] xl:max-h-[calc(100vh-18rem)]">
+        <div className="px-1">
           {isLoading ? (
             <div className="flex justify-center p-2">
               <Loader2 className="animate-spin" />

@@ -42,7 +42,7 @@ const GroupSettings = () => {
     isPrivate: false,
     password: "",
   });
-
+  const [isDeleteGroupModalOpen, setIsDeleteGroupModalOpen] = useState(false);
   // Update group mutation
   const updateGroupMutation = useMutation({
     mutationFn: (data: GroupFormData) => {
@@ -86,7 +86,7 @@ const GroupSettings = () => {
       return deleteGroup(group.id);
     },
     onSuccess: () => {
-      window.location.href = "/dashboard";
+      setCurrentGroup(null);
     },
     onError: (error) => {
       console.error("Error deleting group:", error);
@@ -285,13 +285,20 @@ const GroupSettings = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="px-4 md:px-6 pb-4 md:pb-6">
-            <DeleteGroupModal
-              onDelete={handleDelete}
-              isDeleting={deleteGroupMutation.isPending}
-            />
+            <Button
+              variant="destructive"
+              onClick={() => setIsDeleteGroupModalOpen(true)}
+            >
+              Delete Group
+            </Button>
           </CardContent>
         </Card>
       </div>
+      <DeleteGroupModal
+        onConfirmDelete={handleDelete}
+        isOpen={isDeleteGroupModalOpen}
+        onOpenChange={setIsDeleteGroupModalOpen}
+      />
     </div>
   );
 };

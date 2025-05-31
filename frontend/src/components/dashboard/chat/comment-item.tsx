@@ -4,12 +4,11 @@ import { Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Comment } from "@lib/api/discussion";
 import { getInitials } from "@lib/utils";
+import useChatStore from "@store/chat-store";
 
 interface CommentItemProps {
   comment: Comment;
   isCurrentUser: boolean;
-  onEdit: (comment: Comment) => void;
-  onDelete: (commentId: number) => void;
   showAvatar: boolean;
   isFirstInGroup: boolean;
 }
@@ -17,8 +16,6 @@ interface CommentItemProps {
 const CommentItem = ({
   comment,
   isCurrentUser,
-  onEdit,
-  onDelete,
   showAvatar,
   isFirstInGroup,
 }: CommentItemProps) => {
@@ -81,7 +78,9 @@ const CommentItem = ({
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
-                  onClick={() => onEdit(comment)}
+                  onClick={() =>
+                    useChatStore.getState().setCommentToEdit(comment.id)
+                  }
                 >
                   <Edit className="h-3 w-3" />
                 </Button>
@@ -89,7 +88,9 @@ const CommentItem = ({
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
-                  onClick={() => onDelete(comment.id)}
+                  onClick={() =>
+                    useChatStore.getState().setCommentToDelete(comment.id)
+                  }
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>

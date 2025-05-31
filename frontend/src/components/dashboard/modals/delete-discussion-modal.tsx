@@ -1,17 +1,17 @@
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@components/ui/dialog";
+  Credenza,
+  CredenzaContent,
+  CredenzaDescription,
+  CredenzaFooter,
+  CredenzaHeader,
+  CredenzaTitle,
+} from "@components/ui/credenza";
 import { Button } from "@components/ui/button";
 
 interface DeleteDiscussionModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirmDelete: () => Promise<void>;
+  onConfirmDelete: () => void;
 }
 
 const DeleteDiscussionModal = ({
@@ -20,25 +20,25 @@ const DeleteDiscussionModal = ({
   onConfirmDelete,
 }: DeleteDiscussionModalProps) => {
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Discussion</DialogTitle>
-          <DialogDescription>
+    <Credenza open={isOpen} onOpenChange={onOpenChange}>
+      <CredenzaContent>
+        <CredenzaHeader>
+          <CredenzaTitle>Delete Discussion</CredenzaTitle>
+          <CredenzaDescription>
             Are you sure you want to delete this discussion? This action cannot
             be undone.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
+          </CredenzaDescription>
+        </CredenzaHeader>
+        <CredenzaFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button variant="destructive" onClick={onConfirmDelete}>
             Delete
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </CredenzaFooter>
+      </CredenzaContent>
+    </Credenza>
   );
 };
 

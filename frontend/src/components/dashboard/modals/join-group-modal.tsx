@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@components/ui/dialog";
+  Credenza,
+  CredenzaContent,
+  CredenzaDescription,
+  CredenzaHeader,
+  CredenzaTitle,
+} from "@components/ui/credenza";
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
@@ -122,16 +123,18 @@ const JoinGroupModal = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Join a Group</DialogTitle>
-        </DialogHeader>
+    <Credenza open={isOpen} onOpenChange={onClose}>
+      <CredenzaContent className="sm:max-w-md">
+        <CredenzaHeader>
+          <CredenzaTitle>Join a Group</CredenzaTitle>
+        </CredenzaHeader>
+        <CredenzaDescription className="sr-only">
+          Search for a group to join or create a new one.
+        </CredenzaDescription>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 px-4 sm:px-0">
           {/* Search box */}
           <div className="space-y-2">
-            <Label htmlFor="searchQuery">Search for a group</Label>
             <div className="relative">
               <Input
                 type="text"
@@ -140,7 +143,6 @@ const JoinGroupModal = ({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Start typing to search for groups..."
                 className="w-full"
-                autoFocus
               />
               {isSearching && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -165,8 +167,8 @@ const JoinGroupModal = ({
                     key={group.id}
                     className={`p-2.5 cursor-pointer flex items-center justify-between rounded-md ${
                       selectedGroup?.id === group.id
-                        ? "bg-primary/10 font-medium"
-                        : "hover:bg-muted"
+                        ? "bg-accent font-medium"
+                        : "hover:bg-accent/50"
                     }`}
                     onClick={() => handleSelectGroup(group)}
                   >
@@ -225,7 +227,7 @@ const JoinGroupModal = ({
           )}
 
           {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-2">
+          <div className="flex justify-end space-x-3 pb-4 pt-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
@@ -237,8 +239,8 @@ const JoinGroupModal = ({
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </CredenzaContent>
+    </Credenza>
   );
 };
 

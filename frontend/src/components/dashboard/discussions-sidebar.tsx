@@ -65,7 +65,7 @@ const DiscussionsSidebar = ({
       </div>
 
       {/* Discussions list */}
-      <ScrollArea className="flex-1 md:p-1">
+      <ScrollArea className="flex-1 md:max-h-[calc(100vh-15rem)] md:px-1">
         {loading ? (
           <div className="text-center p-4 flex justify-center items-center">
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -75,7 +75,7 @@ const DiscussionsSidebar = ({
             <button
               key={discussion.id}
               className={cn(
-                "w-full px-3 py-2 md:mb-2 text-left md:rounded-md transition-colors border-b md:border-b-0 flex flex-col",
+                "w-full px-3 py-2 md:mt-1 text-left md:rounded-md transition-colors border-b md:border-b-0 flex flex-col",
                 "hover:bg-accent/50 hover:text-accent-foreground",
                 currentDiscussionId === discussion.id &&
                   "bg-accent text-accent-foreground"
