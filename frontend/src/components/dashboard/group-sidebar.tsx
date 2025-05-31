@@ -113,7 +113,7 @@ const GroupSidebar = () => {
       </div>
 
       {/* Groups heading - Desktop only */}
-      <div className="hidden bg-accent border-y border-l xl:block px-4 py-4 text-base font-extrabold text-muted-foreground">
+      <div className="hidden bg-accent border-y xl:block px-4 py-4 text-base font-extrabold text-muted-foreground">
         Groups
       </div>
       {/* Groups list */}

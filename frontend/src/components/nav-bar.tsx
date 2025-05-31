@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { ModeToggle } from "@components/ui/mode-toggle";
 import { Button } from "@components/ui/button";
-import { LogOut, User, BookOpen, Menu, Code, UserCheck } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,19 +33,18 @@ const Navbar = () => {
       </Link>
 
       {/* Desktop Navigation */}
-      <div className="hidden lg:flex items-center gap-2">
+      <div className="hidden lg:flex items-center gap-4">
         <ModeToggle />
 
-        {/* Developer and Source Code buttons - always visible */}
-        <div className="flex items-center gap-1 mr-2">
+        {/* External Links */}
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => window.open("https://shahcodes.in", "_blank")}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
           >
-            <UserCheck className="h-5 w-5" />
-            View Developer
+            Developer
           </Button>
           <Button
             variant="ghost"
@@ -56,38 +55,44 @@ const Navbar = () => {
                 "_blank"
               )
             }
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
           >
-            <Code className="h-5 w-5" />
-            View Source Code
+            Source Code
           </Button>
         </div>
 
         {isAuthenticated && (
           <>
-            <div className="h-6 w-px bg-border mr-2" />
-            <div className="flex items-center gap-1 mr-4">
-              <Link
-                to="/dashboard"
-                className="group relative px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
+            <div className="h-5 w-px bg-border" />
+
+            {/* Navigation Links */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/dashboard")}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
               >
                 Dashboard
-                <span className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              </Link>
-              <Link
-                to="/profile"
-                className="group relative px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/profile")}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
               >
                 Profile
-                <span className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              </Link>
+              </Button>
             </div>
-            <div className="h-6 w-px bg-border mr-3" />
+
+            <div className="h-5 w-px bg-border" />
+
+            {/* Logout Button */}
             <Button
               variant="outline"
               size="sm"
               onClick={handleLogout}
-              className="ml-3 flex items-center gap-2 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all duration-200 group"
+              className="flex items-center gap-2 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all duration-200 group"
             >
               <LogOut className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
               Logout
@@ -97,23 +102,21 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Navigation */}
-      <div className="flex lg:hidden items-center gap-2">
+      <div className="flex lg:hidden items-center gap-3">
         <ModeToggle />
 
-        {/* Mobile dropdown for all options */}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild className="p-0 m-0">
-            <Button variant="ghost">
-              <Menu className="h-8 w-8" />
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="p-2">
+              <Menu className="h-5 w-5" />
               <span className="sr-only">Toggle menu</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent align="end">
             <DropdownMenuItem
               onClick={() => window.open("https://shahcodes.in", "_blank")}
             >
-              <UserCheck className="mx-2 h-5 w-5" />
-              <span>View Developer</span>
+              Developer
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() =>
@@ -123,22 +126,18 @@ const Navbar = () => {
                 )
               }
             >
-              <Code className="mx-2 h-5 w-5" />
-              <span>View Source Code</span>
+              Source Code
             </DropdownMenuItem>
             {isAuthenticated && (
               <>
                 <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                  <BookOpen className="mx-2 h-5 w-5" />
-                  <span>Dashboard</span>
+                  Dashboard
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/profile")}>
-                  <User className="mx-2 h-5 w-5" />
-                  <span>Profile</span>
+                  Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mx-2 h-5 w-5" />
-                  <span>Logout</span>
+                  Logout
                 </DropdownMenuItem>
               </>
             )}
