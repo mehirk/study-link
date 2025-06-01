@@ -17,6 +17,7 @@ interface GroupStore {
 
 interface PersistedGroupState {
   currentGroupId: number | null;
+  activeTab: string;
 }
 
 const useGroupStore = create(
@@ -24,7 +25,7 @@ const useGroupStore = create(
     (set, get) => ({
       currentGroupId: null,
       currentGroup: null,
-      activeTab: "discussions",
+      activeTab: "discussions" as const,
       isAdmin: false,
 
       setCurrentGroup: (group) => {
@@ -57,6 +58,7 @@ const useGroupStore = create(
       storage: createJSONStorage<PersistedGroupState>(() => persistentStorage),
       partialize: (state): PersistedGroupState => ({
         currentGroupId: state.currentGroupId,
+        activeTab: state.activeTab,
       }),
     }
   )
