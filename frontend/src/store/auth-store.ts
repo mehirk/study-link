@@ -16,11 +16,15 @@ interface AuthStore {
   signOut: () => Promise<void>;
 }
 
-const useAuthStore = create<AuthStore>((set) => ({
+const initialState = {
   user: null,
   isAuthenticated: false,
-  isLoading: true,
   sessionToken: null,
+};
+
+const useAuthStore = create<AuthStore>((set) => ({
+  ...initialState,
+  isLoading: true,
 
   setUser: (user) => set({ user }),
   setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
@@ -29,11 +33,7 @@ const useAuthStore = create<AuthStore>((set) => ({
 
   signOut: async () => {
     await authClient.signOut();
-    set({
-      isAuthenticated: false,
-      user: null,
-      sessionToken: null,
-    });
+    set(initialState);
     window.location.reload();
   },
 
@@ -60,19 +60,11 @@ const useAuthStore = create<AuthStore>((set) => ({
           sessionToken: data.session.token,
         });
       } else {
-        set({
-          isAuthenticated: false,
-          user: null,
-          sessionToken: null,
-        });
+        set(initialState);
       }
     } catch (error) {
       console.error("Auth check error:", error);
-      set({
-        isAuthenticated: false,
-        user: null,
-        sessionToken: null,
-      });
+      set(initialState);
     } finally {
       set({ isLoading: false });
     }

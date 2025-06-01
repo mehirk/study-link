@@ -10,14 +10,6 @@ import { Schema } from "../../../../../zero-syncer/generated/schema";
 import type { Comment } from "@lib/api/discussion";
 import { Loader2 } from "lucide-react";
 
-type CommentWithAuthor = Comment & {
-  author?: {
-    id: string;
-    name: string;
-    image?: string;
-  };
-};
-
 export const Chat = () => {
   const user = useAuthStore((state) => state.user)!;
   const discussionId = useChatStore((state) => state.currentDiscussionId)!;
@@ -42,8 +34,8 @@ export const Chat = () => {
 
   // Helper function to check if date changed between comments
   const hasDateChanged = (
-    currentComment: CommentWithAuthor,
-    previousComment: CommentWithAuthor | null
+    currentComment: Comment,
+    previousComment: Comment | null
   ): boolean => {
     if (!previousComment) return true;
 
@@ -55,8 +47,8 @@ export const Chat = () => {
 
   // Helper function to check if author changed between comments
   const hasAuthorChanged = (
-    currentComment: CommentWithAuthor,
-    previousComment: CommentWithAuthor | null
+    currentComment: Comment,
+    previousComment: Comment | null
   ): boolean => {
     if (!previousComment) return true;
     return currentComment.authorId !== previousComment.authorId;
@@ -64,8 +56,8 @@ export const Chat = () => {
 
   // Helper function to determine if avatar should be shown
   const shouldShowAvatar = (
-    currentComment: CommentWithAuthor,
-    previousComment: CommentWithAuthor | null
+    currentComment: Comment,
+    previousComment: Comment | null
   ): boolean => {
     return (
       hasAuthorChanged(currentComment, previousComment) ||
@@ -75,17 +67,17 @@ export const Chat = () => {
 
   // Helper function to check if this is the first comment in a group
   const isFirstInGroup = (
-    currentComment: CommentWithAuthor,
-    previousComment: CommentWithAuthor | null
+    currentComment: Comment,
+    previousComment: Comment | null
   ): boolean => {
     return shouldShowAvatar(currentComment, previousComment);
   };
 
   // Process a single comment and return rendered elements - this contains actual logic
   const processComment = (
-    comment: CommentWithAuthor,
+    comment: Comment,
     index: number,
-    comments: CommentWithAuthor[]
+    comments: Comment[]
   ): React.ReactNode[] => {
     const elements: React.ReactNode[] = [];
     const previousComment = index > 0 ? comments[index - 1] : null;
@@ -138,7 +130,7 @@ export const Chat = () => {
     );
   }
 
-  const comments = chat as CommentWithAuthor[];
+  const comments = chat as Comment[];
 
   return (
     <div className="space-y-1 sm:space-y-2 py-2">

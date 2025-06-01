@@ -46,7 +46,7 @@ const GroupSettings = () => {
   // Update group mutation
   const updateGroupMutation = useMutation({
     mutationFn: (data: GroupFormData) => {
-      if (!group) throw new Error("Group not found");
+      if (!group.id) throw new Error("Group not found");
       return updateGroup(group.id, {
         name: data.name,
         description: data.description,
@@ -55,19 +55,11 @@ const GroupSettings = () => {
       });
     },
     onSuccess: () => {
-      if (group) {
+      if (group.id) {
         queryClient.invalidateQueries({ queryKey: ["groups"] });
-        setCurrentGroup({
-          id: group.id,
-          createdAt: group.createdAt,
-          updatedAt: group.updatedAt,
-          name: formData.name,
-          description: formData.description,
-          private: formData.isPrivate,
-          password: formData.password,
-        });
-        setInitialData({ ...formData });
+        setCurrentGroup(group);
       }
+      setInitialData({ ...formData });
     },
     onError: (error) => {
       console.error("Error updating group:", error);
@@ -82,11 +74,12 @@ const GroupSettings = () => {
   // Delete group mutation
   const deleteGroupMutation = useMutation({
     mutationFn: () => {
-      if (!group) throw new Error("Group not found");
+      if (!group.id) throw new Error("Group not found");
       return deleteGroup(group.id);
     },
     onSuccess: () => {
       setCurrentGroup(null);
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
     },
     onError: (error) => {
       console.error("Error deleting group:", error);
@@ -100,7 +93,7 @@ const GroupSettings = () => {
 
   // Update state values when group changes
   useEffect(() => {
-    if (group) {
+    if (group.id) {
       const newData = {
         name: group.name,
         description: group.description || "",

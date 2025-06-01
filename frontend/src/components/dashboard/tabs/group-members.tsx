@@ -14,13 +14,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@components/ui/use-toast";
 import { getInitials } from "@lib/utils";
 import useGroupStore from "@store/group-store";
+import useChatStore from "@store/chat-store";
 
 const GroupMembers = () => {
   const user = useAuthStore((state) => state.user);
-  const groupId = useGroupStore((state) => state.currentGroup?.id)!;
+  const groupId = useGroupStore((state) => state.currentGroupId)!;
   const isAdmin = useGroupStore((state) => state.isAdmin);
   const setCurrentGroup = useGroupStore((state) => state.setCurrentGroup);
   const setActiveTab = useGroupStore((state) => state.setActiveTab);
+  const setCurrentDiscussionId = useChatStore(
+    (state) => state.setCurrentDiscussionId
+  );
   const queryClient = useQueryClient();
 
   const { data: members = [] } = useQuery({
@@ -54,6 +58,7 @@ const GroupMembers = () => {
     mutationFn: (groupId: number) => leaveGroup(groupId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
+      setCurrentDiscussionId(null);
       setCurrentGroup(null);
       setActiveTab("discussions");
     },

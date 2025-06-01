@@ -20,7 +20,7 @@ const DiscussionsSidebar = ({
   discussions,
 }: DiscussionsSidebarProps) => {
   const { toast } = useToast();
-  const groupId = useGroupStore((state) => state.currentGroup?.id)!;
+  const groupId = useGroupStore((state) => state.currentGroupId)!;
   const queryClient = useQueryClient();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 

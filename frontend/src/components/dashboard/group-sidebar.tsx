@@ -6,38 +6,55 @@ import { Button } from "@components/ui/button";
 import { ScrollArea } from "@components/ui/scroll-area";
 import GroupAvatar from "@components/ui/group-avatar";
 import { cn } from "@lib/utils";
-import { Group, createGroup, joinGroup, fetchUserGroups } from "@lib/api/group";
+import { createGroup, joinGroup } from "@lib/api/group";
 import { useToast } from "@components/ui/use-toast";
 import { Loader2, Plus } from "lucide-react";
 import useGroupStore from "@store/group-store";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useChatStore from "@store/chat-store";
+import { useZero, useQuery as useZeroQuery } from "@rocicorp/zero/react";
+import { Schema } from "../../../../zero-syncer/generated/schema";
+import useAuthStore from "@store/auth-store";
 
 const GroupSidebar = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [isGroupActionModalOpen, setIsGroupActionModalOpen] = useState(false);
   const { toast } = useToast();
-  const currentGroup = useGroupStore((state) => state.currentGroup);
+
+  const userId = useAuthStore((state) => state.user!.id);
+  const currentGroupId = useGroupStore((state) => state.currentGroupId);
   const setCurrentGroup = useGroupStore((state) => state.setCurrentGroup);
   const setCurrentDiscussionId = useChatStore(
     (state) => state.setCurrentDiscussionId
   );
-  const queryClient = useQueryClient();
 
-  const { data: groups = [], isLoading } = useQuery<Group[]>({
-    queryKey: ["groups"],
-    queryFn: fetchUserGroups,
+  const z = useZero<Schema>();
+
+  const membershipQuery = z.query.group_member
+    .where("userId", "=", userId)
+    .related("group", (q) => q.where("deletedAt", "IS", null));
+
+  const [memberships, membershipDetails] = useZeroQuery(membershipQuery, {
+    ttl: "forever",
   });
+  const groups = memberships.map((member) => member.group);
 
   useEffect(() => {
-    if (groups.length > 0 && !currentGroup) {
-      setCurrentGroup(groups[0]);
+    if (
+      groups.length > 0 &&
+      currentGroupId &&
+      membershipDetails.type !== "unknown"
+    ) {
+      setCurrentGroup(groups.find((group) => group!.id === currentGroupId)!);
     }
-  }, [groups, currentGroup, setCurrentGroup]);
+    if (groups.length > 0 && !currentGroupId) {
+      setCurrentGroup(groups[0]!);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [membershipDetails.type]);
 
   const handleSelectGroup = (groupId: number) => {
-    const selectedGroup = groups.find((group: Group) => group.id === groupId);
+    const selectedGroup = groups.find((group) => group!.id === groupId);
     if (selectedGroup) {
       setCurrentGroup(selectedGroup);
       setCurrentDiscussionId(null);
@@ -49,7 +66,6 @@ const GroupSidebar = () => {
       const newGroup = await createGroup({ name, description });
       setCurrentGroup(newGroup);
       setCurrentDiscussionId(null);
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
     } catch (error) {
       console.error("Failed to create group:", error);
       toast({
@@ -62,19 +78,9 @@ const GroupSidebar = () => {
 
   const handleJoinGroup = async (groupId: string, password?: string) => {
     try {
-      await joinGroup(Number(groupId), password);
-
-      await queryClient.invalidateQueries({ queryKey: ["groups"] });
-      const updatedGroups = await queryClient.fetchQuery({
-        queryKey: ["groups"],
-        queryFn: fetchUserGroups,
-      });
-
-      const joinedGroup = updatedGroups.find((g) => g.id === Number(groupId));
-      if (joinedGroup) {
-        setCurrentGroup(joinedGroup);
-        setCurrentDiscussionId(null);
-      }
+      const joinedGroup = await joinGroup(Number(groupId), password);
+      setCurrentDiscussionId(null);
+      setCurrentGroup(joinedGroup);
     } catch (error) {
       console.error("Failed to join group:", error);
       toast({
@@ -119,30 +125,30 @@ const GroupSidebar = () => {
       {/* Groups list */}
       <ScrollArea className="flex-1 max-h-[calc(100vh-3.5rem)] xl:max-h-[calc(100vh-18rem)]">
         <div className="px-1">
-          {isLoading ? (
+          {membershipDetails.type === "unknown" ? (
             <div className="flex justify-center p-2">
               <Loader2 className="animate-spin" />
             </div>
           ) : groups.length > 0 ? (
             <>
-              {groups.map((group: Group) => (
+              {groups.map((group) => (
                 <button
-                  key={group.id}
+                  key={group!.id}
                   className={cn(
                     "w-full px-1 xl:px-3 my-1 py-2 text-left rounded-md transition-colors",
                     "hover:bg-accent hover:text-accent-foreground",
                     "flex items-center gap-3 xl:gap-3",
-                    currentGroup?.id === group.id &&
+                    currentGroupId === group!.id &&
                       "bg-accent text-accent-foreground"
                   )}
-                  onClick={() => handleSelectGroup(group.id)}
+                  onClick={() => handleSelectGroup(group!.id)}
                 >
                   {/* Mobile: Avatar with initials */}
                   <div className="xl:hidden flex justify-center w-full">
-                    <GroupAvatar name={group.name} />
+                    <GroupAvatar name={group!.name} />
                   </div>
                   {/* Desktop: Full name */}
-                  <span className="hidden xl:block">{group.name}</span>
+                  <span className="hidden xl:block">{group!.name}</span>
                 </button>
               ))}
               {/* Add group button - Mobile (in the list) */}

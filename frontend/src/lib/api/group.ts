@@ -3,12 +3,12 @@ import { apiClient } from "@lib/api-client";
 export interface Group {
   id: number;
   name: string;
-  description?: string;
+  description: string | null;
   private: boolean;
-  password?: string;
-  createdAt: string;
-  updatedAt: string;
-  members?: GroupMember[];
+  password: string | null;
+  createdAt: string | number;
+  updatedAt: string | number;
+  members: GroupMember[];
 }
 
 export interface CreateGroupRequest {
@@ -23,7 +23,7 @@ export interface GroupMember {
   userId: string;
   groupId: number;
   role: "ADMIN" | "MEMBER";
-  joinedAt: string;
+  joinedAt: string | number;
   user: {
     id: string;
     name: string;
@@ -32,7 +32,7 @@ export interface GroupMember {
   };
 }
 // Fetch all groups the user is a member of
-export const fetchUserGroups = async (): Promise<Group[]> => {
+export const fetchUserGroups = async (): Promise<Omit<Group, "members">[]> => {
   const response = await apiClient.get("/groups");
   return response.data;
 };
@@ -40,7 +40,7 @@ export const fetchUserGroups = async (): Promise<Group[]> => {
 // Create a new group
 export const createGroup = async (
   groupData: CreateGroupRequest
-): Promise<Group> => {
+): Promise<Omit<Group, "members">> => {
   const response = await apiClient.post("/groups", groupData);
   return response.data;
 };
@@ -60,7 +60,7 @@ export const updateGroup = async (
     password?: string;
     private?: boolean;
   }
-): Promise<Group> => {
+): Promise<Omit<Group, "members">> => {
   const response = await apiClient.put(`/groups/${groupId}`, data);
   return response.data;
 };
@@ -74,9 +74,12 @@ export const deleteGroup = async (groupId: number): Promise<void> => {
 export const joinGroup = async (
   groupId: number,
   password?: string
-): Promise<void> => {
+): Promise<Omit<Group, "members">> => {
   const queryParams = password ? `?password=${password}` : "";
-  await apiClient.post(`/groups/join-group/${groupId}${queryParams}`);
+  const response = await apiClient.post(
+    `/groups/join-group/${groupId}${queryParams}`
+  );
+  return response.data;
 };
 
 // Leave a group

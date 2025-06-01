@@ -9,28 +9,100 @@ datasource db {
 }
 
 model Comment {
-  id           Int       @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   content      String
-  // discussion   Discussion @relation(fields: [discussionId], references: [id])
+  discussion   Discussion @relation(fields: [discussionId], references: [id])
   discussionId Int
-  author       User      @relation(fields: [authorId], references: [id])
+  author       User       @relation(fields: [authorId], references: [id])
   authorId     String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   deletedAt    DateTime?
 
   @@map("comment")
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id            String        @id @default(uuid())
+  email         String        @unique
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   name          String
   emailVerified Boolean
   image         String?
   comments      Comment[]
+  groups        GroupMember[]
+  files         File[]
+  discussions   Discussion[]
 
+  @@index([email])
   @@map("user")
+}
+
+model Group {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String?
+  members     GroupMember[]
+  discussions Discussion[]
+  files       File[]
+  private     Boolean       @default(false)
+  password    String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?
+
+  @@map("group")
+}
+
+model GroupMember {
+  id       Int      @id @default(autoincrement())
+  user     User     @relation(fields: [userId], references: [id])
+  userId   String
+  group    Group    @relation(fields: [groupId], references: [id])
+  groupId  Int
+  role     Role
+  joinedAt DateTime @default(now())
+
+  @@unique([userId, groupId]) //composite key
+  @@map("group_member")
+}
+
+model Discussion {
+  id        Int       @id @default(autoincrement())
+  title     String
+  content   String?
+  group     Group     @relation(fields: [groupId], references: [id])
+  groupId   Int
+  author    User      @relation(fields: [authorId], references: [id])
+  authorId  String
+  comments  Comment[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  files     File[]
+
+  @@map("discussion")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+model File {
+  id           Int        @id @default(autoincrement())
+  fileName     String
+  url          String
+  group        Group      @relation(fields: [groupId], references: [id])
+  groupId      Int
+  discussion   Discussion @relation(fields: [discussionId], references: [id])
+  discussionId Int
+  size         Int
+  uploadedBy   User       @relation(fields: [uploadedById], references: [id])
+  uploadedById String
+  createdAt    DateTime   @default(now())
+  deletedAt    DateTime?
+
+  @@map("file")
 }

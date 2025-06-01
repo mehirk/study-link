@@ -26,7 +26,7 @@ import { formatDistanceToNow } from "date-fns";
 const GroupFiles = () => {
   const user = useAuthStore((state) => state.user);
   const isAdmin = useGroupStore((state) => state.isAdmin);
-  const groupId = useGroupStore((state) => state.currentGroup?.id)!;
+  const groupId = useGroupStore((state) => state.currentGroupId)!;
   const queryClient = useQueryClient();
 
   // Fetch files

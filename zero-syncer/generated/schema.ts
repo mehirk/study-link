@@ -12,6 +12,13 @@ import {
   type Row,
 } from "@rocicorp/zero";
 
+// Define enums
+
+export enum Role {
+  ADMIN = "ADMIN",
+  MEMBER = "MEMBER",
+}
+
 // Define tables
 
 export const commentTable = table("comment")
@@ -38,10 +45,65 @@ export const userTable = table("user")
   })
   .primaryKey("id");
 
+export const groupTable = table("group")
+  .columns({
+    id: number(),
+    name: string(),
+    description: string().optional(),
+    private: boolean(),
+    password: string().optional(),
+    createdAt: number(),
+    updatedAt: number(),
+    deletedAt: number().optional(),
+  })
+  .primaryKey("id");
+
+export const groupMemberTable = table("group_member")
+  .columns({
+    id: number(),
+    userId: string(),
+    groupId: number(),
+    role: enumeration<Role>(),
+    joinedAt: number(),
+  })
+  .primaryKey("id");
+
+export const discussionTable = table("discussion")
+  .columns({
+    id: number(),
+    title: string(),
+    content: string().optional(),
+    groupId: number(),
+    authorId: string(),
+    createdAt: number(),
+    updatedAt: number(),
+    deletedAt: number().optional(),
+  })
+  .primaryKey("id");
+
+export const fileTable = table("file")
+  .columns({
+    id: number(),
+    fileName: string(),
+    url: string(),
+    groupId: number(),
+    discussionId: number(),
+    size: number(),
+    uploadedById: string(),
+    createdAt: number(),
+    deletedAt: number().optional(),
+  })
+  .primaryKey("id");
+
 
 // Define relationships
 
 export const commentTableRelationships = relationships(commentTable, ({ one }) => ({
+  discussion: one({
+    sourceField: ["discussionId"],
+    destField: ["id"],
+    destSchema: discussionTable,
+  }),
   author: one({
     sourceField: ["authorId"],
     destField: ["id"],
@@ -54,6 +116,93 @@ export const userTableRelationships = relationships(userTable, ({ many }) => ({
     sourceField: ["id"],
     destField: ["authorId"],
     destSchema: commentTable,
+  }),
+  groups: many({
+    sourceField: ["id"],
+    destField: ["userId"],
+    destSchema: groupMemberTable,
+  }),
+  files: many({
+    sourceField: ["id"],
+    destField: ["uploadedById"],
+    destSchema: fileTable,
+  }),
+  discussions: many({
+    sourceField: ["id"],
+    destField: ["authorId"],
+    destSchema: discussionTable,
+  })
+}));
+
+export const groupTableRelationships = relationships(groupTable, ({ many }) => ({
+  members: many({
+    sourceField: ["id"],
+    destField: ["groupId"],
+    destSchema: groupMemberTable,
+  }),
+  discussions: many({
+    sourceField: ["id"],
+    destField: ["groupId"],
+    destSchema: discussionTable,
+  }),
+  files: many({
+    sourceField: ["id"],
+    destField: ["groupId"],
+    destSchema: fileTable,
+  })
+}));
+
+export const groupMemberTableRelationships = relationships(groupMemberTable, ({ one }) => ({
+  user: one({
+    sourceField: ["userId"],
+    destField: ["id"],
+    destSchema: userTable,
+  }),
+  group: one({
+    sourceField: ["groupId"],
+    destField: ["id"],
+    destSchema: groupTable,
+  })
+}));
+
+export const discussionTableRelationships = relationships(discussionTable, ({ one, many }) => ({
+  group: one({
+    sourceField: ["groupId"],
+    destField: ["id"],
+    destSchema: groupTable,
+  }),
+  author: one({
+    sourceField: ["authorId"],
+    destField: ["id"],
+    destSchema: userTable,
+  }),
+  comments: many({
+    sourceField: ["id"],
+    destField: ["discussionId"],
+    destSchema: commentTable,
+  }),
+  files: many({
+    sourceField: ["id"],
+    destField: ["discussionId"],
+    destSchema: fileTable,
+  })
+}));
+
+export const fileTableRelationships = relationships(fileTable, ({ one }) => ({
+  group: one({
+    sourceField: ["groupId"],
+    destField: ["id"],
+    destSchema: groupTable,
+  }),
+  discussion: one({
+    sourceField: ["discussionId"],
+    destField: ["id"],
+    destSchema: discussionTable,
+  }),
+  uploadedBy: one({
+    sourceField: ["uploadedById"],
+    destField: ["id"],
+    destSchema: userTable,
   })
 }));
 
@@ -64,10 +213,18 @@ export const schema = createSchema(
     tables: [
       commentTable,
       userTable,
+      groupTable,
+      groupMemberTable,
+      discussionTable,
+      fileTable,
     ],
     relationships: [
       commentTableRelationships,
       userTableRelationships,
+      groupTableRelationships,
+      groupMemberTableRelationships,
+      discussionTableRelationships,
+      fileTableRelationships,
     ],
   }
 );
@@ -76,3 +233,7 @@ export const schema = createSchema(
 export type Schema = typeof schema;
 export type Comment = Row<typeof schema.tables.comment>;
 export type User = Row<typeof schema.tables.user>;
+export type Group = Row<typeof schema.tables.group>;
+export type GroupMember = Row<typeof schema.tables.group_member>;
+export type Discussion = Row<typeof schema.tables.discussion>;
+export type File = Row<typeof schema.tables.file>;
