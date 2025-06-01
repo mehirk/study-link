@@ -25,39 +25,45 @@ const useChatStore = create<ChatStore>((set) => ({
   sendingComment: false,
   commentToEdit: null,
   commentToDelete: null,
+
   setCommentToEdit: (commentId) => set({ commentToEdit: commentId }),
+
   setCommentToDelete: (commentId) => set({ commentToDelete: commentId }),
+
   setCurrentDiscussionId: (discussionId) =>
     set({ currentDiscussionId: discussionId }),
+
   setSendingComment: (sendingComment) =>
     set({ sendingComment: sendingComment }),
+
   sendNewMessage: async (message) => {
     set({ sendingComment: true });
     await sendNewMessage(
-      useGroupStore.getState().currentGroup!.id,
+      useGroupStore.getState().currentGroupId!,
       useChatStore.getState().currentDiscussionId!,
       { content: message }
     );
     set({ sendingComment: false });
   },
+
   updateMessage: async (message) => {
     set({ sendingComment: true });
     await updateMessage(
-      useGroupStore.getState().currentGroup!.id,
+      useGroupStore.getState().currentGroupId!,
       useChatStore.getState().currentDiscussionId!,
       useChatStore.getState().commentToEdit!,
       { content: message }
     );
-    set({ sendingComment: false });
-    set({ commentToEdit: null });
+    set({ sendingComment: false, commentToEdit: null });
   },
+
   deleteComment: async () => {
     await deleteComment(
-      useGroupStore.getState().currentGroup!.id,
+      useGroupStore.getState().currentGroupId!,
       useChatStore.getState().currentDiscussionId!,
       useChatStore.getState().commentToDelete!
     );
-    set({ commentToDelete: null });
+    set({ sendingComment: false, commentToDelete: null });
   },
 }));
 

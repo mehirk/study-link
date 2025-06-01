@@ -25,7 +25,7 @@ const DiscussionInfoPanel = () => {
   const setCurrentDiscussionId = useChatStore(
     (state) => state.setCurrentDiscussionId
   );
-  const groupId = useGroupStore((state) => state.currentGroup?.id)!;
+  const groupId = useGroupStore((state) => state.currentGroupId)!;
   const isAdmin = useGroupStore((state) => state.isAdmin);
   const user = useAuthStore((state) => state.user);
   const sessionToken = useAuthStore((state) => state.sessionToken);

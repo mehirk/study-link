@@ -3,22 +3,24 @@ import { create } from "zustand";
 import useAuthStore from "./auth-store";
 
 interface GroupStore {
-  currentGroup: Group | null;
+  currentGroupId: number | null;
+  currentGroup: Omit<Group, "members"> | null;
   isAdmin: boolean;
   activeTab: string;
-  setCurrentGroup: (group: Group | null) => void;
+  setCurrentGroup: (group: Omit<Group, "members"> | null) => void;
   setIsAdmin: (isAdmin: boolean) => void;
   setActiveTab: (tab: string) => void;
   updateAdminStatus: (members: GroupMember[]) => void;
 }
 
 const useGroupStore = create<GroupStore>((set, get) => ({
+  currentGroupId: null,
   currentGroup: null,
   activeTab: "discussions",
   isAdmin: false,
 
   setCurrentGroup: (group) => {
-    set({ currentGroup: group });
+    set({ currentGroup: group, currentGroupId: group?.id ?? null });
   },
 
   setIsAdmin: (isAdmin) => set({ isAdmin }),

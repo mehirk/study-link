@@ -8,7 +8,7 @@ export interface Group {
   password?: string;
   createdAt: string;
   updatedAt: string;
-  members?: GroupMember[];
+  members: GroupMember[];
 }
 
 export interface CreateGroupRequest {
@@ -32,7 +32,7 @@ export interface GroupMember {
   };
 }
 // Fetch all groups the user is a member of
-export const fetchUserGroups = async (): Promise<Group[]> => {
+export const fetchUserGroups = async (): Promise<Omit<Group, "members">[]> => {
   const response = await apiClient.get("/groups");
   return response.data;
 };
@@ -60,7 +60,7 @@ export const updateGroup = async (
     password?: string;
     private?: boolean;
   }
-): Promise<Group> => {
+): Promise<Omit<Group, "members">> => {
   const response = await apiClient.put(`/groups/${groupId}`, data);
   return response.data;
 };

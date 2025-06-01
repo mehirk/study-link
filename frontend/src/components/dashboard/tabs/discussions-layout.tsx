@@ -11,7 +11,7 @@ import DiscussionInfoPanel from "@components/dashboard/discussion-info-panel";
 
 const DiscussionsLayout = () => {
   const { toast } = useToast();
-  const groupId = useGroupStore((state) => state.currentGroup?.id)!;
+  const groupId = useGroupStore((state) => state.currentGroupId)!;
   const currentDiscussionId = useChatStore(
     (state) => state.currentDiscussionId
   );
