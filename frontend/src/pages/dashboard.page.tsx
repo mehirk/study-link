@@ -7,7 +7,7 @@ import { ScrollArea } from "@components/ui/scroll-area";
 import { cn } from "@lib/utils";
 
 const Dashboard = () => {
-  const currentGroupId = useGroupStore((state) => state.currentGroupId);
+  const currentGroup = useGroupStore((state) => state.currentGroup);
   const currentDiscussionId = useChatStore(
     (state) => state.currentDiscussionId
   );
@@ -25,13 +25,11 @@ const Dashboard = () => {
       {isMobile && !currentDiscussionId ? (
         <ScrollArea className="flex-1 max-h-[calc(100vh-3.4rem)] md:max-h-full">
           <div className="flex-1 min-h-0">
-            {currentGroupId && <GroupDetails />}
+            {currentGroup && <GroupDetails />}
           </div>
         </ScrollArea>
       ) : (
-        <div className="flex-1 min-h-0">
-          {currentGroupId && <GroupDetails />}
-        </div>
+        <div className="flex-1 min-h-0">{currentGroup && <GroupDetails />}</div>
       )}
     </div>
   );

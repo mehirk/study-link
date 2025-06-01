@@ -32,13 +32,13 @@ const GroupSidebar = () => {
   });
 
   useEffect(() => {
-    if (currentGroupId) {
+    if (currentGroupId && !isLoading) {
       setCurrentGroup(groups.find((group) => group.id === currentGroupId)!);
     }
     if (groups.length > 0 && !currentGroupId) {
       setCurrentGroup(groups[0]);
     }
-  }, [groups, currentGroupId, setCurrentGroup]);
+  }, [groups, currentGroupId, setCurrentGroup, isLoading]);
 
   const handleSelectGroup = (groupId: number) => {
     const selectedGroup = groups.find((group) => group.id === groupId);
