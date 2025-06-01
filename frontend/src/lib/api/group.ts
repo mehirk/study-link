@@ -3,11 +3,11 @@ import { apiClient } from "@lib/api-client";
 export interface Group {
   id: number;
   name: string;
-  description?: string;
+  description: string | null;
   private: boolean;
-  password?: string;
-  createdAt: string;
-  updatedAt: string;
+  password: string | null;
+  createdAt: string | number;
+  updatedAt: string | number;
   members: GroupMember[];
 }
 
@@ -23,7 +23,7 @@ export interface GroupMember {
   userId: string;
   groupId: number;
   role: "ADMIN" | "MEMBER";
-  joinedAt: string;
+  joinedAt: string | number;
   user: {
     id: string;
     name: string;
@@ -40,7 +40,7 @@ export const fetchUserGroups = async (): Promise<Omit<Group, "members">[]> => {
 // Create a new group
 export const createGroup = async (
   groupData: CreateGroupRequest
-): Promise<Group> => {
+): Promise<Omit<Group, "members">> => {
   const response = await apiClient.post("/groups", groupData);
   return response.data;
 };
@@ -74,9 +74,12 @@ export const deleteGroup = async (groupId: number): Promise<void> => {
 export const joinGroup = async (
   groupId: number,
   password?: string
-): Promise<void> => {
+): Promise<Omit<Group, "members">> => {
   const queryParams = password ? `?password=${password}` : "";
-  await apiClient.post(`/groups/join-group/${groupId}${queryParams}`);
+  const response = await apiClient.post(
+    `/groups/join-group/${groupId}${queryParams}`
+  );
+  return response.data;
 };
 
 // Leave a group

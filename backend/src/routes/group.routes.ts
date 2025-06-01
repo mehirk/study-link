@@ -104,7 +104,7 @@ router.post(
         },
       });
 
-      res.status(201).json({ message: "User added to group successfully" });
+      res.status(201).json(group);
     } catch (error) {
       console.error("Error adding user to group:", error);
       res.status(500).json({ message: "Internal server error" });
