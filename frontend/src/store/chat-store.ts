@@ -5,6 +5,8 @@ import {
   updateComment as updateMessage,
 } from "@lib/api/discussion";
 import useGroupStore from "./group-store";
+import { createJSONStorage, persist } from "zustand/middleware";
+import persistentStorage from "@lib/persistent-url-state";
 
 interface ChatStore {
   currentDiscussionId: number | null;
@@ -20,51 +22,66 @@ interface ChatStore {
   deleteComment: () => void;
 }
 
-const useChatStore = create<ChatStore>((set) => ({
-  currentDiscussionId: null,
-  sendingComment: false,
-  commentToEdit: null,
-  commentToDelete: null,
+interface PersistedChatState {
+  currentDiscussionId: number | null;
+}
 
-  setCommentToEdit: (commentId) => set({ commentToEdit: commentId }),
+const useChatStore = create(
+  persist<ChatStore, [], [], PersistedChatState>(
+    (set) => ({
+      currentDiscussionId: null,
+      sendingComment: false,
+      commentToEdit: null,
+      commentToDelete: null,
 
-  setCommentToDelete: (commentId) => set({ commentToDelete: commentId }),
+      setCommentToEdit: (commentId) => set({ commentToEdit: commentId }),
 
-  setCurrentDiscussionId: (discussionId) =>
-    set({ currentDiscussionId: discussionId }),
+      setCommentToDelete: (commentId) => set({ commentToDelete: commentId }),
 
-  setSendingComment: (sendingComment) =>
-    set({ sendingComment: sendingComment }),
+      setCurrentDiscussionId: (discussionId) =>
+        set({ currentDiscussionId: discussionId }),
 
-  sendNewMessage: async (message) => {
-    set({ sendingComment: true });
-    await sendNewMessage(
-      useGroupStore.getState().currentGroupId!,
-      useChatStore.getState().currentDiscussionId!,
-      { content: message }
-    );
-    set({ sendingComment: false });
-  },
+      setSendingComment: (sendingComment) =>
+        set({ sendingComment: sendingComment }),
 
-  updateMessage: async (message) => {
-    set({ sendingComment: true });
-    await updateMessage(
-      useGroupStore.getState().currentGroupId!,
-      useChatStore.getState().currentDiscussionId!,
-      useChatStore.getState().commentToEdit!,
-      { content: message }
-    );
-    set({ sendingComment: false, commentToEdit: null });
-  },
+      sendNewMessage: async (message) => {
+        set({ sendingComment: true });
+        await sendNewMessage(
+          useGroupStore.getState().currentGroupId!,
+          useChatStore.getState().currentDiscussionId!,
+          { content: message }
+        );
+        set({ sendingComment: false });
+      },
 
-  deleteComment: async () => {
-    await deleteComment(
-      useGroupStore.getState().currentGroupId!,
-      useChatStore.getState().currentDiscussionId!,
-      useChatStore.getState().commentToDelete!
-    );
-    set({ sendingComment: false, commentToDelete: null });
-  },
-}));
+      updateMessage: async (message) => {
+        set({ sendingComment: true });
+        await updateMessage(
+          useGroupStore.getState().currentGroupId!,
+          useChatStore.getState().currentDiscussionId!,
+          useChatStore.getState().commentToEdit!,
+          { content: message }
+        );
+        set({ sendingComment: false, commentToEdit: null });
+      },
+
+      deleteComment: async () => {
+        await deleteComment(
+          useGroupStore.getState().currentGroupId!,
+          useChatStore.getState().currentDiscussionId!,
+          useChatStore.getState().commentToDelete!
+        );
+        set({ sendingComment: false, commentToDelete: null });
+      },
+    }),
+    {
+      name: "chat",
+      storage: createJSONStorage<PersistedChatState>(() => persistentStorage),
+      partialize: (state): PersistedChatState => ({
+        currentDiscussionId: state.currentDiscussionId,
+      }),
+    }
+  )
+);
 
 export default useChatStore;
