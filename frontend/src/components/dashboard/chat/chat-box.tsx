@@ -5,27 +5,18 @@ import { getDateDisplay } from "@lib/utils";
 import useAuthStore from "@store/auth-store";
 import useChatStore from "@store/chat-store";
 import { useEffect, useRef } from "react";
-import { useQuery as useZeroQuery, useZero } from "@rocicorp/zero/react";
-import { Schema } from "../../../../../zero-syncer/generated/schema";
 import type { Comment } from "@lib/api/discussion";
 import { Loader2 } from "lucide-react";
+import { useChatQuery } from "@hooks/use-zero-queries";
 
 export const Chat = () => {
   const user = useAuthStore((state) => state.user)!;
   const discussionId = useChatStore((state) => state.currentDiscussionId)!;
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const z = useZero<Schema>();
-  const discussionQuery = z.query.comment
-    .where("discussionId", "=", discussionId)
-    .where("deletedAt", "IS", null)
-    .related("author");
+  const { chat, chatDetails } = useChatQuery(discussionId);
 
-  const [chat, chatDetails] = useZeroQuery(discussionQuery, {
-    ttl: "forever",
-  });
-
-  const resultType = chatDetails.type;
+  const loading = chatDetails.type === "unknown";
 
   // Auto-scroll to bottom when comments change
   useEffect(() => {
@@ -113,7 +104,7 @@ export const Chat = () => {
   };
 
   // Loading state
-  if (resultType === "unknown") {
+  if (loading) {
     return (
       <div className="flex pt-10 justify-center items-center h-full">
         <Loader2 className="h-6 w-6 animate-spin" />
@@ -130,12 +121,12 @@ export const Chat = () => {
     );
   }
 
-  const comments = chat as Comment[];
+  const c = chat as Comment[];
 
   return (
     <div className="space-y-1 sm:space-y-2 py-2">
-      {comments.reduce<React.ReactNode[]>((allElements, comment, index) => {
-        const commentElements = processComment(comment, index, comments);
+      {c.reduce<React.ReactNode[]>((allElements, comment, index) => {
+        const commentElements = processComment(comment, index, c);
         return [...allElements, ...commentElements];
       }, [])}
       <div ref={messagesEndRef} />
