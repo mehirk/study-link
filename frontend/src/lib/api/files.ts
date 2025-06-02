@@ -5,19 +5,18 @@ export interface File {
   fileName: string;
   url: string;
   size: number;
-  type: string;
-  createdAt: string;
-  uploadedBy: {
+  createdAt: string | number;
+  uploadedBy?: {
     id: string;
     name: string;
     email: string;
-    image?: string;
+    image: string | null;
   };
   uploadedById: string;
-  discussion: {
+  discussion?: {
     id: number;
     title: string;
-  } | null;
+  };
   discussionId: number;
   groupId: number;
 }

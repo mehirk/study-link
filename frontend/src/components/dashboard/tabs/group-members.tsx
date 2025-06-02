@@ -4,17 +4,13 @@ import { Button } from "@components/ui/button";
 import { Card, CardContent } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
 import { Loader2, UserX, ShieldAlert } from "lucide-react";
-import {
-  changeUserRole,
-  removeMember,
-  leaveGroup,
-  getGroupMembers,
-} from "@lib/api/group";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { changeUserRole, removeMember, leaveGroup } from "@lib/api/group";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "@components/ui/use-toast";
 import { getInitials } from "@lib/utils";
 import useGroupStore from "@store/group-store";
 import useChatStore from "@store/chat-store";
+import { useMembersQuery } from "@hooks/use-zero-queries";
 
 const GroupMembers = () => {
   const user = useAuthStore((state) => state.user);
@@ -25,19 +21,15 @@ const GroupMembers = () => {
   const setCurrentDiscussionId = useChatStore(
     (state) => state.setCurrentDiscussionId
   );
-  const queryClient = useQueryClient();
+  const { members, membersDetails } = useMembersQuery(groupId);
 
-  const { data: members = [] } = useQuery({
-    queryKey: ["group-members", groupId],
-    queryFn: () => getGroupMembers(groupId),
-  });
+  const loading = membersDetails.type === "unknown";
 
   // Remove member mutation
   const removeMemberMutation = useMutation({
     mutationFn: ({ groupId, userId }: { groupId: number; userId: string }) =>
       removeMember(groupId, userId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-members", groupId] });
       toast({
         title: "Success",
         description: "Member removed successfully",
@@ -57,7 +49,6 @@ const GroupMembers = () => {
   const leaveGroupMutation = useMutation({
     mutationFn: (groupId: number) => leaveGroup(groupId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
       setCurrentDiscussionId(null);
       setCurrentGroup(null);
       setActiveTab("discussions");
@@ -84,7 +75,6 @@ const GroupMembers = () => {
       role: "ADMIN" | "MEMBER";
     }) => changeUserRole(groupId, userId, role),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-members", groupId] });
       toast({
         title: "Success",
         description: "Role updated successfully",
@@ -113,6 +103,13 @@ const GroupMembers = () => {
     changeRoleMutation.mutate({ groupId, userId, role: newRole });
   };
 
+  if (loading) {
+    return (
+      <div className="w-full flex justify-center items-center h-full">
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </div>
+    );
+  }
   return (
     <div className="w-full">
       <div className="p-4 border-b bg-muted flex justify-between items-center">
@@ -127,16 +124,16 @@ const GroupMembers = () => {
                   <Avatar className="h-10 w-10 md:h-12 md:w-12">
                     <AvatarImage
                       className="object-cover"
-                      src={member.user.image || ""}
+                      src={member.user?.image || ""}
                     />
                     <AvatarFallback className="text-sm">
-                      {getInitials(member.user.name)}
+                      {getInitials(member.user?.name || "")}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-medium text-sm md:text-base truncate">
-                        {member.user.name}
+                        {member.user?.name}
                       </p>
                       <Badge
                         variant={
@@ -153,7 +150,7 @@ const GroupMembers = () => {
                       )}
                     </div>
                     <p className="text-xs md:text-sm text-muted-foreground truncate">
-                      {member.user.email}
+                      {member.user?.email}
                     </p>
                   </div>
                 </div>

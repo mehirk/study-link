@@ -44,3 +44,33 @@ export const useChatQuery = (discussionId: number) => {
 
   return { chat, chatDetails };
 };
+
+export const useFilesQuery = (groupId: number) => {
+  const z = useZero<Schema>();
+
+  const filesQuery = z.query.file
+    .where("groupId", "=", groupId)
+    .where("deletedAt", "IS", null)
+    .related("uploadedBy")
+    .related("discussion");
+
+  const [files, filesDetails] = useZeroQuery(filesQuery, {
+    ttl: "forever",
+  });
+
+  return { files, filesDetails };
+};
+
+export const useMembersQuery = (groupId: number) => {
+  const z = useZero<Schema>();
+
+  const membersQuery = z.query.group_member
+    .where("groupId", "=", groupId)
+    .related("user");
+
+  const [members, membersDetails] = useZeroQuery(membersQuery, {
+    ttl: "forever",
+  });
+
+  return { members, membersDetails };
+};
