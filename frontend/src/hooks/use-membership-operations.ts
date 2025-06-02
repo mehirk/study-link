@@ -4,7 +4,7 @@ import { changeUserRole, removeMember, leaveGroup } from "@lib/api/group";
 import useGroupStore from "@store/group-store";
 import useChatStore from "@store/chat-store";
 
-export const useGroupMemberOperations = (groupId: number) => {
+export const useMembershipOperations = (groupId: number) => {
   const setCurrentGroup = useGroupStore((state) => state.setCurrentGroup);
   const setActiveTab = useGroupStore((state) => state.setActiveTab);
   const setCurrentDiscussionId = useChatStore(

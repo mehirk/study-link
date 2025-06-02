@@ -11,7 +11,7 @@ import {
   isCurrentUser,
   type GroupMember,
 } from "@lib/group-permissions";
-import { useGroupMemberOperations } from "@hooks/use-group-member-operations";
+import { useMembershipOperations } from "@hooks/use-membership-operations";
 import useGroupStore from "@store/group-store";
 import useAuthStore from "@store/auth-store";
 
@@ -25,7 +25,7 @@ const MemberCard = ({ member }: MemberCardProps) => {
   const isCurrentUserAdmin = useGroupStore((state) => state.isAdmin);
 
   const { handleRemoveMember, handleLeaveGroup, handleChangeRole } =
-    useGroupMemberOperations(groupId);
+    useMembershipOperations(groupId);
 
   const showAdminActions = canPromoteToAdmin(
     currentUser,

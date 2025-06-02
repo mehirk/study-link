@@ -32,18 +32,20 @@ const GroupSidebar = () => {
   const groups = memberships.map((member) => member.group);
 
   useEffect(() => {
-    if (
-      groups.length > 0 &&
-      currentGroupId &&
-      membershipDetails.type !== "unknown"
-    ) {
-      setCurrentGroup(groups.find((group) => group!.id === currentGroupId)!);
+    if (groups.length === 0) {
+      return;
     }
-    if (groups.length > 0 && !currentGroupId) {
+    if (!currentGroupId) {
       setCurrentGroup(groups[0]!);
     }
+    if (currentGroupId && membershipDetails.type !== "unknown") {
+      const group = groups.find((group) => group!.id === currentGroupId);
+      if (group) {
+        setCurrentGroup(group);
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [membershipDetails.type]);
+  }, [membershipDetails.type, groups]);
 
   const handleSelectGroup = (groupId: number) => {
     const selectedGroup = groups.find((group) => group!.id === groupId);
