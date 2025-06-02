@@ -6,19 +6,15 @@ import { Loader2, Edit, Trash2, Calendar, User, Upload, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@components/ui/use-toast";
-import {
-  updateDiscussion,
-  deleteDiscussion,
-  fetchGroupDiscussions,
-} from "@lib/api/discussion";
+import { updateDiscussion, deleteDiscussion } from "@lib/api/discussion";
 import { UploadDropzone } from "@lib/uploadthing-client";
 import { getInitials } from "@lib/utils";
 import DeleteDiscussionModal from "./modals/delete-discussion-modal";
 import useAuthStore from "@store/auth-store";
 import useGroupStore from "@store/group-store";
 import useChatStore from "@store/chat-store";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ScrollArea } from "@components/ui/scroll-area";
+import { useDiscussionsQuery } from "@hooks/use-zero-queries";
 
 const DiscussionInfoPanel = () => {
   const discussionId = useChatStore((state) => state.currentDiscussionId)!;
@@ -30,13 +26,9 @@ const DiscussionInfoPanel = () => {
   const user = useAuthStore((state) => state.user);
   const sessionToken = useAuthStore((state) => state.sessionToken);
 
-  const queryClient = useQueryClient();
-  const { data: discussions } = useQuery({
-    queryKey: ["discussions", groupId],
-    queryFn: () => fetchGroupDiscussions(groupId),
-  });
+  const { discussions } = useDiscussionsQuery(groupId);
 
-  const discussion = discussions?.find((d) => d.id === discussionId);
+  const discussion = discussions.find((d) => d.id === discussionId)!;
 
   const { toast } = useToast();
 
@@ -74,9 +66,6 @@ const DiscussionInfoPanel = () => {
         title: editedInfo.title,
         content: editedInfo.content || undefined,
       });
-      await queryClient.invalidateQueries({
-        queryKey: ["discussions", groupId],
-      });
 
       setEditingInfo(false);
     } catch (error) {
@@ -105,10 +94,6 @@ const DiscussionInfoPanel = () => {
     try {
       setActionLoading(true);
       await deleteDiscussion(groupId, discussionId);
-
-      await queryClient.invalidateQueries({
-        queryKey: ["discussions", groupId],
-      });
       setCurrentDiscussionId(null);
     } catch (error) {
       console.error("Failed to delete discussion:", error);
@@ -187,18 +172,18 @@ const DiscussionInfoPanel = () => {
           <div className="flex items-center space-x-3">
             <Avatar className="h-10 w-10">
               <AvatarImage
-                src={discussion.author.image || ""}
-                alt={discussion.author.name}
+                src={discussion.author?.image || ""}
+                alt={discussion.author?.name || ""}
               />
               <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                {getInitials(discussion.author.name)}
+                {getInitials(discussion.author?.name || "")}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1">
                 <User className="h-3 w-3 text-muted-foreground" />
                 <span className="font-medium text-sm truncate">
-                  by {discussion.author.name}
+                  by {discussion.author?.name || ""}
                 </span>
               </div>
               <div className="flex items-center space-x-1">

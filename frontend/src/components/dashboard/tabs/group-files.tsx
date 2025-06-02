@@ -10,40 +10,28 @@ import {
 } from "@components/ui/table";
 import { Button } from "@components/ui/button";
 import { toast } from "@components/ui/use-toast";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { getInitials } from "@lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
-import {
-  getGroupFiles,
-  File as FileType,
-  formatFileSize,
-  deleteFile,
-} from "@lib/api/files";
+import { File as FileType, formatFileSize, deleteFile } from "@lib/api/files";
 import useAuthStore from "@store/auth-store";
 import useGroupStore from "@store/group-store";
 import { formatDistanceToNow } from "date-fns";
+import { useFilesQuery } from "@hooks/use-zero-queries";
 
 const GroupFiles = () => {
   const user = useAuthStore((state) => state.user);
   const isAdmin = useGroupStore((state) => state.isAdmin);
   const groupId = useGroupStore((state) => state.currentGroupId)!;
-  const queryClient = useQueryClient();
 
-  // Fetch files
-  const { data: files = [] } = useQuery({
-    queryKey: ["group-files", groupId],
-    queryFn: () => getGroupFiles(groupId),
-  });
+  const { files, filesDetails } = useFilesQuery(groupId);
+
+  const loading = filesDetails.type === "unknown";
 
   // Delete file mutation
   const deleteFileMutation = useMutation({
     mutationFn: (fileId: number) => deleteFile(fileId),
-    onSuccess: (_, fileId) => {
-      queryClient.setQueryData(
-        ["groupFiles", groupId],
-        (oldData: FileType[] | undefined) =>
-          oldData ? oldData.filter((file) => file.id !== fileId) : []
-      );
+    onSuccess: () => {
       toast({
         title: "Success",
         description: "File deleted successfully",
@@ -63,9 +51,17 @@ const GroupFiles = () => {
     window.open(file.url, "_blank");
   };
 
-  const handleFileDelete = (fileId: number) => {
-    deleteFileMutation.mutate(fileId);
+  const handleFileDelete = async (fileId: number) => {
+    await deleteFile(fileId);
   };
+
+  if (loading) {
+    return (
+      <div className="w-full flex justify-center items-center h-full">
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </div>
+    );
+  }
 
   if (files.length === 0) {
     return (
@@ -79,11 +75,13 @@ const GroupFiles = () => {
     <div className="w-full">
       {/* Mobile Card Layout */}
       <div className="p-4 border-b bg-muted flex justify-between items-center">
-        <h3 className="font-semibold">Group Files - {files.length}</h3>
+        <h3 className="font-semibold">
+          Group Files from all Discussions - {files.length}
+        </h3>
       </div>
-      <div className="block md:hidden p-3 md:p-6 space-y-2">
+      <div className="block md:hidden space-y-2">
         {files.map((file) => (
-          <div key={file.id} className="border rounded-lg p-3 space-y-3">
+          <div key={file.id} className="border-b p-3 space-y-3">
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-sm truncate">
@@ -106,7 +104,7 @@ const GroupFiles = () => {
                   <Download className="h-4 w-4" />
                 </Button>
                 {(isAdmin ||
-                  String(file.uploadedBy.id) === String(user?.id)) && (
+                  String(file.uploadedBy?.id) === String(user?.id)) && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -130,14 +128,14 @@ const GroupFiles = () => {
                 <Avatar className="w-6 h-6">
                   <AvatarImage
                     className="object-cover"
-                    src={file.uploadedBy.image || ""}
+                    src={file.uploadedBy?.image || ""}
                   />
                   <AvatarFallback className="text-xs">
-                    {getInitials(file.uploadedBy.name)}
+                    {getInitials(file.uploadedBy?.name || "")}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-xs text-muted-foreground">
-                  {file.uploadedBy.name}
+                  {file.uploadedBy?.name}
                 </span>
               </div>
               {file.discussion && (
@@ -180,13 +178,13 @@ const GroupFiles = () => {
                       <Avatar className="w-8 h-8">
                         <AvatarImage
                           className="object-cover"
-                          src={file.uploadedBy.image || ""}
+                          src={file.uploadedBy?.image || ""}
                         />
                         <AvatarFallback>
-                          {getInitials(file.uploadedBy.name)}
+                          {getInitials(file.uploadedBy?.name || "")}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm">{file.uploadedBy.name}</span>
+                      <span className="text-sm">{file.uploadedBy?.name}</span>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -203,7 +201,7 @@ const GroupFiles = () => {
                       <Download className="h-4 w-4" />
                     </Button>
                     {(isAdmin ||
-                      String(file.uploadedBy.id) === String(user?.id)) && (
+                      String(file.uploadedBy?.id) === String(user?.id)) && (
                       <Button
                         variant="ghost"
                         size="icon"

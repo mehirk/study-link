@@ -2,27 +2,40 @@ import { Button } from "@components/ui/button";
 import { ScrollArea } from "@components/ui/scroll-area";
 import { cn } from "@lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import { Loader2, MessageCircle, Plus } from "lucide-react";
-import { createDiscussion, Discussion } from "@lib/api/discussion";
+import { Loader2, Plus } from "lucide-react";
+import { createDiscussion } from "@lib/api/discussion";
 import useChatStore from "@store/chat-store";
 import CreateDiscussionModal from "./modals/create-discussion-modal";
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@components/ui/use-toast";
 import useGroupStore from "@store/group-store";
+import { useMobile } from "@hooks/use-mobile";
+import { useDiscussionsQuery } from "@hooks/use-zero-queries";
 
-interface DiscussionsSidebarProps {
-  loading: boolean;
-  discussions: Discussion[];
-}
-const DiscussionsSidebar = ({
-  loading,
-  discussions,
-}: DiscussionsSidebarProps) => {
+const DiscussionsSidebar = () => {
   const { toast } = useToast();
   const groupId = useGroupStore((state) => state.currentGroupId)!;
-  const queryClient = useQueryClient();
+  const currentDiscussionId = useChatStore(
+    (state) => state.currentDiscussionId
+  );
+  const setCurrentDiscussionId = useChatStore(
+    (state) => state.setCurrentDiscussionId
+  );
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+  const { discussions, discussionsDetails } = useDiscussionsQuery(groupId);
+
+  const loading = discussionsDetails.type === "unknown";
+
+  const isMobile = useMobile();
+
+  // Auto-select first discussion when discussions load and none is selected (desktop only)
+  useEffect(() => {
+    if (discussions.length > 0 && !currentDiscussionId && !isMobile) {
+      setCurrentDiscussionId(discussions[0].id);
+    }
+  }, [discussions, currentDiscussionId, setCurrentDiscussionId, isMobile]);
 
   const createDiscussionMutation = useMutation({
     mutationFn: ({ title, content }: { title: string; content: string }) =>
@@ -31,7 +44,6 @@ const DiscussionsSidebar = ({
         content,
       }),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["discussions", groupId] });
       setCurrentDiscussionId(data.id);
       setCreateDialogOpen(false);
     },
@@ -47,13 +59,6 @@ const DiscussionsSidebar = ({
   const handleCreateDiscussion = async (title: string, content: string) => {
     createDiscussionMutation.mutate({ title, content });
   };
-
-  const currentDiscussionId = useChatStore(
-    (state) => state.currentDiscussionId
-  );
-  const setCurrentDiscussionId = useChatStore(
-    (state) => state.setCurrentDiscussionId
-  );
 
   return (
     <div className="md:min-w-64 min-w-full md:w-64 md:border-r h-full flex flex-col">
@@ -84,7 +89,7 @@ const DiscussionsSidebar = ({
             >
               <span className="font-medium truncate">{discussion.title}</span>
               <div className="flex items-center text-xs text-muted-foreground mt-1">
-                <span className="truncate">by {discussion.author.name}</span>
+                <span className="truncate">by {discussion.author!.name}</span>
                 <span className="mx-1">·</span>
                 <span>
                   {formatDistanceToNow(new Date(discussion.createdAt), {
@@ -92,10 +97,10 @@ const DiscussionsSidebar = ({
                   })}
                 </span>
               </div>
-              <div className="flex items-center text-xs mt-1">
+              {/* <div className="flex items-center text-xs mt-1">
                 <MessageCircle className="h-3 w-3 mr-1" />
                 <span>{discussion._count?.comments || 0}</span>
-              </div>
+              </div> */}
             </button>
           ))
         ) : (

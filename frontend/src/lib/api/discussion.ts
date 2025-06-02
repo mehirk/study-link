@@ -6,15 +6,15 @@ export interface Discussion {
   content: string | null;
   authorId: string;
   groupId: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | number;
+  updatedAt: string | number;
   author: {
     id: string;
     name: string;
     email: string;
     image?: string;
   };
-  _count: {
+  _count?: {
     comments: number;
   };
   comments?: Comment[];

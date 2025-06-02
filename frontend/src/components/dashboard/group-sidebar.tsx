@@ -11,9 +11,8 @@ import { useToast } from "@components/ui/use-toast";
 import { Loader2, Plus } from "lucide-react";
 import useGroupStore from "@store/group-store";
 import useChatStore from "@store/chat-store";
-import { useZero, useQuery as useZeroQuery } from "@rocicorp/zero/react";
-import { Schema } from "../../../../zero-syncer/generated/schema";
 import useAuthStore from "@store/auth-store";
+import { useMembershipQuery } from "@hooks/use-zero-queries";
 
 const GroupSidebar = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -28,30 +27,25 @@ const GroupSidebar = () => {
     (state) => state.setCurrentDiscussionId
   );
 
-  const z = useZero<Schema>();
+  const { memberships, membershipDetails } = useMembershipQuery(userId);
 
-  const membershipQuery = z.query.group_member
-    .where("userId", "=", userId)
-    .related("group", (q) => q.where("deletedAt", "IS", null));
-
-  const [memberships, membershipDetails] = useZeroQuery(membershipQuery, {
-    ttl: "forever",
-  });
   const groups = memberships.map((member) => member.group);
 
   useEffect(() => {
-    if (
-      groups.length > 0 &&
-      currentGroupId &&
-      membershipDetails.type !== "unknown"
-    ) {
-      setCurrentGroup(groups.find((group) => group!.id === currentGroupId)!);
+    if (groups.length === 0) {
+      return;
     }
-    if (groups.length > 0 && !currentGroupId) {
+    if (!currentGroupId) {
       setCurrentGroup(groups[0]!);
     }
+    if (currentGroupId && membershipDetails.type !== "unknown") {
+      const group = groups.find((group) => group!.id === currentGroupId);
+      if (group) {
+        setCurrentGroup(group);
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [membershipDetails.type]);
+  }, [membershipDetails.type, groups]);
 
   const handleSelectGroup = (groupId: number) => {
     const selectedGroup = groups.find((group) => group!.id === groupId);
